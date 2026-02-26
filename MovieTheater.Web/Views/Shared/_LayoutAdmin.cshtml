@@ -1,0 +1,650 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - MovieTheater Admin</title>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <!-- Admin Global Styles -->
+    <style>
+        /* Root Variables for Admin Theme */
+        :root {
+            --admin-primary: #2C3E50;
+            --admin-secondary: #34495E;
+            --admin-accent: #3498DB;
+            --admin-success: #27AE60;
+            --admin-warning: #F39C12;
+            --admin-danger: #E74C3C;
+            --admin-info: #17A2B8;
+            --admin-light: #ECF0F1;
+            --admin-dark: #1A252F;
+            --admin-white: #FFFFFF;
+            --admin-gray-100: #F8F9FA;
+            --admin-gray-200: #E9ECEF;
+            --admin-gray-300: #DEE2E6;
+            --admin-gray-600: #6C757D;
+            --admin-gray-800: #495057;
+            --admin-sidebar-width: 280px;
+            --admin-header-height: 70px;
+            --admin-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            --admin-shadow-lg: 0 4px 20px rgba(0, 0, 0, 0.15);
+            --admin-radius: 8px;
+            --admin-radius-lg: 12px;
+            --admin-transition: all 0.3s ease;
+        }
+
+        /* Global Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: var(--admin-gray-100);
+            color: var(--admin-gray-800);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Admin Layout Container */
+        .admin-layout {
+            display: flex;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Sidebar Styles - FIXED Z-INDEX */
+        .admin-sidebar {
+            width: var(--admin-sidebar-width);
+            background: linear-gradient(180deg, var(--admin-primary) 0%, var(--admin-secondary) 100%);
+            color: var(--admin-white);
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            overflow-y: auto;
+            box-shadow: var(--admin-shadow-lg);
+            z-index: 1050; /* FIXED: Increased from 1000 to 1050 */
+            transition: var(--admin-transition);
+        }
+
+            .admin-sidebar::-webkit-scrollbar {
+                width: 6px;
+            }
+
+            .admin-sidebar::-webkit-scrollbar-track {
+                background: rgba(255, 255, 255, 0.1);
+            }
+
+            .admin-sidebar::-webkit-scrollbar-thumb {
+                background: rgba(255, 255, 255, 0.3);
+                border-radius: 3px;
+            }
+
+        /* Sidebar Header */
+        .sidebar-header {
+            padding: 24px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .admin-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--admin-white);
+        }
+
+            .admin-brand:hover {
+                color: var(--admin-white);
+                text-decoration: none;
+            }
+
+        .brand-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--admin-accent);
+            border-radius: var(--admin-radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: white;
+        }
+
+        .brand-text {
+            font-size: 1.3rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        /* Admin User Info */
+        .admin-user-info {
+            padding: 20px;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--admin-radius);
+            margin: 20px;
+        }
+
+        .admin-user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-bottom: 12px;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .admin-user-name {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 4px;
+        }
+
+        .admin-user-role {
+            font-size: 0.85rem;
+            opacity: 0.8;
+            color: var(--admin-accent);
+        }
+
+        /* Main Content Area */
+        .admin-main {
+            flex: 1;
+            margin-left: var(--admin-sidebar-width);
+            min-height: 100vh;
+            background-color: var(--admin-gray-100);
+        }
+
+        /* Admin Header */
+        .admin-header {
+            background: var(--admin-white);
+            height: var(--admin-header-height);
+            box-shadow: var(--admin-shadow);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .admin-header-left h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--admin-primary);
+            margin: 0;
+        }
+
+        .admin-header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .header-action {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--admin-gray-100);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--admin-gray-600);
+            cursor: pointer;
+            transition: var(--admin-transition);
+            position: relative;
+        }
+
+            .header-action:hover {
+                background: var(--admin-accent);
+                color: white;
+                transform: translateY(-2px);
+            }
+
+            .header-action .badge {
+                position: absolute;
+                top: -5px;
+                right: -5px;
+                background: var(--admin-danger);
+                color: white;
+                border-radius: 50%;
+                width: 18px;
+                height: 18px;
+                font-size: 0.7rem;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+        /* Content Area */
+        .admin-content {
+            padding: 30px;
+            min-height: calc(100vh - var(--admin-header-height));
+        }
+
+        /* Breadcrumb */
+        .admin-breadcrumb {
+            background: transparent;
+            padding: 0;
+            margin-bottom: 30px;
+        }
+
+            .admin-breadcrumb .breadcrumb {
+                background: var(--admin-white);
+                padding: 12px 20px;
+                border-radius: var(--admin-radius);
+                box-shadow: var(--admin-shadow);
+                margin-bottom: 0;
+            }
+
+            .admin-breadcrumb .breadcrumb-item {
+                color: var(--admin-gray-600);
+            }
+
+                .admin-breadcrumb .breadcrumb-item.active {
+                    color: var(--admin-primary);
+                    font-weight: 600;
+                }
+
+        /* Mobile Sidebar Toggle */
+        .sidebar-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            color: var(--admin-primary);
+            cursor: pointer;
+        }
+
+        /* Mobile Responsive */
+        @@media (max-width: 768px) {
+            .admin-sidebar
+
+        {
+            transform: translateX(-100%);
+        }
+
+        .admin-sidebar.show {
+            transform: translateX(0);
+        }
+
+        .admin-main {
+            margin-left: 0;
+        }
+
+        .sidebar-toggle {
+            display: block;
+        }
+
+        .admin-content {
+            padding: 20px 15px;
+        }
+
+        .admin-header {
+            padding: 0 15px;
+        }
+
+        }
+
+        /* Overlay for mobile */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+            .sidebar-overlay.show {
+                display: block;
+            }
+
+        /* Utility Classes */
+        .text-admin-primary {
+            color: var(--admin-primary) !important;
+        }
+
+        .text-admin-accent {
+            color: var(--admin-accent) !important;
+        }
+
+        .bg-admin-primary {
+            background-color: var(--admin-primary) !important;
+        }
+
+        .bg-admin-accent {
+            background-color: var(--admin-accent) !important;
+        }
+
+        /* Card Improvements */
+        .card {
+            border: none;
+            border-radius: var(--admin-radius-lg);
+            box-shadow: var(--admin-shadow);
+            transition: var(--admin-transition);
+        }
+
+            .card:hover {
+                box-shadow: var(--admin-shadow-lg);
+                transform: translateY(-2px);
+            }
+
+        .card-header {
+            background: var(--admin-white);
+            border-bottom: 1px solid var(--admin-gray-200);
+            border-radius: var(--admin-radius-lg) var(--admin-radius-lg) 0 0 !important;
+            padding: 20px;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        /* Button Improvements */
+        .btn {
+            border-radius: var(--admin-radius);
+            font-weight: 600;
+            padding: 8px 16px;
+            transition: var(--admin-transition);
+        }
+
+            .btn:hover {
+                transform: translateY(-1px);
+            }
+
+        /* Table Improvements */
+        .table {
+            border-radius: var(--admin-radius);
+            overflow: hidden;
+            box-shadow: var(--admin-shadow);
+        }
+
+            .table thead th {
+                background: var(--admin-primary);
+                color: var(--admin-white);
+                border: none;
+                padding: 15px;
+                font-weight: 600;
+            }
+
+            .table tbody td {
+                padding: 15px;
+                border-color: var(--admin-gray-200);
+            }
+
+            .table tbody tr:hover {
+                background: var(--admin-gray-100);
+            }
+
+        /* Admin Dropdown Menu Styling - SAME AS HOMEPAGE BUT WITH ADMIN STYLING */
+        .admin-dropdown-menu {
+            background: var(--admin-white) !important;
+            border: 1px solid var(--admin-gray-200) !important;
+            border-radius: var(--admin-radius-lg) !important;
+            box-shadow: var(--admin-shadow-lg) !important;
+            padding: 8px 0 !important;
+            margin-top: 8px !important;
+            min-width: 220px !important;
+        }
+
+            .admin-dropdown-menu .dropdown-item {
+                padding: 12px 20px !important;
+                color: var(--admin-gray-800) !important;
+                transition: var(--admin-transition) !important;
+                display: flex !important;
+                align-items: center !important;
+                font-weight: 500 !important;
+                border: none !important;
+                background: none !important;
+                width: 100% !important;
+                text-align: left !important;
+            }
+
+                .admin-dropdown-menu .dropdown-item:hover {
+                    background: var(--admin-gray-100) !important;
+                    color: var(--admin-primary) !important;
+                    transform: translateX(3px) !important;
+                }
+
+                .admin-dropdown-menu .dropdown-item i {
+                    color: var(--admin-accent) !important;
+                    font-size: 0.9rem !important;
+                }
+
+            .admin-dropdown-menu .dropdown-divider {
+                margin: 8px 0 !important;
+                border-color: var(--admin-gray-200) !important;
+            }
+    </style>
+
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- Sidebar Overlay for Mobile -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <!-- Sidebar -->
+        <aside class="admin-sidebar" id="adminSidebar">
+            <!-- Sidebar Header -->
+            <div class="sidebar-header">
+                <a href="/Admin/Dashboard" class="admin-brand">
+                    <div class="brand-icon">
+                        <i class="fas fa-film"></i>
+                    </div>
+                    <span class="brand-text">MovieTheater Admin</span>
+                </a>
+            </div>
+
+            <!-- Admin User Info -->
+            <div class="admin-user-info text-center">
+                <img src="https://ui-avatars.com/api/?name=Admin&background=3498db&color=fff&size=128"
+                     alt="Admin Avatar" class="admin-user-avatar">
+                <div class="admin-user-name">@User.FindFirst("FullName")?.Value</div>
+                <div class="admin-user-role">Quản trị viên</div>
+            </div>
+
+            <!-- Sidebar Navigation -->
+            @await Html.PartialAsync("_AdminSidebar")
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <!-- Header -->
+            <header class="admin-header">
+                <div class="admin-header-left">
+                    <button class="sidebar-toggle" id="sidebarToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1>@ViewData["Title"]</h1>
+                </div>
+
+                <!-- FIXED: Same logout functionality as homepage -->
+                <div class="admin-header-right">
+                    <div class="header-action" title="Thông báo">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge">3</span>
+                    </div>
+                    <div class="header-action" title="Tin nhắn">
+                        <i class="fas fa-envelope"></i>
+                        <span class="badge">5</span>
+                    </div>
+                   
+
+                    <!-- User Dropdown - Same logic as Homepage -->
+                    @if (User.Identity != null && User.Identity.IsAuthenticated)
+                    {
+                        <div class="dropdown">
+                            <div class="header-action dropdown-toggle" data-bs-toggle="dropdown" title="Tài khoản" style="cursor: pointer;">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <ul class="dropdown-menu dropdown-menu-end admin-dropdown-menu">
+                                <li><a class="dropdown-item" asp-area="UserManagement" asp-controller="Account" asp-action="UpdateProfile"><i class="fas fa-user me-2"></i>Hồ sơ</a></li>
+                                
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <!-- WORKING LOGOUT - Same as homepage -->
+                                    <form asp-area="UserManagement" asp-controller="Account" asp-action="Logout" method="post" class="m-0">
+                                        <button type="submit" class="dropdown-item">
+                                            <i class="fas fa-sign-out-alt me-2"></i>Đăng xuất
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="dropdown">
+                            <div class="header-action dropdown-toggle" data-bs-toggle="dropdown" title="Tài khoản" style="cursor: pointer;">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <ul class="dropdown-menu dropdown-menu-end admin-dropdown-menu">
+                                <li><a class="dropdown-item" asp-area="UserManagement" asp-controller="Account" asp-action="Login"><i class="fas fa-sign-in-alt me-2"></i>Đăng nhập</a></li>
+                                <li><a class="dropdown-item" asp-area="UserManagement" asp-controller="Account" asp-action="Register"><i class="fas fa-user-plus me-2"></i>Đăng ký</a></li>
+                            </ul>
+                        </div>
+                    }
+                </div>
+            </header>
+
+            <!-- Breadcrumb -->
+            @if (ViewData["Breadcrumb"] != null)
+            {
+                <nav class="admin-breadcrumb">
+                    <ol class="breadcrumb">
+                        @Html.Raw(ViewData["Breadcrumb"])
+                    </ol>
+                </nav>
+            }
+
+            <!-- Content -->
+            <div class="admin-content">
+                @RenderBody()
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Admin Global Scripts -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Sidebar toggle for mobile
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('adminSidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+
+            if (sidebarToggle) {
+                sidebarToggle.addEventListener('click', function() {
+                    sidebar.classList.toggle('show');
+                    overlay.classList.toggle('show');
+                });
+            }
+
+            if (overlay) {
+                overlay.addEventListener('click', function() {
+                    sidebar.classList.remove('show');
+                    overlay.classList.remove('show');
+                });
+            }
+
+            // Close sidebar when clicking outside on mobile
+            document.addEventListener('click', function(e) {
+                if (window.innerWidth <= 768) {
+                    if (!sidebar.contains(e.target) && !sidebarToggle.contains(e.target)) {
+                        sidebar.classList.remove('show');
+                        overlay.classList.remove('show');
+                    }
+                }
+            });
+
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                if (window.innerWidth > 768) {
+                    sidebar.classList.remove('show');
+                    overlay.classList.remove('show');
+                }
+            });
+
+            // Auto-hide alerts after 5 seconds
+            const alerts = document.querySelectorAll('.alert:not(.alert-permanent)');
+            alerts.forEach(alert => {
+                setTimeout(() => {
+                    alert.style.opacity = '0';
+                    setTimeout(() => alert.remove(), 300);
+                }, 5000);
+            });
+
+            // Add loading states to form (excluding logout form)
+            const forms = document.querySelectorAll('form');
+forms.forEach(form => {
+    form.addEventListener('submit', function (e) {
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn && !submitBtn.disabled) {
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang xử lý...';
+            submitBtn.disabled = true;
+
+            // Re-enable fallback (nếu submit fail)
+            setTimeout(() => {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }, 10000);
+        }
+    });
+});
+
+        // Global admin utilities
+        window.AdminUtils = {
+            showToast: function(message, type = 'success') {
+                // Simple toast implementation
+                const toast = document.createElement('div');
+                toast.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+                toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+                toast.innerHTML = `
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                document.body.appendChild(toast);
+
+                setTimeout(() => {
+                    toast.remove();
+                }, 5000);
+            },
+
+            confirmDelete: function(message = 'Bạn có chắc chắn muốn xóa?') {
+                return confirm(message);
+            },
+
+            formatNumber: function(num) {
+                return new Intl.NumberFormat('vi-VN').format(num);
+            },
+
+            formatCurrency: function(amount) {
+                return new Intl.NumberFormat('vi-VN', {
+                    style: 'currency',
+                    currency: 'VND'
+                }).format(amount);
+            }
+        };
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

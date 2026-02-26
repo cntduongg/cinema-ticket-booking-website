@@ -1,0 +1,279 @@
+﻿@model MovieTheater.Web.Areas.Booking.Models.Promotion
+@{
+    ViewData["Title"] = "Chi tiết khuyến mãi";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewData["SidebarActive"] = "PromotionManagement";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-eye"></i> @ViewData["Title"]
+                    </h3>
+                    <div class="card-tools">
+                        @if (Model.IsActive)
+                        {
+                            <span class="badge badge-lg bg-success">
+                                <i class="fas fa-check"></i> Đang hoạt động
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge badge-lg bg-secondary">
+                                <i class="fas fa-pause"></i> Tạm dừng
+                            </span>
+                        }
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h4 class="text-primary">
+                                <i class="fas fa-tag"></i> @Model.Title
+                            </h4>
+                            <hr>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-info-circle"></i> Thông tin cơ bản</h6>
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td width="30%"><strong>ID:</strong></td>
+                                    <td>@Model.PromotionId</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Tiêu đề:</strong></td>
+                                    <td>@Model.Title</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Mức giảm giá:</strong></td>
+                                    <td>
+                                        <span class="badge bg-info fs-6">
+                                            <i class="fas fa-percent"></i> @Model.DiscountLevel%
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Trạng thái:</strong></td>
+                                    <td>
+                                        @if (Model.IsActive)
+                                        {
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-check"></i> Hoạt động
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">
+                                                <i class="fas fa-pause"></i> Tạm dừng
+                                            </span>
+                                        }
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-calendar"></i> Thời gian hiệu lực</h6>
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td width="30%"><strong>Bắt đầu:</strong></td>
+                                    <td>
+                                        <i class="fas fa-calendar-start text-success"></i>
+                                        @Model.StartTime.ToString("dd/MM/yyyy HH:mm")
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Kết thúc:</strong></td>
+                                    <td>
+                                        <i class="fas fa-calendar-times text-danger"></i>
+                                        @Model.EndTime.ToString("dd/MM/yyyy HH:mm")
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Thời gian còn lại:</strong></td>
+                                    <td>
+                                        @{
+                                            var now = DateTime.Now;
+                                            var timeLeft = Model.EndTime - now;
+                                        }
+                                        @if (timeLeft.TotalDays > 0)
+                                        {
+                                            <span class="text-success">
+                                                <i class="fas fa-clock"></i> @((int)timeLeft.TotalDays) ngày
+                                            </span>
+                                        }
+                                        else if (timeLeft.TotalHours > 0)
+                                        {
+                                            <span class="text-warning">
+                                                <i class="fas fa-clock"></i> @((int)timeLeft.TotalHours) giờ
+                                            </span>
+                                        }
+                                        else if (timeLeft.TotalMinutes > 0)
+                                        {
+                                            <span class="text-danger">
+                                                <i class="fas fa-clock"></i> @((int)timeLeft.TotalMinutes) phút
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">
+                                                <i class="fas fa-times"></i> Đã hết hạn
+                                            </span>
+                                        }
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <h6><i class="fas fa-align-left"></i> Mô tả chi tiết</h6>
+                            <div class="alert alert-light">
+                                <p class="mb-0">@Model.Detail</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="btn-group" role="group">
+                        <a asp-action="Edit" asp-route-id="@Model.PromotionId" class="btn btn-warning">
+                            <i class="fas fa-edit"></i> Chỉnh sửa
+                        </a>
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-list"></i> Danh sách
+                        </a>
+                        <form asp-action="Delete" asp-route-id="@Model.PromotionId" method="post" style="display:inline;"
+                              onsubmit="return confirm('Bạn có chắc chắn muốn xóa khuyến mãi này?');">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> Xóa
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i class="fas fa-chart-line"></i> Thống kê
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="stat-item mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span><i class="fas fa-calendar-day"></i> Số ngày hoạt động:</span>
+                            <strong>
+                                @{
+                                    var totalDays = (Model.EndTime - Model.StartTime).TotalDays;
+                                }
+                                @((int)totalDays) ngày
+                            </strong>
+                        </div>
+                    </div>
+
+                    <div class="stat-item mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span><i class="fas fa-percentage"></i> Mức giảm:</span>
+                            <strong class="text-info">@Model.DiscountLevel%</strong>
+                        </div>
+                    </div>
+
+                    <div class="stat-item mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span><i class="fas fa-toggle-on"></i> Trạng thái:</span>
+                            <strong class="@(Model.IsActive ? "text-success" : "text-secondary")">
+                                @(Model.IsActive ? "Hoạt động" : "Tạm dừng")
+                            </strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i class="fas fa-lightbulb"></i> Gợi ý
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        @if (!Model.IsActive)
+                        {
+                            <li class="mb-2">
+                                <i class="fas fa-info-circle text-info"></i>
+                                Khuyến mãi đang tạm dừng. Hãy kích hoạt để áp dụng.
+                            </li>
+                        }
+
+                        @if (Model.EndTime < DateTime.Now)
+                        {
+                            <li class="mb-2">
+                                <i class="fas fa-exclamation-triangle text-warning"></i>
+                                Khuyến mãi đã hết hạn. Hãy cập nhật thời gian.
+                            </li>
+                        }
+                        else if ((Model.EndTime - DateTime.Now).TotalDays < 7)
+                        {
+                            <li class="mb-2">
+                                <i class="fas fa-clock text-warning"></i>
+                                Khuyến mãi sắp hết hạn. Hãy gia hạn nếu cần.
+                            </li>
+                        }
+
+                        <li class="mb-2">
+                            <i class="fas fa-edit text-primary"></i>
+                            Có thể chỉnh sửa thông tin bất kỳ lúc nào.
+                        </li>
+
+                        <li class="mb-2">
+                            <i class="fas fa-copy text-success"></i>
+                            Có thể tạo khuyến mãi tương tự từ mẫu này.
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            console.log('Promotion details loaded');
+
+            // Auto refresh status every 30 seconds
+            setInterval(function() {
+                checkPromotionStatus();
+            }, 30000);
+        });
+
+        function checkPromotionStatus() {
+            const endTime = new Date('@Model.EndTime.ToString("yyyy-MM-ddTHH:mm:ss")');
+            const now = new Date();
+
+            if (endTime < now && @Model.IsActive.ToString().ToLower()) {
+                showAlert('warning', 'Khuyến mãi đã hết hạn!');
+            }
+        }
+
+        function showAlert(type, message) {
+            const alertHtml = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            $('.card-body').first().prepend(alertHtml);
+        }
+    </script>
+}

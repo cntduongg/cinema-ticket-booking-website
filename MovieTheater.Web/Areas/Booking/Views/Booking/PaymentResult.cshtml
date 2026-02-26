@@ -1,0 +1,956 @@
+@{
+    ViewData["Title"] = "Kết quả thanh toán";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    /* Root Variables - Same as Homepage */
+    :root {
+        --primary-blue: #E8F4FD;
+        --secondary-blue: #D1E9F6;
+        --accent-blue: #B8DDFF;
+        --deep-blue: #7FB8D3;
+        --dark-blue: #4A90A4;
+        --text-dark: #1A365D;
+        --text-light: #4A5568;
+        --white: #FFFFFF;
+        --gray-50: #F7FAFC;
+        --gray-100: #EDF2F7;
+        --gray-200: #E2E8F0;
+        --green-success: #48BB78;
+        --green-light: #68D391;
+        --red-error: #F56565;
+        --red-light: #FC8181;
+        --gradient-primary: linear-gradient(135deg, var(--primary-blue) 0%, var(--accent-blue) 50%, var(--deep-blue) 100%);
+        --gradient-success: linear-gradient(135deg, #68D391 0%, #48BB78 100%);
+        --gradient-error: linear-gradient(135deg, #FC8181 0%, #F56565 100%);
+        --gradient-card: linear-gradient(135deg, #FFFFFF 0%, #F8FBFF 100%);
+        --shadow-soft: 0 4px 20px rgba(127, 184, 211, 0.15);
+        --shadow-medium: 0 8px 30px rgba(127, 184, 211, 0.2);
+        --shadow-strong: 0 15px 40px rgba(127, 184, 211, 0.3);
+        --border-radius: 20px;
+    }
+
+    /* Page Background */
+    .payment-result-page {
+        min-height: 100vh;
+        background: var(--gradient-primary);
+        padding: 60px 0;
+        position: relative;
+        overflow: hidden;
+    }
+
+        /* Background Particles */
+        .payment-result-page::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="1" fill="%23ffffff" opacity="0.1"><animate attributeName="opacity" values="0.1;0.3;0.1" dur="3s" repeatCount="indefinite"/></circle><circle cx="80" cy="40" r="1.5" fill="%23ffffff" opacity="0.1"><animate attributeName="opacity" values="0.1;0.4;0.1" dur="4s" repeatCount="indefinite"/></circle><circle cx="40" cy="80" r="1" fill="%23ffffff" opacity="0.1"><animate attributeName="opacity" values="0.1;0.25;0.1" dur="5s" repeatCount="indefinite"/></circle></svg>') repeat;
+            animation: float 20s linear infinite;
+            z-index: 0;
+        }
+
+    @@keyframes float {
+        0%
+
+    {
+        transform: translateY(0px);
+    }
+
+    100% {
+        transform: translateY(-100px);
+    }
+
+    }
+
+    /* Main Container */
+    .payment-container {
+        position: relative;
+        z-index: 2;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+
+    /* Loading State */
+    .loading-payment {
+        background: var(--gradient-card);
+        border-radius: var(--border-radius);
+        padding: 60px 40px;
+        text-align: center;
+        box-shadow: var(--shadow-medium);
+        border: 1px solid rgba(184, 221, 255, 0.3);
+        opacity: 0;
+        animation: fadeInUp 0.6s ease forwards;
+    }
+
+    .loading-spinner {
+        width: 60px;
+        height: 60px;
+        border: 4px solid var(--accent-blue);
+        border-top: 4px solid var(--deep-blue);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 20px;
+    }
+
+    @@keyframes spin {
+        0%
+
+    {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+
+    }
+
+    /* Payment Result Card */
+    .payment-result-card {
+        background: var(--gradient-card);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-strong);
+        border: 1px solid rgba(184, 221, 255, 0.3);
+        overflow: hidden;
+        position: relative;
+        opacity: 0;
+        transform: translateY(50px) scale(0.9);
+        animation: resultAppear 0.8s ease forwards 0.5s;
+    }
+
+    @@keyframes resultAppear {
+        to
+
+    {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+
+    }
+
+    /* Success Card */
+    .payment-result-card.success::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 6px;
+        background: var(--gradient-success);
+    }
+
+    /* Error Card */
+    .payment-result-card.error::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 6px;
+        background: var(--gradient-error);
+    }
+
+    /* Icon Section */
+    .result-icon-section {
+        text-align: center;
+        padding: 50px 40px 30px;
+        position: relative;
+    }
+
+    .result-icon {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 25px;
+        font-size: 3.5rem;
+        position: relative;
+        animation: iconBounce 0.6s ease 1.2s both;
+    }
+
+        .result-icon.success {
+            background: var(--gradient-success);
+            color: white;
+            box-shadow: 0 10px 30px rgba(72, 187, 120, 0.4);
+        }
+
+        .result-icon.error {
+            background: var(--gradient-error);
+            color: white;
+            box-shadow: 0 10px 30px rgba(245, 101, 101, 0.4);
+        }
+
+    @@keyframes iconBounce {
+        0%, 20%, 50%, 80%, 100%
+
+    {
+        transform: translateY(0) scale(1);
+    }
+
+    40% {
+        transform: translateY(-10px) scale(1.1);
+    }
+
+    60% {
+        transform: translateY(-5px) scale(1.05);
+    }
+
+    }
+
+    .result-icon::before {
+        content: '';
+        position: absolute;
+        width: 140px;
+        height: 140px;
+        border-radius: 50%;
+        top: -10px;
+        left: -10px;
+        opacity: 0.2;
+        animation: pulse 2s infinite;
+    }
+
+    .result-icon.success::before {
+        background: var(--green-success);
+    }
+
+    .result-icon.error::before {
+        background: var(--red-error);
+    }
+
+    @@keyframes pulse {
+        0%
+
+    {
+        transform: scale(1);
+        opacity: 0.2;
+    }
+
+    50% {
+        transform: scale(1.1);
+        opacity: 0.1;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 0.2;
+    }
+
+    }
+
+    /* Title and Message */
+    .result-title {
+        font-size: 2rem;
+        font-weight: 800;
+        margin-bottom: 15px;
+        color: var(--text-dark);
+        animation: titleSlide 0.6s ease 1.4s both;
+    }
+
+        .result-title.success {
+            color: var(--green-success);
+        }
+
+        .result-title.error {
+            color: var(--red-error);
+        }
+
+    @@keyframes titleSlide {
+        from
+
+    {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    }
+
+    .result-subtitle {
+        font-size: 1.1rem;
+        color: var(--text-light);
+        margin-bottom: 30px;
+        animation: subtitleSlide 0.6s ease 1.6s both;
+    }
+
+    @@keyframes subtitleSlide {
+        from
+
+    {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    }
+
+    /* Order Details Section */
+    .order-details-section {
+        padding: 0 40px 40px;
+        animation: detailsSlide 0.6s ease 1.8s both;
+    }
+
+    @@keyframes detailsSlide {
+        from
+
+    {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    }
+
+    .order-details-card {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: var(--shadow-soft);
+        border: 1px solid rgba(184, 221, 255, 0.3);
+        margin-bottom: 30px;
+    }
+
+    .order-details-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid var(--accent-blue);
+    }
+
+        .order-details-header h3 {
+            color: var(--text-dark);
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .order-details-header i {
+            color: var(--deep-blue);
+            font-size: 1.4rem;
+        }
+
+    .order-info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+    }
+
+    .order-info-item {
+        background: var(--gradient-primary);
+        padding: 20px;
+        border-radius: 12px;
+        border: 1px solid rgba(184, 221, 255, 0.3);
+        transition: all 0.3s ease;
+    }
+
+        .order-info-item:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-medium);
+        }
+
+    .order-info-label {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--deep-blue);
+        font-weight: 700;
+        font-size: 0.9rem;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+        .order-info-label i {
+            font-size: 1rem;
+            width: 16px;
+            text-align: center;
+        }
+
+    .order-info-value {
+        color: var(--text-dark);
+        font-weight: 600;
+        font-size: 1.1rem;
+        line-height: 1.4;
+    }
+
+        .order-info-value.price {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--green-success);
+        }
+
+        .order-info-value.seats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+    .seat-tag {
+        background: white;
+        color: var(--deep-blue);
+        padding: 4px 10px;
+        border-radius: 15px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        border: 1px solid var(--accent-blue);
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        flex-wrap: wrap;
+        animation: buttonsSlide 0.6s ease 2s both;
+    }
+
+    @@keyframes buttonsSlide {
+        from
+
+    {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    }
+
+    .btn-action {
+        padding: 15px 30px;
+        border-radius: 25px;
+        font-weight: 600;
+        font-size: 1rem;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        transition: all 0.3s ease;
+        box-shadow: var(--shadow-soft);
+        border: none;
+        cursor: pointer;
+        min-width: 160px;
+        justify-content: center;
+    }
+
+    .btn-primary-action {
+        background: var(--deep-blue);
+        color: white;
+    }
+
+        .btn-primary-action:hover {
+            background: var(--dark-blue);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-medium);
+            color: white;
+            text-decoration: none;
+        }
+
+    .btn-secondary-action {
+        background: white;
+        color: var(--deep-blue);
+        border: 2px solid var(--accent-blue);
+    }
+
+        .btn-secondary-action:hover {
+            background: var(--primary-blue);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-medium);
+            color: var(--deep-blue);
+            text-decoration: none;
+        }
+
+    /* Error Message */
+    .error-message {
+        background: rgba(245, 101, 101, 0.1);
+        color: var(--red-error);
+        padding: 20px;
+        border-radius: 12px;
+        border-left: 4px solid var(--red-error);
+        margin-bottom: 30px;
+        font-weight: 600;
+    }
+
+    /* Loading Message */
+    .loading-message {
+        color: var(--text-light);
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+
+    /* Responsive Design */
+    @@media (max-width: 768px) {
+        .payment-container
+
+    {
+        padding: 0 15px;
+    }
+
+    .result-icon-section {
+        padding: 40px 30px 25px;
+    }
+
+    .result-icon {
+        width: 100px;
+        height: 100px;
+        font-size: 3rem;
+    }
+
+    .result-title {
+        font-size: 1.7rem;
+    }
+
+    .order-details-section {
+        padding: 0 30px 30px;
+    }
+
+    .order-details-card {
+        padding: 25px 20px;
+    }
+
+    .order-info-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .btn-action {
+        width: 100%;
+        max-width: 300px;
+    }
+
+    }
+
+    @@media (max-width: 480px) {
+        .result-icon-section
+
+    {
+        padding: 30px 20px 20px;
+    }
+
+    .result-title {
+        font-size: 1.5rem;
+    }
+
+    .result-subtitle {
+        font-size: 1rem;
+    }
+
+    .order-details-section {
+        padding: 0 20px 25px;
+    }
+
+    .order-details-card {
+        padding: 20px 15px;
+    }
+
+    }
+
+    /* Animation delays for stagger effect */
+    .order-info-item:nth-child(1) {
+        animation-delay: 0.1s;
+    }
+
+    .order-info-item:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+
+    .order-info-item:nth-child(3) {
+        animation-delay: 0.3s;
+    }
+
+    .order-info-item:nth-child(4) {
+        animation-delay: 0.4s;
+    }
+
+    .order-info-item:nth-child(5) {
+        animation-delay: 0.5s;
+    }
+
+    .order-info-item:nth-child(6) {
+        animation-delay: 0.6s;
+    }
+
+    @@keyframes fadeInUp {
+        from
+
+    {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    }
+
+    .order-info-item {
+        opacity: 0;
+        animation: fadeInUp 0.5s ease forwards;
+    }
+</style>
+
+<div class="payment-result-page">
+    <div class="payment-container">
+        <!-- Loading State -->
+        <div id="loadingState" class="loading-payment">
+            <div class="loading-spinner"></div>
+            <h3 class="loading-message">Đang xử lý kết quả thanh toán...</h3>
+        </div>
+
+        <!-- Payment Result Card -->
+        <div id="paymentResultCard" class="payment-result-card" style="display: none;">
+            <!-- Icon Section -->
+            <div class="result-icon-section">
+                <div id="resultIcon" class="result-icon">
+                    <i id="iconElement"></i>
+                </div>
+                <h2 id="resultTitle" class="result-title"></h2>
+                <p id="resultSubtitle" class="result-subtitle"></p>
+            </div>
+
+            <!-- Order Details Section -->
+            <div id="orderDetailsSection" class="order-details-section" style="display: none;">
+                <div class="order-details-card">
+                    <div class="order-details-header">
+                        <i class="fas fa-receipt"></i>
+                        <h3>Thông tin đặt vé</h3>
+                    </div>
+                    <div id="orderInfoGrid" class="order-info-grid">
+                        <!-- Order details will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Error Message -->
+            <div id="errorMessageSection" class="order-details-section" style="display: none;">
+                <div id="errorMessage" class="error-message"></div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="order-details-section">
+                <div class="action-buttons">
+                    <a href="/" class="btn-action btn-primary-action">
+                        <i class="fas fa-home"></i>
+                        Về trang chủ
+                    </a>
+                    <a id="historyBtn" href="/Booking/Booking/History" class="btn-action btn-secondary-action" style="display: none;">
+                        <i class="fas fa-history"></i>
+                        Lịch sử đặt vé
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Get query parameters
+        function getQueryParam(name) {
+            const url = new URL(window.location.href);
+            return url.searchParams.get(name);
+        }
+
+        // Get selected seats from localStorage
+        function getSelectedSeats() {
+            try {
+                const data = localStorage.getItem('selectedSeats');
+                if (!data) return [];
+                const arr = JSON.parse(data);
+                if (Array.isArray(arr)) return arr;
+                return [];
+            } catch {
+                return [];
+            }
+        }
+
+        // Post payment actions (book seats)
+        async function postPaymentActions() {
+            try {
+                const selectedSeats = getSelectedSeats();
+                if (!Array.isArray(selectedSeats) || selectedSeats.length === 0) {
+                    console.warn('Không tìm thấy danh sách ghế đã chọn trong localStorage!');
+                    return;
+                }
+
+                for (const seat of selectedSeats) {
+                    const seatId = seat.seatId || seat.SeatId;
+                    const scheduleId = seat.scheduleId || seat.ScheduleId;
+                    const resp = await fetch('https://localhost:7092/api/SeatSchedule/book', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ seatId, scheduleId })
+                    });
+                    const respData = await resp.json().catch(() => ({}));
+                    console.log(`Book seatId=${seatId}, scheduleId=${scheduleId}:`, resp.status, respData);
+                }
+
+                // Clear localStorage after booking
+                localStorage.removeItem('selectedSeats');
+            } catch (e) {
+                console.error('Lỗi khi book ghế:', e);
+            }
+        }
+
+        // Show order information
+        async function showOrderInfo(orderId) {
+            try {
+                // 1. Get order
+                const orderRes = await fetch(`https://localhost:7092/api/Order/${orderId}`);
+                const order = await orderRes.json();
+
+                // 2. Get order details
+                const detailRes = await fetch(`https://localhost:7092/api/OrderDetail/order/${orderId}`);
+                let orderDetails = await detailRes.json();
+                if (orderDetails.$values) orderDetails = orderDetails.$values;
+
+                if (!Array.isArray(orderDetails) || orderDetails.length === 0) {
+                    showError('Không tìm thấy thông tin chi tiết đơn hàng.');
+                    return;
+                }
+
+                // Get scheduleId from first order detail
+                const scheduleId = orderDetails[0].scheduleId || orderDetails[0].ScheduleId;
+
+                // 3. Get schedule
+                const scheduleRes = await fetch(`https://localhost:7092/api/Schedule/${scheduleId}`);
+                const scheduleData = await scheduleRes.json();
+                const movieId = scheduleData.movieId || scheduleData.MovieId;
+                const cinemaRoomId = scheduleData.cinemaRoomId || scheduleData.CinemaRoomId;
+                const showDate = scheduleData.showDate || scheduleData.ShowDate;
+                const fromTime = scheduleData.fromTime || scheduleData.FromTime;
+
+                // 4. Get room name
+                const roomRes = await fetch(`https://localhost:7092/api/CinemaRoom/${cinemaRoomId}`);
+                const roomData = await roomRes.json();
+                const roomName = roomData.cinemaRoomName || roomData.CinemaRoomName || roomData.name;
+
+                // 5. Get movie name
+                const movieRes = await fetch(`https://localhost:7214/api/admin/movies/GetById/${movieId}`);
+                let movieData = await movieRes.json();
+                if (movieData.data) movieData = movieData.data;
+                const movieName = movieData.name || movieData.Name;
+
+                // 6. Map seatId to seatName
+                const seatIds = orderDetails.map(od => od.seatId || od.SeatId);
+                let seatNames = [];
+
+                try {
+                    const params = new URLSearchParams();
+                    seatIds.forEach(id => params.append('ids', id));
+                    const seatRes = await fetch(`https://localhost:7092/api/Seat/by-ids?${params.toString()}`);
+                    let seats = await seatRes.json();
+                    if (seats.$values) seats = seats.$values;
+
+                    if (Array.isArray(seats) && seats.length > 0) {
+                        seatNames = seatIds.map(id => {
+                            const seat = seats.find(s => s.id == id || s.Id == id);
+                            if (seat && (seat.seatRow || seat.SeatRow) && (seat.seatColumn || seat.SeatColumn)) {
+                                return (seat.seatRow || seat.SeatRow) + (seat.seatColumn || seat.SeatColumn);
+                            }
+                            return id;
+                        });
+                    } else {
+                        seatNames = seatIds;
+                    }
+                } catch {
+                    seatNames = seatIds;
+                }
+
+                // Fallback for seat names
+                if (seatNames.every(name => typeof name === 'number' || /^[0-9]+$/.test(name))) {
+                    try {
+                        const allSeatsRes = await fetch(`https://localhost:7092/api/Seat/room/${cinemaRoomId}`);
+                        let allSeats = await allSeatsRes.json();
+                        if (allSeats.$values) allSeats = allSeats.$values;
+
+                        seatNames = seatIds.map(id => {
+                            const seat = allSeats.find(s => s.id == id || s.Id == id);
+                            if (seat && (seat.seatRow || seat.SeatRow) && (seat.seatColumn || seat.SeatColumn)) {
+                                return (seat.seatRow || seat.SeatRow) + (seat.seatColumn || seat.SeatColumn);
+                            }
+                            return id;
+                        });
+                    } catch {}
+                }
+
+                // 7. Display order information
+                displayOrderInfo({
+                    movieName,
+                    roomName,
+                    showDate,
+                    fromTime,
+                    seatNames,
+                    totalPrice: order.totalPrice
+                });
+
+            } catch (e) {
+                showError('Không thể lấy thông tin đơn hàng: ' + e.message);
+            }
+        }
+
+        // Display order information
+        function displayOrderInfo(orderInfo) {
+            const orderInfoGrid = document.getElementById('orderInfoGrid');
+            const seatsHtml = orderInfo.seatNames.map(seat => `<span class="seat-tag">${seat}</span>`).join('');
+
+            orderInfoGrid.innerHTML = `
+                <div class="order-info-item">
+                    <div class="order-info-label">
+                        <i class="fas fa-film"></i>
+                        <span>Tên phim</span>
+                    </div>
+                    <div class="order-info-value">${orderInfo.movieName}</div>
+                </div>
+                <div class="order-info-item">
+                    <div class="order-info-label">
+                        <i class="fas fa-door-open"></i>
+                        <span>Phòng chiếu</span>
+                    </div>
+                    <div class="order-info-value">${orderInfo.roomName}</div>
+                </div>
+                <div class="order-info-item">
+                    <div class="order-info-label">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>Ngày chiếu</span>
+                    </div>
+                    <div class="order-info-value">${orderInfo.showDate}</div>
+                </div>
+                <div class="order-info-item">
+                    <div class="order-info-label">
+                        <i class="fas fa-clock"></i>
+                        <span>Giờ chiếu</span>
+                    </div>
+                    <div class="order-info-value">${orderInfo.fromTime}</div>
+                </div>
+                <div class="order-info-item">
+                    <div class="order-info-label">
+                        <i class="fas fa-chair"></i>
+                        <span>Ghế ngồi</span>
+                    </div>
+                    <div class="order-info-value seats">${seatsHtml}</div>
+                </div>
+                <div class="order-info-item">
+                    <div class="order-info-label">
+                        <i class="fas fa-money-bill-wave"></i>
+                        <span>Tổng tiền</span>
+                    </div>
+                    <div class="order-info-value price">${orderInfo.totalPrice ? orderInfo.totalPrice.toLocaleString('vi-VN') : '0'} VND</div>
+                </div>
+            `;
+
+            document.getElementById('orderDetailsSection').style.display = 'block';
+            document.getElementById('historyBtn').style.display = 'inline-flex';
+        }
+
+        // Show error message
+        function showError(message) {
+            document.getElementById('errorMessage').textContent = message;
+            document.getElementById('errorMessageSection').style.display = 'block';
+        }
+
+        // Render payment result
+        async function renderResult() {
+            const status = getQueryParam('status');
+            const message = getQueryParam('message') || '';
+            const orderId = getQueryParam('orderId');
+
+            if (status === 'success' && orderId) {
+                try {
+                    // Gọi API confirm để cập nhật trạng thái và tính điểm
+                    const confirmRes = await fetch(`https://localhost:7092/api/Order/confirm/${orderId}`, {
+                        method: 'POST'
+                    });
+
+                    if (!confirmRes.ok) {
+                        let errorMessage = 'Lỗi khi xác nhận đơn hàng.';
+                        try {
+                            const errorData = await confirmRes.json();
+                            errorMessage = errorData.message || errorData.title || errorMessage;
+                        } catch (e) {
+                            // Bỏ qua nếu response không phải JSON
+                        }
+                        throw new Error(errorMessage);
+                    }
+
+                    // Nếu thành công, tiếp tục hiển thị giao diện thành công
+                    document.getElementById('loadingState').style.display = 'none';
+                    document.getElementById('paymentResultCard').style.display = 'block';
+                    document.getElementById('paymentResultCard').classList.add('success');
+                    document.getElementById('resultIcon').classList.add('success');
+                    document.getElementById('iconElement').className = 'fas fa-check';
+                    document.getElementById('resultTitle').textContent = 'Thanh toán thành công!';
+                    document.getElementById('resultTitle').classList.add('success');
+                    document.getElementById('resultSubtitle').textContent = 'Cảm ơn bạn đã đặt vé. Chúc bạn có buổi xem phim vui vẻ!';
+
+                    // Load order information
+                    showOrderInfo(orderId);
+                    postPaymentActions();
+
+                } catch (error) {
+                    // Xử lý lỗi nếu API confirm thất bại
+                    document.getElementById('loadingState').style.display = 'none';
+                    document.getElementById('paymentResultCard').style.display = 'block';
+                    document.getElementById('paymentResultCard').classList.add('error');
+                    document.getElementById('resultIcon').classList.add('error');
+                    document.getElementById('iconElement').className = 'fas fa-times';
+                    document.getElementById('resultTitle').textContent = 'Xác nhận đơn hàng thất bại!';
+                    document.getElementById('resultTitle').classList.add('error');
+                    document.getElementById('resultSubtitle').textContent = 'Đã có lỗi xảy ra trong quá trình hoàn tất đơn hàng của bạn.';
+                    showError(error.message);
+                }
+            } else {
+                // Xử lý khi thanh toán thất bại ngay từ đầu (status != 'success')
+                setTimeout(() => {
+                    document.getElementById('loadingState').style.display = 'none';
+                    document.getElementById('paymentResultCard').style.display = 'block';
+                    document.getElementById('paymentResultCard').classList.add('error');
+                    document.getElementById('resultIcon').classList.add('error');
+                    document.getElementById('iconElement').className = 'fas fa-times';
+                    document.getElementById('resultTitle').textContent = 'Thanh toán thất bại!';
+                    document.getElementById('resultTitle').classList.add('error');
+                    document.getElementById('resultSubtitle').textContent = 'Rất tiếc, có lỗi xảy ra trong quá trình thanh toán.';
+
+                    if (message) {
+                        showError(decodeURIComponent(message));
+                    }
+                }, 1500);
+            }
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            renderResult();
+        });
+    </script>
+}

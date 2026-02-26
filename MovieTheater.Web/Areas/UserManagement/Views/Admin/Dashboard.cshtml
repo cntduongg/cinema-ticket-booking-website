@@ -1,0 +1,1240 @@
+@{
+    ViewData["Title"] = "Dashboard";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    // FIXED: Breadcrumb now links to homepage (/) instead of admin page
+    ViewData["Breadcrumb"] = "<li class='breadcrumb-item'><a href='/'><i class='fas fa-home me-1'></i>Trang chủ</a></li><li class='breadcrumb-item active'>Dashboard</li>";
+}
+
+@section Styles {
+    <style>
+        /* Dashboard Specific Styles */
+        :root {
+            --dashboard-gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --dashboard-gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --dashboard-gradient-3: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --dashboard-gradient-4: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            --dashboard-gradient-5: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            --dashboard-gradient-6: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+        }
+
+        /* Welcome Section */
+        .dashboard-welcome {
+            background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-accent) 100%);
+            color: white;
+            padding: 40px;
+            border-radius: var(--admin-radius-lg);
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+            .dashboard-welcome::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                right: 0;
+                width: 200px;
+                height: 200px;
+                background: rgba(255, 255, 255, 0.1);
+                border-radius: 50%;
+                transform: translate(50%, -50%);
+            }
+
+        .welcome-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .welcome-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .welcome-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 0;
+        }
+
+        .welcome-stats {
+            display: flex;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .welcome-stat {
+            text-align: center;
+        }
+
+        .welcome-stat-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: block;
+        }
+
+        .welcome-stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* Quick Stats Grid */
+        .quick-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: var(--admin-radius-lg);
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+            transition: var(--admin-transition);
+            box-shadow: var(--admin-shadow);
+        }
+
+            .stat-card:hover {
+                transform: translateY(-5px);
+                box-shadow: var(--admin-shadow-lg);
+            }
+
+            .stat-card::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 4px;
+            }
+
+            .stat-card.stat-primary::before {
+                background: var(--dashboard-gradient-1);
+            }
+
+            .stat-card.stat-success::before {
+                background: var(--dashboard-gradient-4);
+            }
+
+            .stat-card.stat-warning::before {
+                background: var(--dashboard-gradient-5);
+            }
+
+            .stat-card.stat-info::before {
+                background: var(--dashboard-gradient-3);
+            }
+
+        .stat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: var(--admin-radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .stat-card.stat-primary .stat-icon {
+            background: var(--dashboard-gradient-1);
+        }
+
+        .stat-card.stat-success .stat-icon {
+            background: var(--dashboard-gradient-4);
+        }
+
+        .stat-card.stat-warning .stat-icon {
+            background: var(--dashboard-gradient-5);
+        }
+
+        .stat-card.stat-info .stat-icon {
+            background: var(--dashboard-gradient-3);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--admin-primary);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: var(--admin-gray-600);
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .stat-change {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+            .stat-change.positive {
+                color: var(--admin-success);
+            }
+
+            .stat-change.negative {
+                color: var(--admin-danger);
+            }
+
+        /* Management Cards Grid */
+        .management-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .management-card {
+            background: white;
+            border-radius: var(--admin-radius-lg);
+            padding: 0;
+            overflow: hidden;
+            transition: var(--admin-transition);
+            box-shadow: var(--admin-shadow);
+            position: relative;
+        }
+
+            .management-card:hover {
+                transform: translateY(-8px);
+                box-shadow: var(--admin-shadow-lg);
+            }
+
+            .management-card::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                opacity: 0;
+                transition: var(--admin-transition);
+                z-index: 1;
+            }
+
+            .management-card.users::before {
+                background: var(--dashboard-gradient-1);
+            }
+
+            .management-card.movies::before {
+                background: var(--dashboard-gradient-2);
+            }
+
+            .management-card.showtimes::before {
+                background: var(--dashboard-gradient-3);
+            }
+
+            .management-card.schedule::before {
+                background: var(--dashboard-gradient-4);
+            }
+
+            .management-card.rooms::before {
+                background: var(--dashboard-gradient-5);
+            }
+
+            .management-card.reports::before {
+                background: var(--dashboard-gradient-6);
+            }
+
+            .management-card:hover::before {
+                opacity: 0.05;
+            }
+
+        .management-header {
+            padding: 30px 30px 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .management-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: var(--admin-radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .management-card.users .management-icon {
+            background: var(--dashboard-gradient-1);
+        }
+
+        .management-card.movies .management-icon {
+            background: var(--dashboard-gradient-2);
+        }
+
+        .management-card.showtimes .management-icon {
+            background: var(--dashboard-gradient-3);
+        }
+
+        .management-card.schedule .management-icon {
+            background: var(--dashboard-gradient-4);
+        }
+
+        .management-card.rooms .management-icon {
+            background: var(--dashboard-gradient-5);
+        }
+
+        .management-card.reports .management-icon {
+            background: var(--dashboard-gradient-6);
+        }
+
+        .management-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--admin-primary);
+            margin-bottom: 10px;
+        }
+
+        .management-description {
+            color: var(--admin-gray-600);
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .management-action {
+            background: var(--admin-gray-100);
+            padding: 20px 30px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .management-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--admin-primary);
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--admin-transition);
+        }
+
+            .management-btn:hover {
+                color: var(--admin-accent);
+                text-decoration: none;
+                transform: translateX(5px);
+            }
+
+        /* Charts and Analytics Section */
+        .analytics-section {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: var(--admin-radius-lg);
+            padding: 30px;
+            box-shadow: var(--admin-shadow);
+        }
+
+        .chart-header {
+            display: flex;
+            align-items: center;
+            justify-content: between;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--admin-gray-200);
+        }
+
+        .chart-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--admin-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chart-area {
+            position: relative;
+            height: 300px;
+            display: flex;
+            align-items: end;
+            justify-content: space-around;
+            padding: 20px 0;
+        }
+
+        .chart-bar {
+            background: var(--dashboard-gradient-3);
+            width: 40px;
+            border-radius: 4px 4px 0 0;
+            position: relative;
+            transition: var(--admin-transition);
+            cursor: pointer;
+        }
+
+            .chart-bar:hover {
+                transform: scale(1.05);
+                filter: brightness(1.1);
+            }
+
+            .chart-bar::before {
+                content: attr(data-value);
+                position: absolute;
+                top: -30px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: var(--admin-primary);
+                color: white;
+                padding: 5px 10px;
+                border-radius: 4px;
+                font-size: 0.8rem;
+                font-weight: 600;
+                opacity: 0;
+                transition: var(--admin-transition);
+            }
+
+            .chart-bar:hover::before {
+                opacity: 1;
+            }
+
+        .chart-labels {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 15px;
+            color: var(--admin-gray-600);
+            font-weight: 600;
+        }
+
+        /* Popular Movies */
+        .popular-movies {
+            background: white;
+            border-radius: var(--admin-radius-lg);
+            padding: 30px;
+            box-shadow: var(--admin-shadow);
+        }
+
+        .popular-header {
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--admin-gray-200);
+        }
+
+        .popular-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--admin-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .popular-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .popular-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            border-radius: var(--admin-radius);
+            transition: var(--admin-transition);
+            border: 1px solid var(--admin-gray-200);
+        }
+
+            .popular-item:hover {
+                background: var(--admin-gray-100);
+                transform: translateX(5px);
+            }
+
+        .popular-rank {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: var(--dashboard-gradient-1);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .popular-poster {
+            width: 50px;
+            height: 60px;
+            border-radius: var(--admin-radius);
+            overflow: hidden;
+        }
+
+            .popular-poster img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+
+        .popular-info {
+            flex: 1;
+        }
+
+        .popular-movie-title {
+            font-weight: 600;
+            color: var(--admin-primary);
+            margin-bottom: 5px;
+        }
+
+        .popular-stats {
+            display: flex;
+            gap: 15px;
+            font-size: 0.85rem;
+            color: var(--admin-gray-600);
+        }
+
+            .popular-stats span {
+                display: flex;
+                align-items: center;
+                gap: 5px;
+            }
+
+        /* Recent Activities */
+        .activities-section {
+            background: white;
+            border-radius: var(--admin-radius-lg);
+            padding: 30px;
+            box-shadow: var(--admin-shadow);
+        }
+
+        .activities-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--admin-gray-200);
+        }
+
+        .activities-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--admin-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .view-all-btn {
+            color: var(--admin-accent);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: var(--admin-transition);
+        }
+
+            .view-all-btn:hover {
+                color: var(--admin-primary);
+                text-decoration: none;
+            }
+
+        .activities-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            padding: 20px;
+            border-radius: var(--admin-radius);
+            border: 1px solid var(--admin-gray-200);
+            transition: var(--admin-transition);
+        }
+
+            .activity-item:hover {
+                background: var(--admin-gray-100);
+                border-color: var(--admin-accent);
+            }
+
+        .activity-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1rem;
+        }
+
+            .activity-icon.user {
+                background: var(--dashboard-gradient-1);
+            }
+
+            .activity-icon.movie {
+                background: var(--dashboard-gradient-2);
+            }
+
+            .activity-icon.ticket {
+                background: var(--dashboard-gradient-3);
+            }
+
+            .activity-icon.schedule {
+                background: var(--dashboard-gradient-4);
+            }
+
+            .activity-icon.system {
+                background: var(--dashboard-gradient-5);
+            }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-title {
+            font-weight: 600;
+            color: var(--admin-primary);
+            margin-bottom: 5px;
+        }
+
+        .activity-description {
+            color: var(--admin-gray-600);
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        .activity-time {
+            font-size: 0.85rem;
+            color: var(--admin-gray-600);
+            font-style: italic;
+        }
+
+        /* Responsive Design */
+        @@media (max-width: 1200px) {
+            .analytics-section
+
+        {
+            grid-template-columns: 1fr;
+        }
+
+        .management-grid {
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        }
+
+        }
+
+        @@media (max-width: 768px) {
+            .quick-stats-grid
+
+        {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .management-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .welcome-stats {
+            gap: 20px;
+        }
+
+        .dashboard-welcome {
+            padding: 25px;
+        }
+
+        .welcome-title {
+            font-size: 1.5rem;
+        }
+
+        .stat-card,
+        .chart-container,
+        .popular-movies,
+        .activities-section {
+            padding: 20px;
+        }
+
+        }
+
+        @@media (max-width: 480px) {
+            .quick-stats-grid
+
+        {
+            grid-template-columns: 1fr;
+        }
+
+        .welcome-stats {
+            flex-direction: column;
+            gap: 15px;
+            text-align: center;
+        }
+
+        }
+
+        /* Animation Effects */
+        .dashboard-welcome,
+        .stat-card,
+        .management-card,
+        .chart-container,
+        .popular-movies,
+        .activities-section {
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+            .stat-card:nth-child(1) {
+                animation-delay: 0.1s;
+            }
+
+            .stat-card:nth-child(2) {
+                animation-delay: 0.2s;
+            }
+
+            .stat-card:nth-child(3) {
+                animation-delay: 0.3s;
+            }
+
+            .stat-card:nth-child(4) {
+                animation-delay: 0.4s;
+            }
+
+            .management-card:nth-child(1) {
+                animation-delay: 0.1s;
+            }
+
+            .management-card:nth-child(2) {
+                animation-delay: 0.2s;
+            }
+
+            .management-card:nth-child(3) {
+                animation-delay: 0.3s;
+            }
+
+            .management-card:nth-child(4) {
+                animation-delay: 0.4s;
+            }
+
+            .management-card:nth-child(5) {
+                animation-delay: 0.5s;
+            }
+
+            .management-card:nth-child(6) {
+                animation-delay: 0.6s;
+            }
+
+        @@keyframes fadeInUp {
+            from
+
+        {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        }
+    </style>
+}
+
+<!-- Dashboard Content -->
+<div class="dashboard-container">
+    <!-- Welcome Section -->
+    <div class="dashboard-welcome">
+        <div class="welcome-content">
+            <h1 class="welcome-title">
+                <i class="fas fa-tachometer-alt me-2"></i>
+                Chào mừng trở lại, Admin!
+            </h1>
+            <p class="welcome-subtitle">Tổng quan hệ thống quản lý rạp chiếu phim MovieTheater</p>
+
+            <div class="welcome-stats">
+                <div class="welcome-stat">
+                    <span class="welcome-stat-number">1,247</span>
+                    <span class="welcome-stat-label">Người dùng</span>
+                </div>
+                <div class="welcome-stat">
+                    <span class="welcome-stat-number">89</span>
+                    <span class="welcome-stat-label">Phim đang chiếu</span>
+                </div>
+                <div class="welcome-stat">
+                    <span class="welcome-stat-number">2,456</span>
+                    <span class="welcome-stat-label">Vé bán hôm nay</span>
+                </div>
+                <div class="welcome-stat">
+                    <span class="welcome-stat-number">245M</span>
+                    <span class="welcome-stat-label">Doanh thu tháng</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="quick-stats-grid">
+        <div class="stat-card stat-primary">
+            <div class="stat-header">
+                <div>
+                    <div class="stat-number">1,247</div>
+                    <div class="stat-label">Tổng người dùng</div>
+                </div>
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+            </div>
+            <div class="stat-change positive">
+                <i class="fas fa-arrow-up"></i>
+                <span>+12% so với tháng trước</span>
+            </div>
+        </div>
+
+        <div class="stat-card stat-success">
+            <div class="stat-header">
+                <div>
+                    <div class="stat-number">89</div>
+                    <div class="stat-label">Phim đang chiếu</div>
+                </div>
+                <div class="stat-icon">
+                    <i class="fas fa-film"></i>
+                </div>
+            </div>
+            <div class="stat-change positive">
+                <i class="fas fa-arrow-up"></i>
+                <span>+5% so với tháng trước</span>
+            </div>
+        </div>
+
+        <div class="stat-card stat-warning">
+            <div class="stat-header">
+                <div>
+                    <div class="stat-number">2,456</div>
+                    <div class="stat-label">Vé bán hôm nay</div>
+                </div>
+                <div class="stat-icon">
+                    <i class="fas fa-ticket-alt"></i>
+                </div>
+            </div>
+            <div class="stat-change positive">
+                <i class="fas fa-arrow-up"></i>
+                <span>+18% so với hôm qua</span>
+            </div>
+        </div>
+
+        <div class="stat-card stat-info">
+            <div class="stat-header">
+                <div>
+                    <div class="stat-number">245M</div>
+                    <div class="stat-label">Doanh thu tháng</div>
+                </div>
+                <div class="stat-icon">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+            </div>
+            <div class="stat-change positive">
+                <i class="fas fa-arrow-up"></i>
+                <span>+25% so với tháng trước</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Management Cards -->
+    <div class="management-grid">
+        <div class="management-card users">
+            <div class="management-header">
+                <div class="management-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h3 class="management-title">Quản lý người dùng</h3>
+                <p class="management-description">Quản lý tài khoản nhân viên, khách hàng và phân quyền hệ thống</p>
+            </div>
+            <div class="management-action">
+                <a asp-area="UserManagement" asp-controller="Admin" asp-action="UserManagement" class="management-btn">
+                    <span>Quản lý người dùng</span>
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+
+        <div class="management-card movies">
+            <div class="management-header">
+                <div class="management-icon">
+                    <i class="fas fa-film"></i>
+                </div>
+                <h3 class="management-title">Quản lý phim</h3>
+                <p class="management-description">Thêm, cập nhật, xóa phim và quản lý thông tin chi tiết</p>
+            </div>
+            <div class="management-action">
+                <a asp-area="MovieManagement" asp-controller="Movie" asp-action="Index" class="management-btn">
+                    <span>Quản lý phim</span>
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+
+        <div class="management-card showtimes">
+            <div class="management-header">
+                <div class="management-icon">
+                    <i class="fas fa-calendar-plus"></i>
+                </div>
+                <h3 class="management-title">Quản lý suất chiếu</h3>
+                <p class="management-description">Tạo và quản lý suất chiếu cho các phim đang chiếu</p>
+            </div>
+            <div class="management-action">
+                <a asp-area="Booking" asp-controller="Schedule" asp-action="AdminIndexWithFilter" class="management-btn">
+                    <span>Quản lý suất chiếu</span>
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+
+        <div class="management-card schedule">
+            <div class="management-header">
+                <div class="management-icon">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <h3 class="management-title">Lịch chiếu</h3>
+                <p class="management-description">Xem và quản lý lịch chiếu tổng thể của rạp</p>
+            </div>
+            <div class="management-action">
+                <a asp-area="Booking" asp-controller="Schedule" asp-action="Index" class="management-btn">
+                    <span>Xem lịch chiếu</span>
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+
+        <div class="management-card rooms">
+            <div class="management-header">
+                <div class="management-icon">
+                    <i class="fas fa-door-open"></i>
+                </div>
+                <h3 class="management-title">Quản lý phòng chiếu</h3>
+                <p class="management-description">Quản lý thông tin phòng chiếu và sơ đồ ghế ngồi</p>
+            </div>
+            <div class="management-action">
+                <a asp-area="Booking" asp-controller="CinemaRoom" asp-action="CinemaRooms" class="management-btn">
+                    <span>Quản lý phòng chiếu</span>
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+
+        <div class="management-card reports">
+            <div class="management-header">
+                <div class="management-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h3 class="management-title">Báo cáo doanh thu</h3>
+                <p class="management-description">Xem thống kê và báo cáo chi tiết về doanh thu</p>
+            </div>
+            <div class="management-action">
+                <a href="#" class="management-btn">
+                    <span>Xem báo cáo</span>
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analytics Section -->
+    <div class="analytics-section">
+        <!-- Revenue Chart -->
+        <div class="chart-container">
+            <div class="chart-header">
+                <h3 class="chart-title">
+                    <i class="fas fa-chart-line"></i>
+                    Doanh thu 7 ngày qua
+                </h3>
+            </div>
+            <div class="chart-area">
+                <div class="chart-bar" style="height: 60%;" data-value="12M"></div>
+                <div class="chart-bar" style="height: 80%;" data-value="16M"></div>
+                <div class="chart-bar" style="height: 45%;" data-value="9M"></div>
+                <div class="chart-bar" style="height: 90%;" data-value="18M"></div>
+                <div class="chart-bar" style="height: 75%;" data-value="15M"></div>
+                <div class="chart-bar" style="height: 100%;" data-value="20M"></div>
+                <div class="chart-bar" style="height: 85%;" data-value="17M"></div>
+            </div>
+            <div class="chart-labels">
+                <span>T2</span>
+                <span>T3</span>
+                <span>T4</span>
+                <span>T5</span>
+                <span>T6</span>
+                <span>T7</span>
+                <span>CN</span>
+            </div>
+        </div>
+
+        <!-- Popular Movies -->
+        <div class="popular-movies">
+            <div class="popular-header">
+                <h3 class="popular-title">
+                    <i class="fas fa-fire"></i>
+                    Phim hot nhất
+                </h3>
+            </div>
+
+            <div class="popular-list">
+                <div class="popular-item">
+                    <div class="popular-rank">1</div>
+                    <div class="popular-poster">
+                        <img src="https://via.placeholder.com/60x80/667eea/white?text=1" alt="Movie">
+                    </div>
+                    <div class="popular-info">
+                        <div class="popular-movie-title">Avengers: Endgame</div>
+                        <div class="popular-stats">
+                            <span><i class="fas fa-ticket-alt"></i> 1,234 vé</span>
+                            <span><i class="fas fa-star"></i> 4.8</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="popular-item">
+                    <div class="popular-rank">2</div>
+                    <div class="popular-poster">
+                        <img src="https://via.placeholder.com/60x80/f093fb/white?text=2" alt="Movie">
+                    </div>
+                    <div class="popular-info">
+                        <div class="popular-movie-title">Spider-Man: No Way Home</div>
+                        <div class="popular-stats">
+                            <span><i class="fas fa-ticket-alt"></i> 1,156 vé</span>
+                            <span><i class="fas fa-star"></i> 4.7</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="popular-item">
+                    <div class="popular-rank">3</div>
+                    <div class="popular-poster">
+                        <img src="https://via.placeholder.com/60x80/4facfe/white?text=3" alt="Movie">
+                    </div>
+                    <div class="popular-info">
+                        <div class="popular-movie-title">Top Gun: Maverick</div>
+                        <div class="popular-stats">
+                            <span><i class="fas fa-ticket-alt"></i> 987 vé</span>
+                            <span><i class="fas fa-star"></i> 4.6</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="popular-item">
+                    <div class="popular-rank">4</div>
+                    <div class="popular-poster">
+                        <img src="https://via.placeholder.com/60x80/43e97b/white?text=4" alt="Movie">
+                    </div>
+                    <div class="popular-info">
+                        <div class="popular-movie-title">Black Widow</div>
+                        <div class="popular-stats">
+                            <span><i class="fas fa-ticket-alt"></i> 823 vé</span>
+                            <span><i class="fas fa-star"></i> 4.4</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activities -->
+    <div class="activities-section">
+        <div class="activities-header">
+            <h3 class="activities-title">
+                <i class="fas fa-clock"></i>
+                Hoạt động gần đây
+            </h3>
+            <a href="#" class="view-all-btn">Xem tất cả</a>
+        </div>
+
+        <div class="activities-list">
+            <div class="activity-item">
+                <div class="activity-icon user">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <div class="activity-content">
+                    <div class="activity-title">Người dùng mới đăng ký</div>
+                    <div class="activity-description">Nguyễn Văn A vừa tạo tài khoản mới trên hệ thống</div>
+                    <div class="activity-time">5 phút trước</div>
+                </div>
+            </div>
+
+            <div class="activity-item">
+                <div class="activity-icon movie">
+                    <i class="fas fa-film"></i>
+                </div>
+                <div class="activity-content">
+                    <div class="activity-title">Phim mới được thêm</div>
+                    <div class="activity-description">"Avengers: Endgame" đã được thêm vào hệ thống với đầy đủ thông tin</div>
+                    <div class="activity-time">15 phút trước</div>
+                </div>
+            </div>
+
+            <div class="activity-item">
+                <div class="activity-icon ticket">
+                    <i class="fas fa-ticket-alt"></i>
+                </div>
+                <div class="activity-content">
+                    <div class="activity-title">Đặt vé thành công</div>
+                    <div class="activity-description">25 vé được đặt thành công cho suất chiếu 20:00 phòng A1</div>
+                    <div class="activity-time">30 phút trước</div>
+                </div>
+            </div>
+
+            <div class="activity-item">
+                <div class="activity-icon schedule">
+                    <i class="fas fa-calendar-plus"></i>
+                </div>
+                <div class="activity-content">
+                    <div class="activity-title">Suất chiếu mới được tạo</div>
+                    <div class="activity-description">Đã tạo suất chiếu cho "Spider-Man" vào 22:00 ngày mai</div>
+                    <div class="activity-time">1 giờ trước</div>
+                </div>
+            </div>
+
+            <div class="activity-item">
+                <div class="activity-icon system">
+                    <i class="fas fa-cog"></i>
+                </div>
+                <div class="activity-content">
+                    <div class="activity-title">Cập nhật hệ thống</div>
+                    <div class="activity-description">Hệ thống đã được cập nhật lên phiên bản mới với nhiều tính năng cải tiến</div>
+                    <div class="activity-time">2 giờ trước</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Counter animation for stats
+            function animateCounters() {
+                const counters = document.querySelectorAll('.stat-number');
+
+                counters.forEach(counter => {
+                    const target = parseFloat(counter.textContent.replace(/[^\d.]/g, ''));
+                    const suffix = counter.textContent.replace(/[\d.]/g, '');
+                    const duration = 2000;
+                    const step = target / (duration / 16);
+                    let current = 0;
+
+                    const timer = setInterval(() => {
+                        current += step;
+                        if (current >= target) {
+                            current = target;
+                            clearInterval(timer);
+                        }
+
+                        if (suffix === 'M') {
+                            counter.textContent = Math.floor(current) + 'M';
+                        } else {
+                            counter.textContent = Math.floor(current).toLocaleString() + suffix;
+                        }
+                    }, 16);
+                });
+            }
+
+            // Chart bar animation
+            function animateChartBars() {
+                const bars = document.querySelectorAll('.chart-bar');
+                bars.forEach((bar, index) => {
+                    const originalHeight = bar.style.height;
+                    bar.style.height = '0%';
+
+                    setTimeout(() => {
+                        bar.style.height = originalHeight;
+                    }, index * 100);
+                });
+            }
+
+            // Intersection Observer for animations
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        if (entry.target.classList.contains('quick-stats-grid')) {
+                            animateCounters();
+                        }
+                        if (entry.target.classList.contains('chart-container')) {
+                            animateChartBars();
+                        }
+                        observer.unobserve(entry.target);
+                    }
+                });
+            });
+
+            // Observe elements for animation
+            const statsGrid = document.querySelector('.quick-stats-grid');
+            const chartContainer = document.querySelector('.chart-container');
+
+            if (statsGrid) observer.observe(statsGrid);
+            if (chartContainer) observer.observe(chartContainer);
+
+            // Management card hover effects
+            const managementCards = document.querySelectorAll('.management-card');
+            managementCards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-8px) scale(1.02)';
+                });
+
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0) scale(1)';
+                });
+            });
+
+            // Activity items click effects
+            const activityItems = document.querySelectorAll('.activity-item');
+            activityItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    this.style.transform = 'scale(0.98)';
+                    setTimeout(() => {
+                        this.style.transform = 'scale(1)';
+                    }, 100);
+                });
+            });
+
+            // Auto-refresh stats every 30 seconds
+            setInterval(() => {
+                // Here you would typically fetch new data from the server
+                console.log('Refreshing dashboard stats...');
+
+                // Simulate data update with random variations
+                const statNumbers = document.querySelectorAll('.stat-number');
+                statNumbers.forEach(stat => {
+                    const current = parseFloat(stat.textContent.replace(/[^\d.]/g, ''));
+                    const suffix = stat.textContent.replace(/[\d.]/g, '');
+                    const variation = Math.random() * 0.02 - 0.01; // ±1% variation
+                    const newValue = Math.floor(current * (1 + variation));
+
+                    if (suffix === 'M') {
+                        stat.textContent = newValue + 'M';
+                    } else {
+                        stat.textContent = newValue.toLocaleString() + suffix;
+                    }
+                });
+            }, 30000);
+
+            // Welcome stats animation
+            const welcomeStats = document.querySelectorAll('.welcome-stat-number');
+            welcomeStats.forEach((stat, index) => {
+                setTimeout(() => {
+                    stat.style.transform = 'scale(1.1)';
+                    setTimeout(() => {
+                        stat.style.transform = 'scale(1)';
+                    }, 200);
+                }, index * 100);
+            });
+        });
+    </script>
+}

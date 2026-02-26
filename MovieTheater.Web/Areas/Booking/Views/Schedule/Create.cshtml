@@ -1,0 +1,1313 @@
+﻿@model MovieTheater.Web.Areas.Booking.Models.Schedule
+@{
+	ViewData["SidebarActive"] = "ScheduleManagement";
+	Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+	ViewBag.Title = "Tạo Lịch Chiếu";
+
+}
+
+
+
+<style>
+	.form-container {
+		max-width: 600px;
+		margin: 40px auto;
+		padding: 0 20px;
+	}
+
+	.form-card {
+		background: white;
+		border-radius: 20px;
+		padding: 40px;
+		box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+		border: 1px solid #e9ecef;
+		position: relative;
+		overflow: hidden;
+	}
+
+		.form-card::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			height: 6px;
+			background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #667eea, #ff8a95);
+		}
+
+	.form-title {
+		font-size: 28px;
+		font-weight: 700;
+		color: #2c3e50;
+		margin-bottom: 8px;
+		text-align: center;
+	}
+
+	.form-subtitle {
+		color: #6c757d;
+		text-align: center;
+		margin-bottom: 32px;
+		font-size: 16px;
+	}
+
+	.form-group {
+		margin-bottom: 24px;
+		position: relative;
+	}
+
+	.form-label {
+		display: block;
+		margin-bottom: 8px;
+		font-weight: 600;
+		color: #2c3e50;
+		font-size: 14px;
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+	}
+
+	.form-input, .form-select {
+		width: 100%;
+		padding: 16px 20px;
+		border: 2px solid #e9ecef;
+		border-radius: 12px;
+		font-size: 16px;
+		transition: all 0.3s ease;
+		background: #f8f9fa;
+		box-sizing: border-box;
+		appearance: none;
+	}
+
+		.form-input:focus, .form-select:focus {
+			outline: none;
+			border-color: #667eea;
+			background: white;
+			box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+			transform: translateY(-2px);
+		}
+
+		.form-input:hover, .form-select:hover {
+			border-color: #ced4da;
+			background: white;
+		}
+
+	/* Special styling for select dropdowns */
+	.form-select {
+		background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+		background-repeat: no-repeat;
+		background-position: right 16px center;
+		background-size: 16px;
+		padding-right: 50px;
+		cursor: pointer;
+	}
+
+		.form-select option {
+			padding: 12px;
+			background: white;
+			color: #2c3e50;
+		}
+
+			.form-select option:checked {
+				background: #667eea;
+				color: white;
+			}
+
+	/* Icon styling */
+	.icon-input {
+		position: relative;
+	}
+
+		.icon-input::before {
+			content: attr(data-icon);
+			position: absolute;
+			right: 16px;
+			top: 50%;
+			transform: translateY(-50%);
+			font-size: 18px;
+			color: #6c757d;
+			pointer-events: none;
+			z-index: 1;
+		}
+
+	/* Special styling for select with icons */
+	.icon-select::before {
+		right: 40px; /* Make room for dropdown arrow */
+	}
+
+	.submit-btn {
+		width: 100%;
+		padding: 18px;
+		background: linear-gradient(135deg, #667eea, #764ba2);
+		border: none;
+		border-radius: 12px;
+		color: white;
+		font-size: 16px;
+		font-weight: 600;
+		cursor: pointer;
+		transition: all 0.3s ease;
+		text-transform: uppercase;
+		letter-spacing: 1px;
+		margin-top: 16px;
+		position: relative;
+		overflow: hidden;
+	}
+
+		.submit-btn::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: -100%;
+			width: 100%;
+			height: 100%;
+			background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+			transition: left 0.5s;
+		}
+
+		.submit-btn:hover {
+			transform: translateY(-3px);
+			box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+		}
+
+			.submit-btn:hover::before {
+				left: 100%;
+			}
+
+		.submit-btn:active {
+			transform: translateY(-1px);
+		}
+
+	.validation-error {
+		color: #dc3545;
+		font-size: 12px;
+		margin-top: 6px;
+		display: block;
+		font-weight: 500;
+	}
+
+	.success-message {
+		background: linear-gradient(135deg, #4ecdc4, #44a08d);
+		color: white;
+		padding: 16px 20px;
+		border-radius: 12px;
+		margin-bottom: 24px;
+		text-align: center;
+		font-weight: 500;
+		display: none;
+	}
+
+	/* Validation states */
+	.form-input.error, .form-select.error {
+		border-color: #dc3545;
+		background: #fff5f5;
+	}
+
+	.form-input.success, .form-select.success {
+		border-color: #28a745;
+		background: #f8fff8;
+	}
+
+	/* Time and Date inputs specific styling */
+	.form-input[type="date"], .form-input[type="time"] {
+		font-family: inherit;
+		color: #2c3e50;
+	}
+
+		.form-input[type="date"]::-webkit-calendar-picker-indicator,
+		.form-input[type="time"]::-webkit-calendar-picker-indicator {
+			color: #667eea;
+			cursor: pointer;
+			font-size: 16px;
+		}
+
+	/* Disabled end time styling */
+	.form-input:disabled {
+		background: #e9ecef !important;
+		color: #6c757d !important;
+		cursor: not-allowed !important;
+		opacity: 0.7;
+	}
+
+	.disabled-label {
+		color: #6c757d !important;
+		opacity: 0.7;
+	}
+
+	/* Custom ClockPicker Modal */
+	.clockpicker-modal {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: rgba(0, 0, 0, 0.6);
+		backdrop-filter: blur(8px);
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		z-index: 2000;
+		opacity: 0;
+		visibility: hidden;
+		transition: all 0.3s ease;
+	}
+
+		.clockpicker-modal.active {
+			opacity: 1;
+			visibility: visible;
+		}
+
+	.clockpicker-container {
+		background: white;
+		border-radius: 24px;
+		padding: 40px;
+		box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+		transform: scale(0.8) translateY(30px);
+		transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+		position: relative;
+		max-width: 420px;
+		width: 90%;
+		text-align: center;
+	}
+
+	.clockpicker-modal.active .clockpicker-container {
+		transform: scale(1) translateY(0);
+	}
+
+	.clockpicker-header {
+		margin-bottom: 30px;
+	}
+
+	.clockpicker-title {
+		font-size: 24px;
+		font-weight: 700;
+		color: #2c3e50;
+		margin-bottom: 8px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 10px;
+	}
+
+	.clockpicker-subtitle {
+		color: #6c757d;
+		font-size: 14px;
+	}
+
+	.clockpicker-close {
+		position: absolute;
+		top: 16px;
+		right: 20px;
+		background: #f8f9fa;
+		border: none;
+		color: #6c757d;
+		font-size: 20px;
+		width: 36px;
+		height: 36px;
+		border-radius: 50%;
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		transition: all 0.3s ease;
+	}
+
+		.clockpicker-close:hover {
+			background: #e9ecef;
+			color: #dc3545;
+			transform: rotate(90deg);
+		}
+
+	.custom-clock {
+		position: relative;
+		width: 320px;
+		height: 320px;
+		margin: 0 auto 30px;
+		background: linear-gradient(135deg, #ffffff, #f8f9fa);
+		border-radius: 50%;
+		border: 4px solid #667eea;
+		box-shadow: 0 0 0 12px rgba(102, 126, 234, 0.08), 0 8px 32px rgba(0, 0, 0, 0.12), inset 0 2px 8px rgba(255, 255, 255, 0.6);
+	}
+
+	.clock-center {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		width: 16px;
+		height: 16px;
+		background: radial-gradient(circle, #667eea, #5a67d8);
+		border-radius: 50%;
+		transform: translate(-50%, -50%);
+		z-index: 20;
+		box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+		border: 2px solid white;
+	}
+
+	.clock-numbers {
+		position: absolute;
+		width: 100%;
+		height: 100%;
+	}
+
+	.clock-number {
+		position: absolute;
+		width: 44px;
+		height: 44px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-weight: 700;
+		font-size: 15px;
+		color: #374151;
+		cursor: pointer;
+		border-radius: 50%;
+		transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+		transform: translate(-50%, -50%);
+		background: rgba(255, 255, 255, 0.8);
+		border: 2px solid transparent;
+		backdrop-filter: blur(4px);
+	}
+
+		.clock-number:hover {
+			background: rgba(102, 126, 234, 0.15);
+			color: #667eea;
+			transform: translate(-50%, -50%) scale(1.15);
+			border-color: rgba(102, 126, 234, 0.3);
+			box-shadow: 0 4px 16px rgba(102, 126, 234, 0.2);
+		}
+
+		.clock-number.active {
+			background: linear-gradient(135deg, #667eea, #764ba2);
+			color: white;
+			transform: translate(-50%, -50%) scale(1.25);
+			border-color: white;
+			box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4), 0 0 0 3px rgba(102, 126, 234, 0.2);
+			font-weight: 800;
+		}
+
+		.clock-number.inner {
+			font-size: 13px;
+			width: 36px;
+			height: 36px;
+			background: rgba(248, 249, 250, 0.9);
+			font-weight: 600;
+		}
+
+			.clock-number.inner:hover {
+				background: rgba(102, 126, 234, 0.12);
+			}
+
+			.clock-number.inner.active {
+				background: linear-gradient(135deg, #4f46e5, #7c3aed);
+				font-size: 12px;
+				font-weight: 700;
+			}
+
+	.clock-hand {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform-origin: bottom center;
+		background: linear-gradient(to top, #667eea, #4f46e5);
+		border-radius: 3px;
+		transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+		z-index: 15;
+		box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+	}
+
+	.hour-hand {
+		width: 6px;
+		height: 90px;
+		margin-left: 1px;
+		margin-top: -90px;
+		border-radius: 3px 3px 0 0;
+	}
+
+	.minute-hand {
+		width: 4px;
+		height: 120px;
+		margin-left: 1px;
+		margin-top: -120px;
+		border-radius: 2px 2px 0 0;
+		background: linear-gradient(to top, #10b981, #059669);
+		z-index: 16;
+	}
+
+	/* Clock face decorative elements */
+	.custom-clock::before {
+		content: '';
+		position: absolute;
+		top: 20px;
+		left: 50%;
+		width: 3px;
+		height: 15px;
+		background: #667eea;
+		transform: translateX(-50%);
+		border-radius: 2px;
+	}
+
+	.custom-clock::after {
+		position: absolute;
+		bottom: 20px;
+		left: 50%;
+		width: 3px;
+		height: 15px;
+		background: #667eea;
+		transform: translateX(-50%);
+		border-radius: 2px;
+	}
+
+	/* Hour markers */
+	.clock-marker {
+		position: absolute;
+		background: #d1d5db;
+		border-radius: 1px;
+	}
+
+		.clock-marker.major {
+			width: 3px;
+			height: 12px;
+			background: #667eea;
+		}
+
+		.clock-marker.minor {
+			width: 2px;
+			height: 8px;
+			background: #e5e7eb;
+		}
+
+	.time-display {
+		background: linear-gradient(135deg, #667eea, #764ba2);
+		color: white;
+		padding: 16px 24px;
+		border-radius: 16px;
+		font-size: 32px;
+		font-weight: 700;
+		margin-bottom: 30px;
+		letter-spacing: 2px;
+		font-family: 'Courier New', monospace;
+		box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+	}
+
+	.time-buttons {
+		display: flex;
+		justify-content: center;
+		gap: 16px;
+		margin-bottom: 30px;
+	}
+
+	.time-mode-btn {
+		padding: 12px 24px;
+		border: 2px solid #e9ecef;
+		background: white;
+		color: #6c757d;
+		border-radius: 12px;
+		cursor: pointer;
+		font-weight: 600;
+		transition: all 0.3s ease;
+		font-size: 14px;
+	}
+
+		.time-mode-btn.active {
+			border-color: #667eea;
+			background: #667eea;
+			color: white;
+			transform: translateY(-2px);
+		}
+
+		.time-mode-btn:hover:not(.active) {
+			border-color: #667eea;
+			color: #667eea;
+		}
+
+	.clock-actions {
+		display: flex;
+		gap: 12px;
+		justify-content: center;
+	}
+
+	.clock-btn {
+		padding: 14px 28px;
+		border: none;
+		border-radius: 12px;
+		font-weight: 600;
+		cursor: pointer;
+		transition: all 0.3s ease;
+		font-size: 14px;
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+	}
+
+	.clock-btn-cancel {
+		background: #f8f9fa;
+		color: #6c757d;
+		border: 2px solid #e9ecef;
+	}
+
+		.clock-btn-cancel:hover {
+			background: #e9ecef;
+			color: #495057;
+		}
+
+	.clock-btn-confirm {
+		background: linear-gradient(135deg, #667eea, #764ba2);
+		color: white;
+	}
+
+		.clock-btn-confirm:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+		}
+
+	/* Hide original clockpicker */
+	.clockpicker-popover {
+		display: none !important;
+	}
+
+	/* Responsive */
+	@@media (max-width: 768px) {
+		.form-container {
+			margin: 20px auto;
+			padding: 0 15px;
+		}
+
+		.form-card {
+			padding: 24px;
+		}
+
+		.form-title {
+			font-size: 24px;
+		}
+
+		.clockpicker-container {
+			max-width: 440px;
+			padding: 30px 24px;
+		}
+
+		.custom-clock {
+			width: 280px;
+			height: 280px;
+		}
+
+		.clockpicker-title {
+			font-size: 20px;
+		}
+
+		.time-display {
+			font-size: 28px;
+			padding: 14px 20px;
+		}
+	}
+
+	/* Animation classes */
+	.fade-in {
+		animation: fadeIn 0.6s ease-out;
+	}
+
+	@@keyframes fadeIn {
+		from {
+			opacity: 0;
+			transform: translateY(20px);
+		}
+
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	/* Focus within animation */
+	.form-group:focus-within .form-label {
+		color: #667eea;
+		transform: scale(1.02);
+	}
+
+	/* --- OVERRIDE FORM INPUT/SELECT STYLE FOR CREATE SCHEDULE FORM --- */
+	.form-card {
+		background: rgba(30, 41, 59, 0.95) !important;
+		color: #e2e8f0 !important;
+		border: 1px solid rgba(148,163,184,0.13);
+		border-radius: 18px;
+		box-shadow: 0 8px 32px rgba(30,41,59,0.18);
+	}
+
+	.form-title, .form-subtitle {
+		color: #e2e8f0 !important;
+	}
+
+	.form-label {
+		color: #e2e8f0 !important;
+		font-weight: 600;
+		font-size: 1rem;
+	}
+
+	.form-input, .form-select {
+		background: rgba(15,23,42,0.85) !important;
+		border: 2px solid #60a5fa;
+		color: #e2e8f0;
+		border-radius: 12px;
+		padding: 0.75rem 1rem;
+		font-size: 1rem;
+		margin-bottom: 8px;
+		transition: all 0.3s;
+	}
+
+		.form-input:focus, .form-select:focus {
+			outline: none;
+			border-color: #a78bfa;
+			background: rgba(15,23,42,0.95) !important;
+			color: #fff;
+			box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15);
+			transform: translateY(-2px);
+		}
+
+		.form-input:disabled {
+			background: rgba(15,23,42,0.85) !important;
+			color: #94a3b8 !important;
+			border: 2px solid #60a5fa !important;
+			opacity: 1 !important;
+			cursor: not-allowed !important;
+		}
+
+		.form-input::placeholder {
+			color: #94a3b8;
+		}
+
+	body {
+		background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+		color: #e2e8f0;
+	}
+</style>
+
+@if (!ViewData.ModelState.IsValid && ViewData.ModelState.Values.Any(v => v.Errors.Count > 0))
+{
+	<div class="validation-summary-errors" style="color: #dc3545; margin-bottom: 16px; text-align: center; font-weight: 500;">
+		@Html.ValidationSummary(false, "", new { @class = "validation-error" })
+	</div>
+}
+<div class="form-container">
+	<div class="form-card fade-in">
+		<div class="success-message" id="successMessage">
+			✅ Lịch chiếu đã được tạo thành công!
+		</div>
+
+		<h2 class="form-title">Tạo Lịch Chiếu</h2>
+		<p class="form-subtitle">Lập lịch chiếu phim cho rạp của bạn</p>
+
+		<form asp-action="Create" method="post" id="scheduleForm">
+			<div class="form-group">
+				<label asp-for="CinemaRoomId" class="form-label">🏢 Phòng Chiếu</label>
+				<div class="icon-select" data-icon="🎭">
+					<select asp-for="CinemaRoomId" class="form-select" name="CinemaRoomId">
+						<option value="">-- Chọn phòng chiếu --</option>
+						@if (Model.RoomOptions != null)
+						{
+							@foreach (var room in Model.RoomOptions)
+							{
+								<option value="@room.Value">@room.Text</option>
+							}
+						}
+					</select>
+				</div>
+				<span asp-validation-for="CinemaRoomId" class="validation-error"></span>
+			</div>
+
+			<div class="form-group">
+				<label asp-for="MovieId" class="form-label">🎬 Phim</label>
+				<div class="icon-select" data-icon="🍿">
+					<select asp-for="MovieId" class="form-select" name="MovieId">
+						<option value="">-- Chọn phim --</option>
+						@foreach (var movie in Model.MovieOptions)
+						{
+							var duration = ViewBag.MovieDurations != null &&
+							((Dictionary<string, int>)ViewBag.MovieDurations).ContainsKey(movie.Value)
+							? ((Dictionary<string, int>)ViewBag.MovieDurations)[movie.Value]
+							: 120;
+							<option value="@movie.Value" data-duration="@duration">@movie.Text</option>
+						}
+					</select>
+				</div>
+				<span asp-validation-for="MovieId" class="validation-error"></span>
+			</div>
+
+			<div class="form-group">
+				<label asp-for="ShowDate" class="form-label">📅 Ngày Chiếu</label>
+				<div class="icon-input" data-icon="📆">
+					<input asp-for="ShowDate" type="date" class="form-input" name="ShowDate" />
+				</div>
+				<span asp-validation-for="ShowDate" class="validation-error"></span>
+			</div>
+
+			<div class="form-group">
+				<label asp-for="FromTime" class="form-label">⏰ Giờ Bắt Đầu</label>
+				<div class="icon-input" data-icon="🕐">
+					<input asp-for="FromTime" type="text" class="form-input" name="FromTime" placeholder="Chọn giờ bắt đầu" readonly onclick="openCustomClockPicker()" />
+				</div>
+				<span asp-validation-for="FromTime" class="validation-error"></span>
+			</div>
+
+			<div class="form-group">
+				<label asp-for="ToTime" class="form-label disabled-label">⏰ Giờ Kết Thúc (Tự động tính)</label>
+				<div class="icon-input" data-icon="🕕">
+					<input asp-for="ToTime" type="text" class="form-input" name="ToTime" placeholder="Sẽ tự động tính khi chọn phim và giờ bắt đầu" readonly disabled />
+				</div>
+				<span asp-validation-for="ToTime" class="validation-error"></span>
+			</div>
+
+			<button type="submit" class="submit-btn">
+				✨ Tạo Lịch Chiếu
+			</button>
+			<a href="@Url.Action("AdminIndexWithFilter", "Schedule", new { area = "Booking" })" class="cancel-btn" style="margin-top: 16px; display: inline-block; width: 100%; text-align: center; background: #e2e8f0; color: #2c3e50; border-radius: 12px; padding: 14px 0; font-weight: 600; text-decoration: none; transition: background 0.2s;">
+				← Quay lại
+			</a>
+		</form>
+	</div>
+</div>
+
+<!-- Custom Clock Picker Modal -->
+<div class="clockpicker-modal" id="customClockModal">
+	<div class="clockpicker-container">
+		<button class="clockpicker-close" onclick="closeCustomClockPicker()">×</button>
+
+		<div class="clockpicker-header">
+			<div class="clockpicker-title">
+				🕐 Chọn Giờ Bắt Đầu
+			</div>
+			<div class="clockpicker-subtitle">Chọn giờ và phút cho lịch chiếu</div>
+		</div>
+
+		<div class="time-display" id="timeDisplay">
+			12:00
+		</div>
+
+		<div class="time-buttons">
+			<button class="time-mode-btn active" id="hourMode" onclick="setTimeMode('hour')">
+				Giờ
+			</button>
+			<button class="time-mode-btn" id="minuteMode" onclick="setTimeMode('minute')">
+				Phút
+			</button>
+		</div>
+
+		<div class="custom-clock">
+			<div class="clock-center"></div>
+			<div class="clock-numbers" id="clockNumbers">
+				<!-- Numbers will be generated by JavaScript -->
+			</div>
+			<div class="clock-hand hour-hand" id="hourHand"></div>
+			<div class="clock-hand minute-hand" id="minuteHand"></div>
+		</div>
+
+		<div class="clock-actions">
+			<button class="clock-btn clock-btn-cancel" onclick="closeCustomClockPicker()">
+				Hủy
+			</button>
+			<button class="clock-btn clock-btn-confirm" onclick="confirmTime()">
+				Xác Nhận
+			</button>
+		</div>
+	</div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+<script>
+		// Custom Clock Picker Variables
+		let currentHour = 12;
+		let currentMinute = 0;
+		let currentMode = 'hour'; // 'hour' or 'minute'
+
+		// Custom Clock Picker Functions
+		function openCustomClockPicker() {
+			const modal = document.getElementById('customClockModal');
+			modal.classList.add('active');
+			document.body.style.overflow = 'hidden';
+
+			// Initialize clock
+			initializeClock();
+			updateTimeDisplay();
+			updateClockHands();
+		}
+
+		function closeCustomClockPicker() {
+			const modal = document.getElementById('customClockModal');
+			modal.classList.remove('active');
+			document.body.style.overflow = 'auto';
+		}
+
+		function setTimeMode(mode) {
+			currentMode = mode;
+
+			// Update button states
+			document.getElementById('hourMode').classList.toggle('active', mode === 'hour');
+			document.getElementById('minuteMode').classList.toggle('active', mode === 'minute');
+
+			// Update clock numbers
+			generateClockNumbers();
+			updateClockHands();
+		}
+
+		function initializeClock() {
+			// Get current time from input if exists
+			const fromTimeInput = document.querySelector('input[name="FromTime"]');
+			if (fromTimeInput.value) {
+				let [hour, minute] = fromTimeInput.value.split(':').map(Number);
+				if (isNaN(hour)) hour = 0;
+				if (isNaN(minute)) minute = 0;
+				currentHour = hour;
+				currentMinute = minute;
+			} else {
+				const now = new Date();
+				currentHour = now.getHours();
+				currentMinute = 0; // Mặc định phút = 0
+			}
+			generateClockNumbers();
+		}
+
+		function generateClockNumbers() {
+			const clockNumbers = document.getElementById('clockNumbers');
+			clockNumbers.innerHTML = '';
+
+			if (currentMode === 'hour') {
+				// Generate 24 hours with proper positioning like the image
+				for (let i = 0; i < 24; i++) {
+					let angle, radius, x, y;
+
+					if (i >= 1 && i <= 12) {
+						// Outer circle: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
+						const position = i; // 1-12
+						angle = (position * 30) - 90; // 30 degrees each
+						radius = 130;
+					} else {
+						// Inner circle: 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 0
+						let position;
+						if (i === 0) {
+							position = 12; // 0 at 12 o'clock position inner
+						} else {
+							position = i - 12; // 13->1, 14->2, etc.
+						}
+						angle = (position * 30) - 90;
+						radius = 95;
+					}
+
+					x = 160 + radius * Math.cos(angle * Math.PI / 180);
+	y = 160 + radius * Math.sin(angle * Math.PI / 180);
+
+					const numberEl = document.createElement('div');
+					numberEl.className = `clock-number ${(i >= 13 || i === 0) ? 'inner' : ''}`;
+					numberEl.style.left = x + 'px';
+					numberEl.style.top = y + 'px';
+					numberEl.textContent = i.toString().padStart(2, '0');
+
+					if (i === currentHour) {
+						numberEl.classList.add('active');
+					}
+
+					numberEl.addEventListener('click', () => {
+						currentHour = i;
+						updateTimeDisplay();
+						updateClockHands();
+
+						document.querySelectorAll('.clock-number').forEach(el => el.classList.remove('active'));
+						numberEl.classList.add('active');
+
+						setTimeout(() => setTimeMode('minute'), 300);
+					});
+
+					clockNumbers.appendChild(numberEl);
+				}
+			} else {
+				// Generate minutes (0, 5, 10, 15, ...)
+				for (let i = 0; i < 60; i += 5) {
+					const angle = (i * 6) - 90; // 6 degrees per 5-minute interval
+					const radius = 130;
+
+					const x = 160 + radius * Math.cos(angle * Math.PI / 180);
+					const y = 160 + radius * Math.sin(angle * Math.PI / 180);
+
+					const numberEl = document.createElement('div');
+					numberEl.className = 'clock-number';
+					numberEl.style.left = x + 'px';
+					numberEl.style.top = y + 'px';
+					numberEl.textContent = i.toString().padStart(2, '0');
+
+					if (i === currentMinute) {
+						numberEl.classList.add('active');
+					}
+
+					numberEl.addEventListener('click', () => {
+						currentMinute = i;
+						updateTimeDisplay();
+						updateClockHands();
+
+						document.querySelectorAll('.clock-number').forEach(el => el.classList.remove('active'));
+						numberEl.classList.add('active');
+					});
+
+					clockNumbers.appendChild(numberEl);
+				}
+			}
+
+			// Add clock markers for better visual
+			addClockMarkers();
+		}
+
+		function addClockMarkers() {
+			// Remove existing markers
+			document.querySelectorAll('.clock-marker').forEach(el => el.remove());
+
+			const clock = document.querySelector('.custom-clock');
+			if (!clock) return;
+
+			// Add 12 major markers (every 30 degrees)
+			for (let i = 0; i < 12; i++) {
+				const angle = (i * 30) - 90;
+				const x = 160 + 145 * Math.cos(angle * Math.PI / 180);
+	const y = 160 + 145 * Math.sin(angle * Math.PI / 180);
+
+				const marker = document.createElement('div');
+				marker.className = 'clock-marker major';
+				marker.style.position = 'absolute';
+				marker.style.left = (x - 1.5) + 'px';
+				marker.style.top = (y - 6) + 'px';
+				marker.style.transform = `rotate(${angle + 90}deg)`;
+
+				clock.appendChild(marker);
+			}
+		}
+
+		function addClockMarkers() {
+			// Remove existing markers
+			document.querySelectorAll('.clock-marker').forEach(el => el.remove());
+
+			const clock = document.querySelector('.custom-clock');
+			if (!clock) return;
+
+			// Add 12 major markers (every 30 degrees)
+			for (let i = 0; i < 12; i++) {
+				const angle = (i * 30) - 90;
+				const x = 160 + 145 * Math.cos(angle * Math.PI / 180);
+				const y = 160 + 145 * Math.sin(angle * Math.PI / 180);
+
+				const marker = document.createElement('div');
+				marker.className = 'clock-marker major';
+				marker.style.position = 'absolute';
+				marker.style.left = (x - 1.5) + 'px';
+				marker.style.top = (y - 6) + 'px';
+				marker.style.transform = `rotate(${angle + 90}deg)`;
+
+				clock.appendChild(marker);
+			}
+		}
+
+		function updateTimeDisplay() {
+			const timeDisplay = document.getElementById('timeDisplay');
+			if (timeDisplay) {
+				timeDisplay.textContent =
+					`${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}`;
+			}
+		}
+
+		function updateClockHands() {
+			const hourHand = document.getElementById('hourHand');
+			const minuteHand = document.getElementById('minuteHand');
+
+			if (hourHand && minuteHand) {
+				// Calculate angles
+				const hourAngle = (currentHour % 12) * 30 + (currentMinute * 0.5);
+				const minuteAngle = currentMinute * 6;
+
+				// Apply rotation from center bottom
+				hourHand.style.transform = `translate(-50%, 0) rotate(${hourAngle}deg)`;
+				minuteHand.style.transform = `translate(-50%, 0) rotate(${minuteAngle}deg)`;
+			}
+		}
+
+		function confirmTime() {
+			const timeString = `${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}`;
+			const fromTimeInput = document.querySelector('input[name="FromTime"]');
+
+			fromTimeInput.value = timeString;
+			fromTimeInput.classList.remove('error');
+			fromTimeInput.classList.add('success');
+
+			// Trigger calculation
+			calculateEndTime();
+
+			closeCustomClockPicker();
+
+			console.log('⏰ Selected time:', timeString);
+		}
+
+		// Close modal when clicking outside
+		document.getElementById('customClockModal').addEventListener('click', function(e) {
+	if (e.target === this) {
+				closeCustomClockPicker();
+			}
+		});
+
+		// Close modal with ESC key
+		document.addEventListener('keydown', function(e) {
+			if (e.key === 'Escape' && document.getElementById('customClockModal').classList.contains('active')) {
+				closeCustomClockPicker();
+			}
+		});
+
+		document.addEventListener("DOMContentLoaded", function () {
+			const form = document.getElementById('scheduleForm');
+			const inputs = form.querySelectorAll('.form-input, .form-select');
+			const successMessage = document.getElementById('successMessage');
+			const movieSelect = form.querySelector('select[name="MovieId"]');
+			const fromTimeInput = form.querySelector('input[name="FromTime"]');
+			const toTimeInput = form.querySelector('input[name="ToTime"]');
+
+			// Function to calculate end time
+			function calculateEndTime() {
+				const movieOption = movieSelect.options[movieSelect.selectedIndex];
+				const fromTime = fromTimeInput.value;
+
+				if (movieOption && movieOption.value && fromTime) {
+					// Get movie duration (default to 120 minutes if not specified)
+					const movieDuration = parseInt(movieOption.getAttribute('data-duration'));
+
+					if (!movieDuration || isNaN(movieDuration)) {
+						console.error('Invalid movie duration:', movieDuration);
+						toTimeInput.value = '';
+						toTimeInput.classList.remove('success');
+						return;
+					}
+
+					// Thêm 15 phút buffer
+					const totalDuration = movieDuration + 15;
+
+					console.log('🎬 Movie Duration:', movieDuration, 'minutes');
+					console.log('⏰ Start Time:', fromTime);
+
+					// Parse start time
+					const [hours, minutes] = fromTime.split(':').map(Number);
+					const startDate = new Date();
+					startDate.setHours(hours, minutes, 0, 0);
+
+					// Add duration to start time
+					const endDate = new Date(startDate.getTime() + (totalDuration * 60000));
+
+					// Format end time
+					const endHours = String(endDate.getHours()).padStart(2, '0');
+					const endMinutes = String(endDate.getMinutes()).padStart(2, '0');
+					const endTimeString = `${endHours}:${endMinutes}`;
+
+					// Set end time
+					toTimeInput.value = endTimeString;
+					toTimeInput.classList.remove('error');
+					toTimeInput.classList.add('success');
+
+					console.log('⏰ Calculated End Time:', endTimeString);
+				} else {
+					toTimeInput.value = '';
+					toTimeInput.classList.remove('success');
+				}
+			}
+
+			// Make calculateEndTime global so it can be called from confirmTime
+			window.calculateEndTime = calculateEndTime;
+
+			// Listen for movie selection change
+			movieSelect.addEventListener('change', function() {
+				calculateEndTime();
+			});
+
+			// Listen for start time change (manual input)
+			fromTimeInput.addEventListener('change', function() {
+				calculateEndTime();
+			});
+			// Input validation and styling
+			inputs.forEach(input => {
+				input.addEventListener('blur', function() {
+					validateInput(this);
+				});
+
+				input.addEventListener('change', function() {
+					if (this.classList.contains('error')) {
+						validateInput(this);
+					}
+				});
+
+				input.addEventListener('input', function() {
+					if (this.classList.contains('error')) {
+						validateInput(this);
+					}
+				});
+			});
+
+			function validateInput(input) {
+				const value = input.value.trim();
+				const inputName = input.name;
+
+				// Remove previous states
+				input.classList.remove('error', 'success');
+
+				if (inputName === 'CinemaRoomId' || inputName === 'MovieId') {
+					if (value === '' || value === '0') {
+						input.classList.add('error');
+					} else {
+						input.classList.add('success');
+					}
+				}
+
+				if (inputName === 'ShowDate') {
+					if (value === '') {
+						input.classList.add('error');
+					} else {
+						const selectedDate = new Date(value);
+						const today = new Date();
+						today.setHours(0, 0, 0, 0);
+
+						if (selectedDate >= today) {
+							input.classList.add('success');
+						} else {
+							input.classList.add('error');
+						}
+					}
+				}
+
+				if (inputName === 'FromTime') {
+					if (value === '') {
+						input.classList.add('error');
+					} else {
+						input.classList.add('success');
+						// Trigger end time calculation
+						calculateEndTime();
+					}
+				}
+
+				// ToTime validation is handled by calculateEndTime function
+			}
+
+			// Smooth animations
+			const formCard = document.querySelector('.form-card');
+			const observer = new IntersectionObserver((entries) => {
+				entries.forEach(entry => {
+					if (entry.isIntersecting) {
+						entry.target.style.animationDelay = '0.2s';
+					}
+				});
+			});
+
+			observer.observe(formCard);
+		});
+</script>
+
+@section Scripts {
+	@await Html.PartialAsync("_ValidationScriptsPartial")
+
+	<script>
+				document.querySelector('form').addEventListener('submit', function(e) {
+
+					console.log('🚀 FORM SUBMITTING...');
+
+					// Lấy form data
+					const formData = new FormData(this);
+					const data = {};
+
+					// Convert FormData to Object
+					for (let [key, value] of formData.entries()) {
+						data[key] = value;
+					}
+		console.log('📋 Form Data Object:', data);
+					console.log('📋 Form Data JSON:', JSON.stringify(data, null, 2));
+
+					// Log từng field riêng lẻ
+					console.log('🏢 CinemaRoomId:', data.CinemaRoomId);
+					console.log('🎬 MovieId:', data.MovieId);
+					console.log('📅 ShowDate:', data.ShowDate);
+					console.log('⏰ FromTime:', data.FromTime);
+					console.log('⏰ ToTime:', data.ToTime);
+
+					// Kiểm tra selected options
+					const roomSelect = this.querySelector('select[name="CinemaRoomId"]');
+					const movieSelect = this.querySelector('select[name="MovieId"]');
+
+					if (roomSelect && roomSelect.selectedIndex > 0) {
+						console.log('🏢 Selected Room Text:', roomSelect.options[roomSelect.selectedIndex].text);
+					}
+
+					if (movieSelect && movieSelect.selectedIndex > 0) {
+						console.log('🎬 Selected Movie Text:', movieSelect.options[movieSelect.selectedIndex].text);
+						console.log('🎬 Movie Duration:', movieSelect.options[movieSelect.selectedIndex].getAttribute('data-duration'));
+					}
+
+					console.log('================================');
+					console.log('Xem logs ở trên, form sẽ submit sau 3 giây...');
+					console.log('================================');
+
+					// Delay 3 giây rồi mới submit form thật
+					setTimeout(() => {
+						console.log('⏳ Đang submit form...');
+						this.submit(); // Submit form sau khi delay
+					}, 3000); // 3 giây delay
+				});
+				const dateInput = document.getElementById('ShowDate');
+		const validationSpan = document.getElementById('dateValidation');
+
+		// Cho phép nhập tay vào input type="date"
+		dateInput.addEventListener('keydown', function(e) {
+			// Cho phép các phím điều hướng, xóa, tab
+			const allowedKeys = ['Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight', 'Home', 'End'];
+			if (allowedKeys.includes(e.key)) {
+				return;
+			}
+
+			// Cho phép số và dấu gạch ngang, gạch chéo
+			if (!/[\d\-\/]/.test(e.key)) {
+				e.preventDefault();
+			}
+		});
+
+		dateInput.addEventListener('input', function(e) {
+			let value = e.target.value;
+
+			// Nếu người dùng nhập theo format dd/mm/yyyy hoặc dd-mm-yyyy
+			if (value.includes('/') || value.includes('-')) {
+				const parts = value.split(/[\/\-]/);
+				if (parts.length === 3) {
+					const [day, month, year] = parts;
+
+					// Validate và convert sang yyyy-mm-dd
+					if (day && month && year && year.length === 4) {
+						const dayNum = parseInt(day, 10);
+						const monthNum = parseInt(month, 10);
+						const yearNum = parseInt(year, 10);
+
+						if (dayNum >= 1 && dayNum <= 31 &&
+							monthNum >= 1 && monthNum <= 12 &&
+							yearNum >= 1900 && yearNum <= 2100) {
+
+							const formattedDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+
+							// Kiểm tra ngày có hợp lệ không
+							const testDate = new Date(formattedDate);
+							if (testDate.getDate() == dayNum &&
+								testDate.getMonth() + 1 == monthNum &&
+								testDate.getFullYear() == yearNum) {
+
+								e.target.value = formattedDate;
+								validationSpan.textContent = '';
+								return;
+							}
+						}
+
+						validationSpan.textContent = 'Ngày không hợp lệ';
+					}
+				}
+			}
+
+			// Clear validation nếu input đang được chỉnh sửa
+			if (validationSpan.textContent && value !== '') {
+				validationSpan.textContent = '';
+			}
+		});
+
+		// Validate khi blur
+		dateInput.addEventListener('blur', function() {
+			if (this.value && !this.value.match(/^\d{4}-\d{2}-\d{2}$/)) {
+				validationSpan.textContent = 'Vui lòng nhập đúng định dạng ngày';
+			}
+		});
+	</script>
+}

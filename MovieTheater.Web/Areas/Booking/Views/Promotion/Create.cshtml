@@ -1,0 +1,230 @@
+﻿@model MovieTheater.Web.Areas.Booking.Models.Promotion
+@{
+    ViewData["Title"] = "Tạo khuyến mãi mới";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewData["SidebarActive"] = "PromotionManagement";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-plus"></i> @ViewData["Title"]
+                    </h3>
+                </div>
+                <div class="card-body">
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-circle"></i> @TempData["Error"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    @if (TempData["Success"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle"></i> @TempData["Success"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    <form asp-action="Create" method="post" id="createPromotionForm">
+                        @Html.AntiForgeryToken()
+
+                        <div class="form-group mb-3">
+                            <label asp-for="Title" class="form-label">
+                                <i class="fas fa-tag"></i> Tiêu đề khuyến mãi <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="Title" class="form-control" placeholder="Nhập tiêu đề khuyến mãi..." required />
+                            <span asp-validation-for="Title" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="Detail" class="form-label">
+                                <i class="fas fa-align-left"></i> Mô tả chi tiết <span class="text-danger">*</span>
+                            </label>
+                            <textarea asp-for="Detail" class="form-control" rows="4" placeholder="Nhập mô tả chi tiết về khuyến mãi..." required></textarea>
+                            <span asp-validation-for="Detail" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="DiscountLevel" class="form-label">
+                                <i class="fas fa-percent"></i> Mức giảm giá (%) <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <input asp-for="DiscountLevel" class="form-control" type="number"
+                                       step="0.01" min="0.01" placeholder="0.00" required />
+                                <span class="input-group-text">%</span>
+                            </div>
+                            <span asp-validation-for="DiscountLevel" class="text-danger"></span>
+                            <small class="form-text text-muted">Nhập mức giảm giá (VD: 10.5 cho 10.5%)</small>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="StartTime" class="form-label">
+                                        <i class="fas fa-calendar-start"></i> Ngày bắt đầu <span class="text-danger">*</span>
+                                    </label>
+                                    <input asp-for="StartTime" class="form-control" type="datetime-local"
+                                           value="@Model.StartTime.ToString("yyyy-MM-ddTHH:mm")" required />
+                                    <span asp-validation-for="StartTime" class="text-danger"></span>
+                                    <small class="form-text text-muted">Thời gian địa phương</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="EndTime" class="form-label">
+                                        <i class="fas fa-calendar-times"></i> Ngày kết thúc <span class="text-danger">*</span>
+                                    </label>
+                                    <input asp-for="EndTime" class="form-control" type="datetime-local"
+                                           value="@Model.EndTime.ToString("yyyy-MM-ddTHH:mm")" required />
+                                    <span asp-validation-for="EndTime" class="text-danger"></span>
+                                    <small class="form-text text-muted">Thời gian địa phương</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group mb-4">
+                            <div class="form-check form-switch">
+                                <input asp-for="IsActive" class="form-check-input" type="checkbox" />
+                                <label asp-for="IsActive" class="form-check-label">
+                                    <i class="fas fa-toggle-on"></i> Kích hoạt khuyến mãi ngay
+                                </label>
+                            </div>
+                            <small class="form-text text-muted">Bỏ tick nếu muốn tạo khuyến mãi ở trạng thái tạm dừng</small>
+                        </div>
+
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-success me-2" id="submitBtn">
+                                <i class="fas fa-save"></i> Tạo khuyến mãi
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Quay lại
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i class="fas fa-info-circle"></i> Hướng dẫn
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <h6><i class="fas fa-lightbulb"></i> Lưu ý:</h6>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success"></i> Tiêu đề phải rõ ràng, dễ hiểu</li>
+                        <li><i class="fas fa-check text-success"></i> Mô tả chi tiết về điều kiện áp dụng</li>
+                        <li><i class="fas fa-check text-success"></i> Mức giảm giá không giới hạn</li>
+                        <li><i class="fas fa-check text-success"></i> Ngày kết thúc phải sau ngày bắt đầu</li>
+                        <li><i class="fas fa-check text-success"></i> Thời gian sẽ được lưu theo UTC</li>
+                    </ul>
+
+                    <div class="alert alert-info">
+                        <strong>Múi giờ:</strong><br>
+                        <small>Thời gian hiển thị theo múi giờ địa phương nhưng sẽ được lưu dưới DB theo UTC.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        $(document).ready(function() {
+            console.log('Create promotion form initialized');
+
+            // Form validation và submission
+            $('#createPromotionForm').on('submit', function(e) {
+                console.log('=== FORM SUBMIT EVENT TRIGGERED ===');
+
+                if (!validateFormData()) {
+                    console.log('Validation failed, preventing submit');
+                    e.preventDefault();
+                    return false;
+                }
+
+                console.log('Validation passed, allowing submit to proceed');
+                showLoadingState();
+                return true;
+            });
+        });
+
+        function validateFormData() {
+            let isValid = true;
+
+            // Clear previous alerts
+            $('.alert').remove();
+
+            // Validate title
+            const title = $('#Title').val().trim();
+            if (!title) {
+                showAlert('danger', 'Tiêu đề không được để trống!');
+                $('#Title').focus();
+                return false;
+            }
+
+            // Validate detail
+            const detail = $('#Detail').val().trim();
+            if (!detail) {
+                showAlert('danger', 'Mô tả không được để trống!');
+                $('#Detail').focus();
+                return false;
+            }
+
+            // Validate discount level
+            const discountLevel = parseFloat($('#DiscountLevel').val());
+            if (isNaN(discountLevel) || discountLevel <= 0) {
+                showAlert('danger', 'Mức giảm giá phải lớn hơn 0!');
+                $('#DiscountLevel').focus();
+                return false;
+            }
+
+            // Validate dates
+            const startTime = new Date($('#StartTime').val());
+            const endTime = new Date($('#EndTime').val());
+
+            if (isNaN(startTime.getTime()) || isNaN(endTime.getTime())) {
+                showAlert('danger', 'Vui lòng nhập đúng định dạng ngày giờ!');
+                return false;
+            }
+
+            if (startTime >= endTime) {
+                showAlert('danger', 'Ngày kết thúc phải sau ngày bắt đầu!');
+                $('#EndTime').focus();
+                return false;
+            }
+
+            console.log('All validations passed');
+            return true;
+        }
+
+        function showLoadingState() {
+            const submitBtn = $('#submitBtn');
+            submitBtn.prop('disabled', true);
+            submitBtn.html('<i class="fas fa-spinner fa-spin"></i> Đang xử lý...');
+        }
+
+        function showAlert(type, message) {
+            const alertHtml = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            $('.card-body').prepend(alertHtml);
+            $('.alert')[0].scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+}

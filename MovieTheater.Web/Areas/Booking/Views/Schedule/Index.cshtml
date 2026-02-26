@@ -1,0 +1,2931 @@
+﻿@model List<MovieTheater.Web.Areas.Booking.Models.ScheduleViewModel>
+@{
+    ViewData["SidebarActive"] = "ScheduleCalendar";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+
+}
+
+<style>
+    :root {
+        /* Light Theme Color Palette */
+        --primary: #8b5cf6;
+        --primary-dark: #7c3aed;
+        --primary-light: #a855f7;
+        --secondary: #06b6d4;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        /* New Light Theme Colors */
+        --surface: #F9FAFB; /* Nền chính - Trắng ngà */
+        --surface-dim: #F4FAF7; /* Cột ngày khác - Trắng/xanh nhạt */
+        --surface-accent: #F0F4F8; /* Khung giờ - Xám lạnh nhẹ */
+        --header-bg: #E5E0FF; /* Khung tiêu đề - Tím pastel */
+        --today-bg: #DFF5E3; /* Cột ngày hiện tại - Xanh mint pastel */
+        --movie-card: #D0E8FF; /* Thẻ phim - Xanh dương baby */
+        --text-primary: #374151; /* Text - Xám đậm */
+        --text-secondary: #64748b;
+        --text-muted: #94a3b8;
+        --border: #D1D5DB; /* Viền - Xám xanh nhạt */
+
+        --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        --radius: 12px;
+        --radius-lg: 20px;
+        --radius-xl: 24px;
+    }
+
+    body {
+        background: #18191a;
+        color: #fff;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        margin: 0;
+        padding: 0;
+    }
+
+    .admin-layout {
+        display: flex;
+        min-height: 100vh;
+    }
+
+    .sidebar-3d {
+        height: 100vh;
+        flex-shrink: 0;
+        z-index: 10;
+    }
+
+    .main-content {
+        flex: 1;
+        overflow-x: auto;
+        background: none;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .button-container {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        z-index: 100;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .create-schedule-btn {
+        background: var(--primary);
+        color: white;
+        border: 2px solid var(--primary);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+        padding: 1.25rem 2rem;
+        border-radius: 24px;
+        font-size: 1rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        transition: all 0.2s;
+        cursor: pointer;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        min-width: 200px;
+        text-align: center;
+    }
+
+        .create-schedule-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .create-schedule-btn:hover::before {
+            left: 100%;
+        }
+
+        .create-schedule-btn::after {
+            content: '';
+            position: absolute;
+            left: 1.5rem;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .create-schedule-btn:hover {
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 12px 48px rgba(139, 92, 246, 0.4);
+            background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+            color: white
+        }
+
+        .create-schedule-btn:active {
+            transform: translateY(-2px) scale(1.02);
+            transition: all 0.1s ease;
+        }
+
+        .create-schedule-btn:hover::after {
+            transform: rotate(180deg) scale(1.2);
+            color: white;
+        }
+
+    /* Responsive Design */
+    @@media (max-width: 768px) {
+        .button-container {
+            bottom: 1rem;
+            right: 1rem;
+            left: 1rem;
+        }
+
+        .create-schedule-btn {
+            padding: 1rem 1.5rem;
+            font-size: 0.9rem;
+            min-width: auto;
+            width: 100%;
+        }
+
+            .create-schedule-btn::after {
+                left: 1rem;
+            }
+    }
+
+    /* Animation cho hiệu ứng xuất hiện */
+    @@keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(60px) scale(0.9);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    .create-schedule-btn {
+        animation: slideInUp 0.6s ease-out 0.5s both;
+    }
+
+    /* Pulse effect khi trang load */
+    @@keyframes pulse {
+        0%, 100% {
+            box-shadow: 0 8px 32px rgba(139, 92, 246, 0.3);
+        }
+
+        50% {
+            box-shadow: 0 8px 32px rgba(139, 92, 246, 0.5);
+        }
+    }
+
+    .create-schedule-btn:nth-child(1) {
+        animation: slideInUp 0.6s ease-out 0.5s both, pulse 2s ease-in-out 2s infinite;
+    }
+
+    /* Variant khác - nếu muốn nút có style khác */
+    .create-schedule-btn.variant-outline {
+        background: rgba(255, 255, 255, 0.9);
+        color: #8b5cf6;
+        border: 2px solid #8b5cf6;
+        backdrop-filter: blur(15px);
+    }
+
+        .create-schedule-btn.variant-outline:hover {
+            background: #8b5cf6;
+            color: white;
+            border-color: #7c3aed;
+        }
+
+    /* Floating badge notification (nếu cần) */
+    .create-schedule-btn .notification-badge {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background: #ef4444;
+        color: white;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        font-weight: 800;
+        border: 2px solid white;
+        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+    }
+    /* Main Container */
+    .calendar-page {
+        min-height: 100vh;
+        padding: 1.5rem;
+        max-width: 1800px;
+        margin: 0 auto;
+    }
+
+    .calendar-container {
+        background: var(--surface);
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-lg);
+        overflow: hidden;
+        border: 1px solid var(--border);
+        position: relative;
+    }
+
+    /* Enhanced Header Section với Light Theme */
+    .calendar-header {
+        background: var(--header-bg); /* Tím pastel */
+        padding: 2.5rem 2rem;
+        position: relative;
+        overflow: hidden;
+        border-bottom: 2px solid var(--border);
+    }
+
+        .calendar-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.08'%3E%3Ccircle cx='30' cy='30' r='3'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") repeat;
+            opacity: 0.3;
+        }
+
+    .calendar-title {
+        font-size: clamp(2rem, 4vw, 3rem);
+        font-weight: 900;
+        color: var(--text-primary); /* Text xám đậm */
+        margin: 0 0 2rem 0;
+        text-align: center;
+        position: relative;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        letter-spacing: -0.025em;
+        text-shadow: none;
+    }
+
+    .calendar-navigation {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+        position: relative;
+        z-index: 2;
+    }
+
+    .nav-btn {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(10px);
+        border: 2px solid var(--border);
+        color: var(--text-primary);
+        padding: 1rem 1.75rem;
+        border-radius: var(--radius);
+        cursor: pointer;
+        font-size: 0.875rem;
+        font-weight: 700;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+    }
+
+        .nav-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .nav-btn:hover::before {
+            left: 100%;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.95);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--primary);
+        }
+
+        .nav-btn:active {
+            transform: translateY(-1px);
+        }
+
+    .today-btn {
+        background: var(--primary);
+        color: white;
+        font-weight: 800;
+        border: 2px solid var(--primary);
+    }
+
+        .today-btn:hover {
+            background: var(--primary-dark);
+            border-color: var(--primary-dark);
+            box-shadow: var(--shadow-lg);
+        }
+
+    .current-week {
+        font-size: 1.125rem;
+        font-weight: 800;
+        padding: 1.25rem 2.5rem;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(15px);
+        border: 2px solid var(--border);
+        border-radius: var(--radius-lg);
+        color: var(--text-primary);
+        text-align: center;
+        min-width: 320px;
+        letter-spacing: 0.5px;
+        box-shadow: var(--shadow-sm);
+    }
+
+    /* Enhanced Calendar Grid with 24h Support */
+    .calendar-grid {
+        display: grid;
+        grid-template-columns: 120px repeat(7, 1fr);
+        background: var(--surface);
+        position: relative;
+        max-height: 85vh;
+        overflow-y: auto;
+        scroll-behavior: smooth;
+    }
+
+    /* Improved Time Header với Light Theme */
+    .time-header {
+        background: var(--surface-accent); /* Xám lạnh nhẹ */
+        border-right: 2px solid var(--border);
+        border-bottom: 2px solid var(--border);
+        padding: 2rem 1rem;
+        text-align: center;
+        font-weight: 800;
+        font-size: 0.875rem;
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        box-shadow: var(--shadow-sm);
+    }
+
+    /* Enhanced Day Headers với Light Theme */
+    .day-header {
+        background: var(--surface-accent); /* Xám lạnh nhẹ mặc định */
+        border-right: 1px solid var(--border);
+        border-bottom: 2px solid var(--border);
+        padding: 2rem 1rem;
+        text-align: center;
+        font-weight: 800;
+        color: var(--text-primary);
+        position: sticky;
+        top: 0;
+        z-index: 15;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        box-shadow: var(--shadow-sm);
+    }
+
+        .day-header:last-child {
+            border-right: none;
+        }
+
+        .day-header:hover {
+            background: var(--surface-dim);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .day-header.today {
+            background: var(--today-bg); /* Xanh mint pastel */
+            color: var(--text-primary);
+            box-shadow: var(--shadow-md);
+            border: 2px solid #10b981;
+        }
+
+        .day-header.weekend {
+            background: #FEF3F2; /* Hồng nhạt cho cuối tuần */
+            color: var(--text-primary);
+            border: 1px solid #FECACA;
+        }
+
+        .day-header.past {
+            background: #F9FAFB; /* Xám nhạt cho ngày qua */
+            color: var(--text-secondary);
+            opacity: 0.8;
+        }
+
+        .day-header.future {
+            background: var(--surface-dim); /* Xanh nhạt cho tương lai */
+            color: var(--text-primary);
+        }
+
+    .day-name {
+        font-size: 0.875rem;
+        margin-bottom: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        opacity: 0.9;
+        font-weight: 700;
+    }
+
+    .day-number {
+        font-size: 1.75rem;
+        font-weight: 900;
+        line-height: 1;
+    }
+
+    /* Enhanced Time Slots for 24h với Light Theme */
+    .time-slot {
+        background: var(--surface-accent); /* Xám lạnh nhẹ */
+        border-right: 2px solid var(--border);
+        border-bottom: 1px solid var(--border);
+        padding: 1.25rem 0.75rem;
+        color: var(--text-secondary);
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 120px;
+        position: relative;
+        transition: all 0.3s ease;
+    }
+
+        .time-slot:hover {
+            background: var(--surface-dim);
+            color: var(--text-primary);
+        }
+
+        .time-slot.night-time {
+            background: #F1F5F9; /* Xám nhạt hơn cho giờ đêm */
+            color: var(--text-secondary);
+            border-color: var(--border);
+        }
+
+            .time-slot.night-time:hover {
+                background: #E2E8F0;
+                color: var(--text-primary);
+            }
+
+        .time-slot::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 25%;
+            bottom: 25%;
+            width: 3px;
+            background: linear-gradient(to bottom, transparent, var(--primary), transparent);
+            opacity: 0.4;
+            border-radius: 2px;
+        }
+
+    /* Enhanced Day Columns với Light Theme */
+    .day-column {
+        border-right: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+        min-height: 120px;
+        position: relative;
+        background: var(--surface); /* Trắng ngà */
+        padding: 0.75rem;
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        overflow: visible;
+    }
+
+        .day-column:last-child {
+            border-right: none;
+        }
+
+        .day-column.past-day {
+            background: #F9FAFB; /* Xám nhạt cho ngày qua */
+            opacity: 0.8;
+        }
+
+        .day-column.future-day {
+            background: var(--surface-dim); /* Xanh nhạt cho tương lai */
+        }
+
+        .day-column.night-column {
+            background: #F8FAFC; /* Xám rất nhạt cho giờ đêm */
+            border-color: var(--border);
+        }
+
+        .day-column:hover {
+            background: #EEF2FF; /* Tím nhạt khi hover */
+            transform: scale(1.02);
+            z-index: 5;
+            box-shadow: var(--shadow-lg);
+            border-radius: var(--radius);
+        }
+
+    /* Multi-Movie Container */
+    .movies-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.375rem;
+        width: 100%;
+        min-height: 100%;
+    }
+
+        .movies-container.has-multiple {
+            max-height: 110px;
+            overflow-y: auto;
+            padding-right: 2px;
+        }
+
+            .movies-container.has-multiple::-webkit-scrollbar {
+                width: 3px;
+            }
+
+            .movies-container.has-multiple::-webkit-scrollbar-track {
+                background: rgba(139, 92, 246, 0.1);
+                border-radius: 2px;
+            }
+
+            .movies-container.has-multiple::-webkit-scrollbar-thumb {
+                background: var(--primary);
+                border-radius: 2px;
+            }
+
+    /* Enhanced Movie Blocks với Light Theme */
+    .movie-block {
+        background: var(--movie-card); /* Xanh dương baby */
+        color: var(--text-primary); /* Text xám đậm */
+        padding: 0.875rem;
+        border-radius: var(--radius);
+        font-size: 0.75rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+        position: relative;
+        border: 2px solid rgba(139, 92, 246, 0.15);
+        backdrop-filter: blur(5px);
+        flex-shrink: 0;
+    }
+
+        .movie-block::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.1), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .movie-block:hover::before {
+            left: 100%;
+        }
+
+        .movie-block:hover {
+            transform: translateY(-3px) scale(1.03);
+            box-shadow: var(--shadow-lg);
+            z-index: 15;
+            border-color: var(--primary);
+            background: #BFDBFE; /* Xanh dương nhạt hơn khi hover */
+        }
+
+        .movie-block:active {
+            transform: translateY(-1px) scale(1.01);
+        }
+
+        /* Stacked Movie Block */
+        .movie-block.stacked {
+            margin-bottom: 0.25rem;
+            font-size: 0.625rem;
+            padding: 0.625rem 0.75rem;
+            min-height: auto;
+        }
+
+            .movie-block.stacked:last-child {
+                margin-bottom: 0;
+            }
+
+    .movie-title {
+        font-weight: 800;
+        margin-bottom: 0.75rem;
+        font-size: 0.8rem;
+        line-height: 1.3;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+
+    .movie-block.stacked .movie-title {
+        font-size: 0.675rem;
+        margin-bottom: 0.5rem;
+        -webkit-line-clamp: 1;
+    }
+
+    .movie-details {
+        font-size: 0.625rem;
+        opacity: 0.95;
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+        margin-bottom: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .movie-block.stacked .movie-details {
+        font-size: 0.5rem;
+        margin-bottom: 0.25rem;
+        gap: 0.25rem;
+    }
+
+    .movie-room {
+        background: rgba(139, 92, 246, 0.15); /* Tím nhạt */
+        color: var(--text-primary);
+        padding: 0.25rem 0.625rem;
+        border-radius: 20px;
+        display: inline-block;
+        font-size: 0.625rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid rgba(139, 92, 246, 0.2);
+    }
+
+    .movie-block.stacked .movie-room {
+        font-size: 0.5rem;
+        padding: 0.125rem 0.5rem;
+    }
+
+    /* Genre-based Colors Enhanced với Light Theme */
+    .movie-action {
+        background: #FEE2E2; /* Đỏ nhạt */
+        border-color: #FECACA;
+        color: #7F1D1D;
+    }
+
+        .movie-action:hover {
+            background: #FCA5A5;
+            border-color: #F87171;
+        }
+
+    .movie-comedy {
+        background: #FEF3C7; /* Vàng nhạt */
+        border-color: #FDE68A;
+        color: #92400E;
+    }
+
+        .movie-comedy:hover {
+            background: #FCD34D;
+            border-color: #F59E0B;
+        }
+
+    .movie-drama {
+        background: #DBEAFE; /* Xanh dương nhạt */
+        border-color: #BFDBFE;
+        color: #1E3A8A;
+    }
+
+        .movie-drama:hover {
+            background: #93C5FD;
+            border-color: #60A5FA;
+        }
+
+    .movie-horror {
+        background: #F3F4F6; /* Xám nhạt */
+        border-color: #D1D5DB;
+        color: #374151;
+    }
+
+        .movie-horror:hover {
+            background: #E5E7EB;
+            border-color: #9CA3AF;
+        }
+
+    .movie-romance {
+        background: #FCE7F3; /* Hồng nhạt */
+        border-color: #F9A8D4;
+        color: #BE185D;
+    }
+
+        .movie-romance:hover {
+            background: #F472B6;
+            border-color: #EC4899;
+        }
+
+    .movie-sci-fi {
+        background: #ECFDF5; /* Xanh lá nhạt */
+        border-color: #A7F3D0;
+        color: #065F46;
+    }
+
+        .movie-sci-fi:hover {
+            background: #6EE7B7;
+            border-color: #34D399;
+        }
+
+    .movie-thriller {
+        background: #EDE9FE; /* Tím nhạt */
+        border-color: #C4B5FD;
+        color: #5B21B6;
+    }
+
+        .movie-thriller:hover {
+            background: #A78BFA;
+            border-color: #8B5CF6;
+        }
+
+    /* Multi-Movie Counter với Light Theme */
+    .movie-counter {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background: var(--primary);
+        color: white;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        font-weight: 800;
+        border: 2px solid var(--surface);
+        box-shadow: var(--shadow-md);
+        z-index: 20;
+    }
+
+    /* Enhanced Modal với Light Theme */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(8px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        opacity: 0;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .modal-content {
+        background: var(--surface);
+        padding: 3rem 2.5rem;
+        border-radius: var(--radius-xl);
+        max-width: 520px;
+        width: 90%;
+        box-shadow: var(--shadow-xl);
+        text-align: center;
+        transform: translateY(30px) scale(0.95);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 2px solid var(--border);
+        position: relative;
+        overflow: hidden;
+    }
+
+        .modal-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--primary);
+        }
+
+    .modal-icon {
+        font-size: 3.5rem;
+        margin-bottom: 2rem;
+        display: block;
+        filter: none;
+    }
+
+    .modal-title {
+        color: var(--text-primary);
+        margin-bottom: 2rem;
+        font-size: 1.75rem;
+        font-weight: 800;
+        line-height: 1.2;
+    }
+
+    .modal-info {
+        color: var(--text-secondary);
+        margin-bottom: 1.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        font-size: 1rem;
+        padding: 1rem 1.5rem;
+        background: var(--surface-accent);
+        border-radius: var(--radius);
+        font-weight: 600;
+        border: 1px solid var(--border);
+    }
+
+    .modal-button-container {
+        display: flex;
+        gap: 1.25rem;
+        margin-top: 2.5rem;
+    }
+
+    .modal-close-btn {
+        background: var(--primary);
+        color: white;
+        border: none;
+        padding: 1.25rem 2rem;
+        border-radius: var(--radius);
+        cursor: pointer;
+        font-weight: 700;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        flex: 1;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+    }
+
+        .modal-close-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .modal-close-btn:hover::before {
+            left: 100%;
+        }
+
+        .modal-close-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+            background: var(--primary-dark);
+        }
+
+    .modal-view-room-btn {
+        background: var(--success);
+    }
+
+        .modal-view-room-btn:hover {
+            background: #059669;
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+        }
+
+    /* Enhanced Empty State với Light Theme */
+    .empty-calendar {
+        text-align: center;
+        padding: 5rem 3rem;
+        background: var(--surface-accent);
+        border-radius: var(--radius-xl);
+        border: 3px dashed var(--border);
+        margin: 3rem;
+        color: var(--text-secondary);
+        position: relative;
+        overflow: hidden;
+    }
+
+        .empty-calendar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%238b5cf6' fill-opacity='0.05'%3E%3Ccircle cx='20' cy='20' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") repeat;
+            opacity: 0.5;
+        }
+
+        .empty-calendar h3 {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+            font-weight: 800;
+            position: relative;
+            z-index: 2;
+        }
+
+        .empty-calendar p {
+            font-size: 1.125rem;
+            line-height: 1.7;
+            max-width: 600px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+    .empty-icon {
+        font-size: 5rem;
+        color: var(--primary);
+        margin-bottom: 2rem;
+        display: block;
+        filter: none;
+        position: relative;
+        z-index: 2;
+    }
+
+    /* Enhanced Loading Spinner */
+    .loading-spinner {
+        display: inline-block;
+        width: 24px;
+        height: 24px;
+        border: 3px solid var(--border);
+        border-radius: 50%;
+        border-top-color: var(--primary);
+        animation: spin 1.2s linear infinite;
+    }
+
+    /* Notification Styles với Light Theme */
+    .notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 1rem 1.5rem;
+        border-radius: var(--radius);
+        color: white;
+        font-weight: 600;
+        z-index: 2000;
+        max-width: 350px;
+        opacity: 0;
+        transform: translateX(100%);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: var(--shadow-lg);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .notification.info {
+            background: var(--secondary);
+        }
+
+        .notification.error {
+            background: var(--danger);
+        }
+
+        .notification.success {
+            background: var(--success);
+        }
+    /* CSS CHO MODAL TẠO LỊCH CHIẾU */
+    .schedule-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(8px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+        .schedule-modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+    .schedule-modal-content {
+        background: rgba(30, 41, 59, 0.95); /* giống .search-filters-card */
+        color: #e2e8f0; /* giống .search-filters-card */
+        border: 1px solid rgba(148,163,184,0.13);
+        border-radius: 18px;
+        box-shadow: 0 8px 32px rgba(30,41,59,0.18);
+        max-width: 700px;
+        width: 95%;
+        max-height: 90vh;
+        overflow-y: auto;
+        transform: translateY(30px) scale(0.95);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+        position: relative;
+    }
+
+    .schedule-modal-overlay.active .schedule-modal-content {
+        transform: translateY(0) scale(1);
+    }
+    /* COPY TOÀN BỘ CSS CỦA FORM TỪ VIEW TẠO LỊCH CHIẾU */
+    .form-container {
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
+    }
+
+    .form-card {
+        background: rgba(30, 41, 59, 0.95); /* giống .search-filters-card */
+        color: #e2e8f0; /* giống .search-filters-card */
+        border: 1px solid rgba(148,163,184,0.13);
+        border-radius: 18px;
+        box-shadow: 0 8px 32px rgba(30,41,59,0.18);
+        padding: 40px;
+        box-shadow: none;
+        border: none;
+        position: relative;
+        overflow: hidden;
+        margin: 0;
+    }
+
+        .form-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #667eea, #ff8a95);
+        }
+
+    .form-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 8px;
+        text-align: center;
+    }
+
+    .form-subtitle {
+        color: #6c757d;
+        text-align: center;
+        margin-bottom: 32px;
+        font-size: 16px;
+    }
+
+    .form-group {
+        margin-bottom: 24px;
+        position: relative;
+    }
+
+    .form-label {
+        color: #e2e8f0;
+        font-weight: 600;
+        font-size: 1rem;
+    }
+
+    .form-input, .form-select {
+        background: rgba(15,23,42,0.85) !important;
+        border: 2px solid #60a5fa;
+        color: #e2e8f0;
+        border-radius: 12px;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        margin-bottom: 8px;
+        transition: all 0.3s;
+    }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #a78bfa;
+            background: rgba(15,23,42,0.95) !important;
+            color: #fff;
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15);
+            transform: translateY(-2px);
+        }
+
+    .form-select {
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 16px center;
+        background-size: 16px;
+        padding-right: 50px;
+        cursor: pointer;
+    }
+
+    .submit-btn {
+        width: 100%;
+        padding: 18px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border: none;
+        border-radius: 12px;
+        color: white;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-top: 16px;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+    .validation-error {
+        color: #dc3545;
+        font-size: 12px;
+        margin-top: 6px;
+        display: block;
+        font-weight: 500;
+    }
+
+    /* Modal close button */
+    .modal-close-x {
+        position: absolute;
+        top: 20px;
+        right: 25px;
+        background: #f8f9fa;
+        border: none;
+        color: #6c757d;
+        font-size: 24px;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        z-index: 10;
+    }
+
+        .modal-close-x:hover {
+            background: #e9ecef;
+            color: #dc3545;
+            transform: rotate(90deg);
+        }
+
+    /* COPY TOÀN BỘ CSS CỦA CUSTOM CLOCK PICKER */
+    .clockpicker-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(8px);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 3000; /* Cao hơn schedule modal */
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+    }
+
+        .clockpicker-modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+    .clockpicker-container {
+        background: white;
+        border-radius: 24px;
+        padding: 40px;
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+        transform: scale(0.8) translateY(30px);
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        position: relative;
+        max-width: 420px;
+        width: 90%;
+        text-align: center;
+    }
+
+    .clockpicker-modal.active .clockpicker-container {
+        transform: scale(1) translateY(0);
+    }
+
+    .clockpicker-header {
+        margin-bottom: 30px;
+    }
+
+    .clockpicker-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .clockpicker-subtitle {
+        color: #6c757d;
+        font-size: 14px;
+    }
+
+    .clockpicker-close {
+        position: absolute;
+        top: 16px;
+        right: 20px;
+        background: #f8f9fa;
+        border: none;
+        color: #6c757d;
+        font-size: 20px;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+
+        .clockpicker-close:hover {
+            background: #e9ecef;
+            color: #dc3545;
+            transform: rotate(90deg);
+        }
+
+    .custom-clock {
+        position: relative;
+        width: 320px;
+        height: 320px;
+        margin: 0 auto 30px;
+        background: linear-gradient(135deg, #ffffff, #f8f9fa);
+        border-radius: 50%;
+        border: 4px solid #667eea;
+        box-shadow: 0 0 0 12px rgba(102, 126, 234, 0.08), 0 8px 32px rgba(0, 0, 0, 0.12), inset 0 2px 8px rgba(255, 255, 255, 0.6);
+    }
+
+    .clock-center {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 16px;
+        height: 16px;
+        background: radial-gradient(circle, #667eea, #5a67d8);
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 20;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+        border: 2px solid white;
+    }
+
+    .clock-numbers {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+    }
+
+    .clock-number {
+        position: absolute;
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 15px;
+        color: #374151;
+        cursor: pointer;
+        border-radius: 50%;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transform: translate(-50%, -50%);
+        background: rgba(255, 255, 255, 0.8);
+        border: 2px solid transparent;
+        backdrop-filter: blur(4px);
+    }
+
+        .clock-number:hover {
+            background: rgba(102, 126, 234, 0.15);
+            color: #667eea;
+            transform: translate(-50%, -50%) scale(1.15);
+            border-color: rgba(102, 126, 234, 0.3);
+            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.2);
+        }
+
+        .clock-number.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            transform: translate(-50%, -50%) scale(1.25);
+            border-color: white;
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4), 0 0 0 3px rgba(102, 126, 234, 0.2);
+            font-weight: 800;
+        }
+
+        .clock-number.inner {
+            font-size: 13px;
+            width: 36px;
+            height: 36px;
+            background: rgba(248, 249, 250, 0.9);
+            font-weight: 600;
+        }
+
+            .clock-number.inner:hover {
+                background: rgba(102, 126, 234, 0.12);
+            }
+
+            .clock-number.inner.active {
+                background: linear-gradient(135deg, #4f46e5, #7c3aed);
+                font-size: 12px;
+                font-weight: 700;
+            }
+
+    .clock-hand {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform-origin: bottom center;
+        background: linear-gradient(to top, #667eea, #4f46e5);
+        border-radius: 3px;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 15;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    }
+
+    .hour-hand {
+        width: 6px;
+        height: 90px;
+        margin-left: 1px;
+        margin-top: -90px;
+        border-radius: 3px 3px 0 0;
+    }
+
+    .minute-hand {
+        width: 4px;
+        height: 120px;
+        margin-left: 1px;
+        margin-top: -120px;
+        border-radius: 2px 2px 0 0;
+        background: linear-gradient(to top, #10b981, #059669);
+        z-index: 16;
+    }
+
+    .time-display {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        padding: 16px 24px;
+        border-radius: 16px;
+        font-size: 32px;
+        font-weight: 700;
+        margin-bottom: 30px;
+        letter-spacing: 2px;
+        font-family: 'Courier New', monospace;
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    }
+
+    .time-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 16px;
+        margin-bottom: 30px;
+    }
+
+    .time-mode-btn {
+        padding: 12px 24px;
+        border: 2px solid #e9ecef;
+        background: white;
+        color: #6c757d;
+        border-radius: 12px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        font-size: 14px;
+    }
+
+        .time-mode-btn.active {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .time-mode-btn:hover:not(.active) {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+    .clock-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+    }
+
+    .clock-btn {
+        padding: 14px 28px;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .clock-btn-cancel {
+        background: #f8f9fa;
+        color: #6c757d;
+        border: 2px solid #e9ecef;
+    }
+
+        .clock-btn-cancel:hover {
+            background: #e9ecef;
+            color: #495057;
+        }
+
+    .clock-btn-confirm {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+    }
+
+        .clock-btn-confirm:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+    /* Hide original clockpicker */
+    .clockpicker-popover {
+        display: none !important;
+    }
+
+    /* Success message */
+    .success-message {
+        background: linear-gradient(135deg, #4ecdc4, #44a08d);
+        color: white;
+        padding: 16px 20px;
+        border-radius: 12px;
+        margin-bottom: 24px;
+        text-align: center;
+        font-weight: 500;
+        display: none;
+    }
+
+    /* Validation states */
+    .form-input.error, .form-select.error {
+        border-color: #dc3545;
+        background: #fff5f5;
+    }
+
+    .form-input.success, .form-select.success {
+        border-color: #28a745;
+        background: #f8fff8;
+    }
+
+    /* Disabled end time styling */
+    .form-input:disabled {
+        background: rgba(15,23,42,0.85) !important;
+        color: #94a3b8 !important; /* màu chữ nhạt hơn cho disabled */
+        border: 2px solid #60a5fa !important;
+        opacity: 1 !important;
+        cursor: not-allowed !important;
+    }
+
+    .disabled-label {
+        color: #6c757d !important;
+        opacity: 0.7;
+    }
+
+    /* Responsive cho modal */
+    @@media (max-width: 768px) {
+        .schedule-modal-content {
+            width: 98%;
+            max-height: 95vh;
+        }
+
+        .form-card {
+            padding: 24px;
+        }
+
+        .clockpicker-container {
+            max-width: 440px;
+            padding: 30px 24px;
+        }
+
+        .custom-clock {
+            width: 280px;
+            height: 280px;
+        }
+
+        @@keyframes ripple {
+            0% {
+                transform: scale(0);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        @@keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    }
+
+    /* Giữ lại style đặc biệt cho table, nút, badge, KHÔNG override body, header, font, màu nền */
+    .button-container {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        z-index: 100;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .create-schedule-btn {
+        background: var(--primary);
+        color: white;
+        border: 2px solid var(--primary);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+        padding: 1.25rem 2rem;
+        border-radius: 24px;
+        font-size: 1rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        transition: all 0.2s;
+        cursor: pointer;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        min-width: 200px;
+        text-align: center;
+    }
+
+        .create-schedule-btn:hover {
+            background: var(--primary-dark);
+            border-color: var(--primary-dark);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+    .table thead th {
+        background: #23272b;
+        color: #fff;
+        border: none;
+        padding: 20px 15px;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .table tbody tr {
+        background: #18191a;
+        color: #fff;
+        transition: background 0.2s;
+    }
+
+        .table tbody tr:hover {
+            background: #23272b;
+            transform: scale(1.01);
+        }
+
+    .table td {
+        padding: 20px 15px;
+        vertical-align: middle;
+        border-color: #343a40;
+        text-align: center;
+    }
+
+    .badge.bg-success {
+        background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%) !important;
+        color: #fff;
+    }
+
+    .badge.bg-secondary {
+        background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%) !important;
+        color: #fff;
+    }
+
+    .btn, .btn-primary, .btn-success, .btn-warning, .btn-danger, .btn-outline-secondary {
+        background: #23272b !important;
+        color: #fff !important;
+        border: 1px solid #343a40 !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+        border-radius: 8px;
+        font-weight: 500;
+        transition: background 0.2s, color 0.2s;
+    }
+
+        .btn:hover, .btn-primary:hover, .btn-success:hover, .btn-warning:hover, .btn-danger:hover, .btn-outline-secondary:hover {
+            background: #343a40 !important;
+            color: #fff !important;
+        }
+
+    .form-input::placeholder {
+        color: #94a3b8;
+    }
+</style>
+<div class="button-container">
+    <button class="create-schedule-btn" id="openScheduleModal">
+        Tạo lịch chiếu
+    </button>
+</div>
+<div class="admin-layout">  
+    <div class="main-content">
+        <div class="calendar-page">
+            <div class="calendar-container">
+                <div class="calendar-header">
+                    <h2 class="calendar-title">
+                        🎬       Lịch Chiếu Phim 24/7
+                    </h2>
+                    <div style="margin-bottom: 1.5rem; display: flex; align-items: center;">
+                        <a href="@Url.Action("CinemaRooms", "CinemaRoom", new { area = "Booking" })" class="nav-btn variant-outline" style="margin-right: 1rem;">
+                            <i class="fas fa-arrow-left"></i> Quay lại danh sách phòng
+                        </a>
+                    </div>
+                    <div class="calendar-navigation">
+                        <button class="nav-btn" id="prevWeek">
+                            ← Tuần trước
+                        </button>
+                        <div class="current-week" id="currentWeekDisplay">
+                            <span class="loading-spinner"></span>
+                        </div>
+                        <button class="nav-btn" id="nextWeek">
+                            Tuần sau →
+                        </button>
+                        <button class="nav-btn today-btn" id="todayBtn">
+                            Hôm nay
+                        </button>
+                    </div>
+                </div>
+
+                @if (Model != null && Model.Any())
+                {
+                    <div class="calendar-grid" id="movieCalendar">
+                        <!-- Enhanced 24/7 Calendar will be generated by JavaScript -->
+                    </div>
+                }
+                else
+                {
+                    <div class="empty-calendar">
+                        <span class="empty-icon">📅</span>
+                        <h3>Chưa có lịch chiếu nào</h3>
+                        <p>Hiện tại chưa có lịch chiếu nào được tạo trong hệ thống.<br>Vui lòng quay lại sau hoặc liên hệ quản trị viên để biết thêm thông tin.</p>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- MODAL TẠO LỊCH CHIẾU -->
+        <div class="schedule-modal-overlay" id="scheduleModalOverlay">
+            <div class="schedule-modal-content">
+                <button class="modal-close-x" onclick="closeScheduleModal()">×</button>
+
+                <div class="form-container">
+                    <div class="form-card fade-in">
+                        <div class="success-message" id="successMessage">
+                            ✅ Lịch chiếu đã được tạo thành công!
+                        </div>
+
+                        <h2 class="form-title text-light">Tạo Lịch Chiếu</h2>
+                        <p class="form-subtitle text-light">Lập lịch chiếu phim cho rạp của bạn</p>
+
+                        <form id="scheduleForm" method="post">
+                            <div class="form-group">
+                                <label class="form-label">🏢 Phòng Chiếu</label>
+                                <div class="icon-select" data-icon="🎭">
+                                    <select class="form-select" name="CinemaRoomId" id="CinemaRoomId">
+                                        <option value="">-- Chọn phòng chiếu --</option>
+                                        <!-- Options sẽ được load từ server -->
+                                    </select>
+                                </div>
+                                <span class="validation-error" id="roomError"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">🎬 Phim</label>
+                                <div class="icon-select" data-icon="🍿">
+                                    <select class="form-select" name="MovieId" id="MovieId" data-duration="">
+                                        <option value="">-- Chọn phim --</option>
+                                        <!-- Options sẽ được load từ server -->
+                                    </select>
+                                </div>
+                                <span class="validation-error" id="movieError"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">📅 Ngày Chiếu</label>
+                                <div class="icon-input" data-icon="📆">
+                                    <input type="date" class="form-input" name="ShowDate" id="ShowDate" />
+                                </div>
+                                <span class="validation-error" id="dateError"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">⏰ Giờ Bắt Đầu</label>
+                                <div class="icon-input" data-icon="🕐">
+                                    <input type="text" class="form-input" name="FromTime" id="FromTime" placeholder="Chọn giờ bắt đầu" readonly onclick="openCustomClockPicker()" />
+                                </div>
+                                <span class="validation-error" id="fromTimeError"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label disabled-label">⏰ Giờ Kết Thúc (Tự động tính)</label>
+                                <div class="icon-input" data-icon="🕕">
+                                    <input type="text" class="form-input" name="ToTime" id="ToTime" placeholder="Sẽ tự động tính khi chọn phim và giờ bắt đầu" readonly disabled />
+                                </div>
+                                <span class="validation-error" id="toTimeError"></span>
+                            </div>
+
+                            <button type="submit" class="submit-btn">
+                                ✨ Tạo Lịch Chiếu
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL CUSTOM CLOCK PICKER -->
+        <div class="clockpicker-modal" id="customClockModal">
+            <div class="clockpicker-container">
+                <button class="clockpicker-close" onclick="closeCustomClockPicker()">×</button>
+
+                <div class="clockpicker-header">
+                    <div class="clockpicker-title">
+                        🕐 Chọn Giờ Bắt Đầu
+                    </div>
+                    <div class="clockpicker-subtitle">Chọn giờ và phút cho lịch chiếu</div>
+                </div>
+
+                <div class="time-display" id="timeDisplay">
+                    12:00
+                </div>
+
+                <div class="time-buttons">
+                    <button class="time-mode-btn active" id="hourMode" onclick="setTimeMode('hour')">
+                        Giờ
+                    </button>
+                    <button class="time-mode-btn" id="minuteMode" onclick="setTimeMode('minute')">
+                        Phút
+                    </button>
+                </div>
+
+                <div class="custom-clock">
+                    <div class="clock-center"></div>
+                    <div class="clock-numbers" id="clockNumbers">
+                        <!-- Numbers will be generated by JavaScript -->
+                    </div>
+                    <div class="clock-hand hour-hand" id="hourHand"></div>
+                    <div class="clock-hand minute-hand" id="minuteHand"></div>
+                </div>
+
+                <div class="clock-actions">
+                    <button class="clock-btn clock-btn-cancel" onclick="closeCustomClockPicker()">
+                        Hủy
+                    </button>
+                    <button class="clock-btn clock-btn-confirm" onclick="confirmTime()">
+                        Xác Nhận
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+</div>
+<script>
+         function showNotification(message, type = 'info') {
+                const notification = document.createElement('div');
+                notification.className = `notification ${type}`;
+                notification.textContent = message;
+
+                document.body.appendChild(notification);
+
+                requestAnimationFrame(() => {
+                    notification.classList.add('show');
+                });
+
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                    setTimeout(() => notification.remove(), 400);
+                }, 3500);
+            }
+                window.scheduleData = [
+        @if (Model != null && Model.Any())
+        {
+                @for (int i = 0; i < Model.Count; i++)
+                {
+                        @:{
+                        @:MovieName: "@Html.Raw(Model[i].MovieName?.Replace("\"", "\\\""))",
+                        @:RoomName: "@Html.Raw(Model[i].RoomName?.Replace("\"", "\\\""))",
+                        @:RoomId: @(Model[i].RoomId),
+                        @:ShowDate: "@Model[i].ShowDate.ToString("yyyy-MM-dd")",
+                        @:FromTime: "@Model[i].FromTimeFormatted",
+                        @:ToTime: "@Model[i].ToTimeFormatted"
+                        @:}@(i < Model.Count - 1 ? "," : "")
+                }
+        }
+    ];
+            // === MODAL FUNCTIONS ===
+        function openScheduleModal() {
+            console.log('🎬 Opening schedule modal...');
+            const modal = document.getElementById('scheduleModalOverlay');
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+
+            // Load dropdown data
+            loadDropdownData();
+        }
+
+        function closeScheduleModal() {
+            console.log('❌ Closing schedule modal...');
+            const modal = document.getElementById('scheduleModalOverlay');
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+
+            // Reset form
+            document.getElementById('scheduleForm').reset();
+            clearValidationErrors();
+        }
+
+            function loadDropdownData() {
+            // Load rooms - SỬA LẠI
+            fetch('/Booking/Schedule/GetRooms')
+                    .then(response => {
+            console.log('📡 Response status:', response.status);
+            console.log('📡 Response ok:', response.ok);
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            return response.json();
+        })
+                .then(data => {
+                    console.log('🏢 Rooms data:', data); // Debug log
+                    const roomSelect = document.getElementById('CinemaRoomId');
+                    roomSelect.innerHTML = '<option value="">-- Chọn phòng chiếu --</option>';
+                    data.forEach(room => {
+                        // SỬA: room.Value → room.value, room.Text → room.text
+                        roomSelect.innerHTML += `<option value="${room.value || room.Value}">${room.text || room.Text}</option>`;
+                    });
+                })
+                .catch(error => {
+                    console.error('Error loading rooms:', error);
+                    showNotification('Lỗi tải danh sách phòng chiếu', 'error');
+                });
+
+            // Load movies - SỬA LẠI
+            fetch('/Booking/Schedule/GetMovies')
+                .then(response => response.json())
+                .then(data => {
+                    console.log('🎬 Movies data:', data); // Debug log
+                    const movieSelect = document.getElementById('MovieId');
+                    movieSelect.innerHTML = '<option value="">-- Chọn phim --</option>';
+                    data.forEach(movie => {
+                        const duration = movie.Duration || 120;
+                        // SỬA: movie.Value → movie.value, movie.Text → movie.text
+                        movieSelect.innerHTML += `<option value="${movie.value || movie.Value}" data-duration="${duration}">${movie.text || movie.Text} (${duration} phút)</option>`;
+                    });
+                })
+                .catch(error => {
+                    console.error('Error loading movies:', error);
+                    showNotification('Lỗi tải danh sách phim', 'error');
+                });
+        }
+
+        function clearValidationErrors() {
+            document.querySelectorAll('.validation-error').forEach(span => {
+                span.textContent = '';
+            });
+            document.querySelectorAll('.form-input, .form-select').forEach(input => {
+                input.classList.remove('error', 'success');
+            });
+        }
+
+        // === CLOCK PICKER FUNCTIONS (COPY TỪNG VỀT NGUYÊN) ===
+        let currentHour = 12;
+        let currentMinute = 0;
+        let currentMode = 'hour';
+
+        function openCustomClockPicker() {
+            const modal = document.getElementById('customClockModal');
+            modal.classList.add('active');
+
+            // Initialize clock
+            initializeClock();
+            updateTimeDisplay();
+            updateClockHands();
+        }
+
+        function closeCustomClockPicker() {
+            const modal = document.getElementById('customClockModal');
+            modal.classList.remove('active');
+        }
+
+        function setTimeMode(mode) {
+            currentMode = mode;
+
+            // Update button states
+            document.getElementById('hourMode').classList.toggle('active', mode === 'hour');
+            document.getElementById('minuteMode').classList.toggle('active', mode === 'minute');
+
+            // Update clock numbers
+            generateClockNumbers();
+            updateClockHands();
+        }
+
+        function initializeClock() {
+            // Get current time from input if exists
+            const fromTimeInput = document.getElementById('FromTime');
+            if (fromTimeInput.value) {
+                const [hour, minute] = fromTimeInput.value.split(':').map(Number);
+                currentHour = hour;
+                currentMinute = minute;
+            } else {
+                const now = new Date();
+                currentHour = now.getHours();
+                currentMinute = now.getMinutes();
+            }
+
+            generateClockNumbers();
+        }
+
+        function generateClockNumbers() {
+            const clockNumbers = document.getElementById('clockNumbers');
+            clockNumbers.innerHTML = '';
+
+            if (currentMode === 'hour') {
+                // Generate 24 hours with proper positioning
+                for (let i = 0; i < 24; i++) {
+                    let angle, radius, x, y;
+
+                    if (i >= 1 && i <= 12) {
+                        // Outer circle: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
+                        const position = i; // 1-12
+                        angle = (position * 30) - 90; // 30 degrees each
+                        radius = 130;
+                    } else {
+                        // Inner circle: 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 0
+                        let position;
+                        if (i === 0) {
+                            position = 12; // 0 at 12 o'clock position inner
+                        } else {
+                            position = i - 12; // 13->1, 14->2, etc.
+                        }
+                        angle = (position * 30) - 90;
+                        radius = 95;
+                    }
+
+                    x = 160 + radius * Math.cos(angle * Math.PI / 180);
+                    y = 160 + radius * Math.sin(angle * Math.PI / 180);
+
+                    const numberEl = document.createElement('div');
+                    numberEl.className = `clock-number ${(i >= 13 || i === 0) ? 'inner' : ''}`;
+                    numberEl.style.left = x + 'px';
+                    numberEl.style.top = y + 'px';
+                    numberEl.textContent = i.toString().padStart(2, '0');
+
+                    if (i === currentHour) {
+                        numberEl.classList.add('active');
+                    }
+
+                    numberEl.addEventListener('click', () => {
+                        currentHour = i;
+                        updateTimeDisplay();
+                        updateClockHands();
+
+                        document.querySelectorAll('.clock-number').forEach(el => el.classList.remove('active'));
+                        numberEl.classList.add('active');
+
+                        setTimeout(() => setTimeMode('minute'), 300);
+                    });
+
+                    clockNumbers.appendChild(numberEl);
+                }
+            } else {
+                // Generate minutes (0, 5, 10, 15, ...)
+                for (let i = 0; i < 60; i += 5) {
+                    const angle = (i * 6) - 90; // 6 degrees per 5-minute interval
+                    const radius = 130;
+
+                    const x = 160 + radius * Math.cos(angle * Math.PI / 180);
+                    const y = 160 + radius * Math.sin(angle * Math.PI / 180);
+
+                    const numberEl = document.createElement('div');
+                    numberEl.className = 'clock-number';
+                    numberEl.style.left = x + 'px';
+                    numberEl.style.top = y + 'px';
+                    numberEl.textContent = i.toString().padStart(2, '0');
+
+                    if (i === currentMinute) {
+                        numberEl.classList.add('active');
+                    }
+
+                    numberEl.addEventListener('click', () => {
+                        currentMinute = i;
+                        updateTimeDisplay();
+                        updateClockHands();
+
+                        document.querySelectorAll('.clock-number').forEach(el => el.classList.remove('active'));
+                        numberEl.classList.add('active');
+                    });
+
+                    clockNumbers.appendChild(numberEl);
+                }
+            }
+        }
+
+        function updateTimeDisplay() {
+            const timeDisplay = document.getElementById('timeDisplay');
+            if (timeDisplay) {
+                timeDisplay.textContent =
+                    `${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}`;
+            }
+        }
+
+        function updateClockHands() {
+            const hourHand = document.getElementById('hourHand');
+            const minuteHand = document.getElementById('minuteHand');
+
+            if (hourHand && minuteHand) {
+                // Calculate angles
+                const hourAngle = (currentHour % 12) * 30 + (currentMinute * 0.5);
+                const minuteAngle = currentMinute * 6;
+
+                // Apply rotation from center bottom
+                hourHand.style.transform = `translate(-50%, 0) rotate(${hourAngle}deg)`;
+                minuteHand.style.transform = `translate(-50%, 0) rotate(${minuteAngle}deg)`;
+            }
+        }
+
+        function confirmTime() {
+            const timeString = `${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}`;
+            const fromTimeInput = document.getElementById('FromTime');
+
+            fromTimeInput.value = timeString;
+            fromTimeInput.classList.remove('error');
+            fromTimeInput.classList.add('success');
+
+            // Trigger calculation
+            calculateEndTime();
+
+            closeCustomClockPicker();
+
+            console.log('⏰ Selected time:', timeString);
+        }
+
+        // === FORM FUNCTIONS ===
+           function calculateEndTime() {
+            const movieSelect = document.getElementById('MovieId');
+            const fromTimeInput = document.getElementById('FromTime');
+            const toTimeInput = document.getElementById('ToTime');
+
+            const movieOption = movieSelect.options[movieSelect.selectedIndex];
+            const fromTime = fromTimeInput.value;
+
+            console.log('🎬 Movie Option:', movieOption);
+            console.log('⏰ From Time:', fromTime);
+
+            if (movieOption && movieOption.value && fromTime) {
+                // ✅ SỬA: Lấy duration từ data-duration
+                let movieDuration = parseInt(movieOption.getAttribute('data-duration')) || 120;
+                movieDuration += 15; // Add buffer
+
+                console.log('🎬 Movie Duration:', movieDuration, 'minutes');
+
+                // ✅ SỬA: Parse time correctly
+                const [hours, minutes] = fromTime.split(':').map(Number);
+                const startDate = new Date();
+                startDate.setHours(hours, minutes, 0, 0);
+
+                const endDate = new Date(startDate.getTime() + (movieDuration * 60000));
+
+                const endHours = String(endDate.getHours()).padStart(2, '0');
+                const endMinutes = String(endDate.getMinutes()).padStart(2, '0');
+                const endTimeString = `${endHours}:${endMinutes}`;
+
+                toTimeInput.value = endTimeString;
+                console.log('⏰ Calculated End Time:', endTimeString);
+            } else {
+                console.log('❌ Missing data for calculation');
+                toTimeInput.value = '';
+            }
+        }
+
+        function validateInput(input) {
+            const value = input.value.trim();
+            const inputName = input.name;
+
+            // Remove previous states
+            input.classList.remove('error', 'success');
+
+            if (inputName === 'CinemaRoomId' || inputName === 'MovieId') {
+                if (value === '' || value === '0') {
+                    input.classList.add('error');
+                    return false;
+                } else {
+                    input.classList.add('success');
+                    return true;
+                }
+            }
+
+            if (inputName === 'ShowDate') {
+                if (value === '') {
+                    input.classList.add('error');
+                    return false;
+                } else {
+                    const selectedDate = new Date(value);
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+
+                    if (selectedDate >= today) {
+                        input.classList.add('success');
+                        return true;
+                    } else {
+                        input.classList.add('error');
+                        return false;
+                    }
+                }
+            }
+
+            if (inputName === 'FromTime') {
+                if (value === '') {
+                    input.classList.add('error');
+                    return false;
+                } else {
+                    input.classList.add('success');
+                    calculateEndTime();
+                    return true;
+                }
+            }
+
+            return true;
+        }
+        function submitScheduleForm() {
+        const form = document.getElementById('scheduleForm');
+
+        // ✅ ENABLE toTime trước khi submit:
+        const toTimeInput = document.getElementById('ToTime');
+        toTimeInput.disabled = false;
+
+        const formData = new FormData(form);
+
+        // Disable lại sau khi lấy data
+        toTimeInput.disabled = true;
+
+        const fromTime = formData.get('FromTime');
+        const toTime = formData.get('ToTime');
+
+        console.log('🔍 FromTime:', fromTime, 'ToTime:', toTime);
+
+        if (!fromTime || !toTime) {
+            showNotification('Vui lòng chọn đầy đủ thời gian!', 'error');
+            return;
+        }
+
+            // ✅ SỬA FORMAT TIME:
+            const scheduleData = {
+                CinemaRoomId: parseInt(formData.get('CinemaRoomId')),
+                MovieId: parseInt(formData.get('MovieId')),
+                ShowDate: formData.get('ShowDate'),
+                FromTime: fromTime + ':00',  // "06:30" → "06:30:00"
+                ToTime: toTime + ':00'       // "08:45" → "08:45:00"
+            };
+
+            console.log('📋 Final schedule data:', scheduleData);
+
+            // ✅ VALIDATE NULL VALUES:
+            if (!scheduleData.FromTime.includes('null') && !scheduleData.ToTime.includes('null')) {
+                // Submit to server
+                fetch('/Booking/Schedule/CreateModal', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify(scheduleData)
+                })
+                .then(response => response.json())
+                    .then(result => {
+            if (result.success) {
+                console.log('✅ Schedule created successfully:', result);
+
+                // ✅ TẠO SCHEDULE MỚI:
+                const newSchedule = {
+                    MovieName: document.getElementById('MovieId').options[document.getElementById('MovieId').selectedIndex].text.split(' (')[0],
+                    RoomName: document.getElementById('CinemaRoomId').options[document.getElementById('CinemaRoomId').selectedIndex].text,
+                    RoomId: parseInt(document.getElementById('CinemaRoomId').value),
+                    ShowDate: document.getElementById('ShowDate').value,
+                    FromTime: document.getElementById('FromTime').value,
+                    ToTime: document.getElementById('ToTime').value
+                };
+
+                console.log('🆕 Adding new schedule:', newSchedule);
+
+                // ✅ THÊM VÀO ARRAY:
+                    if (typeof window.scheduleData !== 'undefined' && Array.isArray(window.scheduleData)) {
+            window.scheduleData.push(newSchedule);
+            console.log('📅 Updated schedule array length:', window.scheduleData.length);
+        }
+
+                // Show success message
+                const successMsg = document.getElementById('successMessage');
+                if (successMsg) {
+                    successMsg.style.display = 'block';
+                }
+
+                // Reset form
+                form.reset();
+                clearValidationErrors();
+
+                // Close modal after delay
+                setTimeout(() => {
+                    closeScheduleModal();
+
+                    // ✅ REFRESH CALENDAR VỚI DATA MỚI:
+                    if (typeof initCalendar === 'function') {
+                        initCalendar();
+                    }
+
+                    showNotification('Lịch chiếu mới đã được thêm vào calendar!', 'success');
+                }, 2000);
+            } else {
+                        if (result.errors) {
+                            result.errors.forEach(error => showNotification(error, 'error'));
+                        } else {
+                            showNotification('Có lỗi xảy ra!', 'error');
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('❌ Error:', error);
+                    showNotification('Lỗi kết nối!', 'error');
+                });
+            } else {
+                showNotification('Lỗi tính toán thời gian! Vui lòng thử lại.', 'error');
+            }
+        }
+
+
+        // === EVENT LISTENERS ===
+        document.addEventListener('DOMContentLoaded', function() {
+            // Modal open button
+            const openModalBtn = document.getElementById('openScheduleModal');
+            if (openModalBtn) {
+                openModalBtn.addEventListener('click', openScheduleModal);
+            }
+
+            // Close modal when clicking outside
+            const modalOverlay = document.getElementById('scheduleModalOverlay');
+            if (modalOverlay) {
+                modalOverlay.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        closeScheduleModal();
+                    }
+                });
+            }
+
+            // Close modals with ESC key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    if (document.getElementById('customClockModal').classList.contains('active')) {
+                        closeCustomClockPicker();
+                    } else if (document.getElementById('scheduleModalOverlay').classList.contains('active')) {
+                        closeScheduleModal();
+                    }
+                }
+            });
+
+            // Form submission
+            const scheduleForm = document.getElementById('scheduleForm');
+            if (scheduleForm) {
+                scheduleForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    submitScheduleForm();
+                });
+            }
+
+                // Movie selection change
+        const movieSelect = document.getElementById('MovieId');
+        if (movieSelect) {
+            movieSelect.addEventListener('change', function() {
+                console.log('🎬 Movie selection changed');
+                // ✅ CHỈ TÍNH TOÁN KHI CÓ FromTime:
+                if (document.getElementById('FromTime').value) {
+                    calculateEndTime();
+                }
+            });
+        }
+
+            // Input validation
+            const inputs = document.querySelectorAll('#scheduleForm .form-input, #scheduleForm .form-select');
+            inputs.forEach(input => {
+                input.addEventListener('blur', function() {
+                    validateInput(this);
+                });
+
+                input.addEventListener('change', function() {
+                    if (this.classList.contains('error')) {
+                        validateInput(this);
+                    }
+                });
+            });
+
+            console.log('✅ Schedule Modal initialized');
+
+
+
+
+
+
+            console.log('🎬 Enhanced 24/7 Movie Calendar initialized with', scheduleData.length, 'schedules');
+            console.log('📊 Schedule Data:', scheduleData);
+
+            // Debug: Log first few schedules to check format
+            if (scheduleData.length > 0) {
+                console.log('🔍 Sample schedule:', scheduleData[0]);
+                scheduleData.slice(0, 3).forEach((schedule, index) => {
+                    console.log(`Schedule ${index + 1}:`, {
+                        Movie: schedule.MovieName,
+                        Room: schedule.RoomName,
+                        Date: schedule.ShowDate,
+                        Time: schedule.FromTime
+                    });
+                });
+            }
+
+            if (!scheduleData || scheduleData.length === 0) {
+                console.warn('❌ No schedule data available - showing empty calendar');
+                // Don't return, still show empty calendar
+            }
+
+            let currentWeekOffset = 0;
+            let isLoading = false;
+
+            function showLoading() {
+                const weekDisplay = document.getElementById('currentWeekDisplay');
+                if (weekDisplay) {
+                    weekDisplay.innerHTML = '<span class="loading-spinner"></span>';
+                }
+                isLoading = true;
+            }
+
+            function hideLoading() {
+                isLoading = false;
+            }
+
+            function initCalendar() {
+                if (isLoading) return;
+
+                showLoading();
+
+                setTimeout(() => {
+                    const calendarGrid = document.getElementById('movieCalendar');
+                    if (!calendarGrid) {
+                        hideLoading();
+                        return;
+                    }
+
+                    const currentWeek = getCurrentWeek(currentWeekOffset);
+                    updateWeekDisplay(currentWeek);
+                    const timeSlots = generate24HourTimeSlots();
+
+                    calendarGrid.innerHTML = '';
+                    calendarGrid.style.display = 'grid';
+
+                    createEnhancedCalendarHeader(calendarGrid, currentWeek);
+                    createEnhanced24HCalendarBody(calendarGrid, currentWeek, timeSlots, scheduleData);
+
+                    hideLoading();
+
+                    // Enhanced entrance animation
+                    calendarGrid.style.opacity = '0';
+                    calendarGrid.style.transform = 'translateY(30px) scale(0.98)';
+                    requestAnimationFrame(() => {
+                        calendarGrid.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+                        calendarGrid.style.opacity = '1';
+                        calendarGrid.style.transform = 'translateY(0) scale(1)';
+                    });
+                }, 400);
+            }
+
+            function getCurrentWeek(weekOffset = 0) {
+                const today = new Date();
+                today.setDate(today.getDate() + (weekOffset * 7));
+
+                const currentDay = today.getDay();
+                const mondayOffset = currentDay === 0 ? -6 : 1 - currentDay;
+
+                const monday = new Date(today);
+                monday.setDate(today.getDate() + mondayOffset);
+
+                const week = [];
+                for (let i = 0; i < 7; i++) {
+                    const date = new Date(monday);
+                    date.setDate(monday.getDate() + i);
+                    week.push(date);
+                }
+
+                return week;
+            }
+
+            function updateWeekDisplay(weekDates) {
+                const weekDisplay = document.getElementById('currentWeekDisplay');
+                if (weekDisplay) {
+                    const startDate = weekDates[0];
+                    const endDate = weekDates[6];
+
+                    const startStr = `${startDate.getDate()}/${startDate.getMonth() + 1}`;
+                    const endStr = `${endDate.getDate()}/${endDate.getMonth() + 1}/${endDate.getFullYear()}`;
+
+                    const today = new Date();
+                    const isCurrentWeek = weekDates.some(date => isSameDay(date, today));
+
+                    let timeIndicator = '';
+                    if (isCurrentWeek) {
+                        timeIndicator = ' • Tuần hiện tại';
+                    }
+
+                    weekDisplay.textContent = `${startStr} - ${endStr}${timeIndicator}`;
+                }
+            }
+
+            function setupNavigation() {
+                const prevBtn = document.getElementById('prevWeek');
+                const nextBtn = document.getElementById('nextWeek');
+                const todayBtn = document.getElementById('todayBtn');
+
+                if (prevBtn) {
+                    prevBtn.addEventListener('click', function() {
+                        if (isLoading) return;
+                        currentWeekOffset -= 1;
+                        initCalendar();
+                        showNotification('Chuyển đến tuần trước', 'info');
+                    });
+                }
+
+                if (nextBtn) {
+                    nextBtn.addEventListener('click', function() {
+                        if (isLoading) return;
+                        currentWeekOffset += 1;
+                        initCalendar();
+                        showNotification('Chuyển đến tuần sau', 'info');
+                    });
+                }
+
+                if (todayBtn) {
+                    todayBtn.addEventListener('click', function() {
+                        if (isLoading) return;
+                        currentWeekOffset = 0;
+                        initCalendar();
+                        showNotification('Quay về tuần hiện tại', 'success');
+                    });
+                }
+            }
+
+            // Enhanced 24-hour time slot generation
+            function generate24HourTimeSlots() {
+                const slots = [];
+                for (let hour = 0; hour < 24; hour++) {
+                    slots.push(`${hour.toString().padStart(2, '0')}:00`);
+                }
+                return slots;
+            }
+
+            function createEnhancedCalendarHeader(container, weekDates) {
+                const timeHeader = document.createElement('div');
+                timeHeader.className = 'time-header';
+                timeHeader.innerHTML = '<strong>GIỜ</strong>';
+                container.appendChild(timeHeader);
+
+                const dayNames = ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chủ nhật'];
+                const today = new Date();
+
+                weekDates.forEach((date, index) => {
+                    const dayHeader = document.createElement('div');
+                    dayHeader.className = 'day-header';
+
+                    if (isSameDay(date, today)) {
+                        dayHeader.classList.add('today');
+                    }
+
+                    if (index >= 5) {
+                        dayHeader.classList.add('weekend');
+                    }
+
+                    if (date < today && !isSameDay(date, today)) {
+                        dayHeader.classList.add('past');
+                    }
+
+                    if (date > today && !isSameDay(date, today)) {
+                        dayHeader.classList.add('future');
+                    }
+
+                    dayHeader.innerHTML = `
+                        <div class="day-name">${dayNames[index]}</div>
+                        <div class="day-number">${date.getDate()}</div>
+                    `;
+
+                    container.appendChild(dayHeader);
+                });
+            }
+
+            function createEnhanced24HCalendarBody(container, weekDates, timeSlots, scheduleData) {
+                timeSlots.forEach(timeSlot => {
+                    const timeDiv = document.createElement('div');
+                    timeDiv.className = 'time-slot';
+
+                    const hour = parseInt(timeSlot.split(':')[0]);
+
+                    // Add night-time styling for late hours
+                    if (hour >= 22 || hour <= 5) {
+                        timeDiv.classList.add('night-time');
+                    }
+
+                    timeDiv.textContent = timeSlot;
+                    container.appendChild(timeDiv);
+
+                    weekDates.forEach(date => {
+                        const dayColumn = document.createElement('div');
+                        dayColumn.className = 'day-column';
+
+                        const today = new Date();
+                        if (date < today && !isSameDay(date, today)) {
+                            dayColumn.classList.add('past-day');
+                        } else if (date > today && !isSameDay(date, today)) {
+                            dayColumn.classList.add('future-day');
+                        }
+
+                        // Add night styling for columns
+                        if (hour >= 22 || hour <= 5) {
+                            dayColumn.classList.add('night-column');
+                        }
+
+                        // Get all movies for this precise time slot (including minutes)
+                        const movies = getEnhancedMoviesForSlot(scheduleData, date, timeSlot);
+
+                        if (movies.length > 0) {
+                            const moviesContainer = document.createElement('div');
+                            moviesContainer.className = 'movies-container';
+
+                            if (movies.length > 1) {
+                                moviesContainer.classList.add('has-multiple');
+
+                                // Add counter for multiple movies
+                                const counter = document.createElement('div');
+                                counter.className = 'movie-counter';
+                                counter.textContent = movies.length;
+                                moviesContainer.appendChild(counter);
+                            }
+
+                            movies.forEach((movie, index) => {
+                                const movieBlock = createEnhancedMovieBlock(movie, movies.length > 1, index);
+                                moviesContainer.appendChild(movieBlock);
+                            });
+
+                            dayColumn.appendChild(moviesContainer);
+                        }
+
+                        container.appendChild(dayColumn);
+                    });
+                });
+            }
+
+            // Enhanced movie filtering for precise time handling
+            function getEnhancedMoviesForSlot(scheduleData, date, timeSlot) {
+                const movies = scheduleData.filter(schedule => {
+                    let scheduleDate;
+                    if (typeof schedule.ShowDate === 'string') {
+                        if (schedule.ShowDate.includes('/')) {
+                            const parts = schedule.ShowDate.split('/');
+                            scheduleDate = new Date(parts[2], parts[1] - 1, parts[0]);
+                        } else {
+                            scheduleDate = new Date(schedule.ShowDate);
+                        }
+                    } else {
+                        scheduleDate = new Date(schedule.ShowDate);
+                    }
+
+                    let scheduleTime = schedule.FromTime;
+                    if (typeof scheduleTime === 'string') {
+                        if (scheduleTime.includes(':')) {
+                            scheduleTime = scheduleTime.substring(0, 5);
+                        }
+                    }
+
+                    const dateMatch = isSameDay(scheduleDate, date);
+                    let timeMatch = false;
+
+                    if (scheduleTime && timeSlot && dateMatch) {
+                        const slotHour = parseInt(timeSlot.split(':')[0]);
+                        const movieHour = parseInt(scheduleTime.split(':')[0]);
+
+                        // Enhanced time matching - exact hour match
+                        if (movieHour === slotHour) {
+                            timeMatch = true;
+                        }
+                    }
+
+                    return dateMatch && timeMatch;
+                });
+
+                // Remove duplicates and sort by time
+                const uniqueMovies = movies.filter((movie, index, self) =>
+                    index === self.findIndex(m =>
+                        m.MovieName === movie.MovieName &&
+                        m.RoomName === movie.RoomName &&
+                        m.FromTime === movie.FromTime &&
+                        m.ShowDate === movie.ShowDate
+                    )
+                );
+
+                // Sort by time (including minutes)
+                uniqueMovies.sort((a, b) => {
+                    const timeA = a.FromTime || '00:00';
+                    const timeB = b.FromTime || '00:00';
+                    return timeA.localeCompare(timeB);
+                });
+
+                return uniqueMovies;
+            }
+
+            function createEnhancedMovieBlock(movie, isStacked, index) {
+                const block = document.createElement('div');
+                block.className = `movie-block ${getEnhancedGenreClass(movie.MovieName)}`;
+
+                if (isStacked) {
+                    block.classList.add('stacked');
+                }
+
+                const fromTime = formatEnhancedTime(movie.FromTime);
+                const toTime = formatEnhancedTime(movie.ToTime);
+
+                // Check if movie has non-zero minutes
+                const hasMinutes = movie.FromTime && movie.FromTime.includes(':') &&
+                                  !movie.FromTime.endsWith(':00');
+
+                block.innerHTML = `
+                    <div class="movie-title">${movie.MovieName}</div>
+                    <div class="movie-details">
+                        <span>🕐</span>
+                        <span>${fromTime} - ${toTime}</span>
+                        ${hasMinutes ? '<span class="time-indicator minute-indicator">📍</span>' : ''}
+                    </div>
+                    <div class="movie-room">🏛️ ${movie.RoomName}</div>
+                `;
+
+                // Enhanced click interaction with ripple effect
+                block.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    // Create enhanced ripple effect
+                    createEnhancedRipple(e, this);
+                    showEnhancedMovieDetails(movie);
+                });
+
+                // Enhanced hover effects
+                block.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-4px) scale(1.04)';
+                    this.style.zIndex = '20';
+                });
+
+                block.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0) scale(1)';
+                    this.style.zIndex = '10';
+                });
+
+                return block;
+            }
+
+            function createEnhancedRipple(event, element) {
+                const rect = element.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = event.clientX - rect.left - size / 2;
+                const y = event.clientY - rect.top - size / 2;
+
+                const ripple = document.createElement('div');
+                ripple.style.cssText = `
+                    position: absolute;
+                    width: ${size}px;
+                    height: ${size}px;
+                    left: ${x}px;
+                    top: ${y}px;
+                    background: radial-gradient(circle, rgba(255, 255, 255, 0.6) 0%, transparent 70%);
+                    border-radius: 50%;
+                    transform: scale(0);
+                    animation: ripple 0.8s ease-out;
+                    pointer-events: none;
+                    z-index: 1000;
+                `;
+
+                element.style.position = 'relative';
+                element.style.overflow = 'hidden';
+                element.appendChild(ripple);
+
+                setTimeout(() => {
+                    if (ripple.parentNode) {
+                        ripple.parentNode.removeChild(ripple);
+                    }
+                }, 800);
+            }
+
+            function getEnhancedGenreClass(movieName) {
+                const name = movieName.toLowerCase();
+                if (name.includes('action') || name.includes('fast') || name.includes('mission') || name.includes('hành động') || name.includes('chiến')) return 'movie-action';
+                if (name.includes('comedy') || name.includes('funny') || name.includes('hài') || name.includes('cười')) return 'movie-comedy';
+                if (name.includes('horror') || name.includes('scary') || name.includes('kinh dị') || name.includes('ma')) return 'movie-horror';
+                if (name.includes('romance') || name.includes('love') || name.includes('tình cảm') || name.includes('yêu')) return 'movie-romance';
+                if (name.includes('sci-fi') || name.includes('star') || name.includes('space') || name.includes('khoa học') || name.includes('tương lai')) return 'movie-sci-fi';
+                if (name.includes('thriller') || name.includes('dark') || name.includes('tâm lý') || name.includes('bí ẩn')) return 'movie-thriller';
+                return 'movie-drama';
+            }
+
+            function formatEnhancedTime(timeStr) {
+                if (typeof timeStr === 'string') {
+                    // Handle both HH:mm and HH:mm:ss formats
+                    if (timeStr.includes(':')) {
+                        const parts = timeStr.split(':');
+                        return `${parts[0]}:${parts[1]}`;
+                    }
+                    return timeStr.substring(0, 5);
+                }
+                return timeStr;
+            }
+
+            function isSameDay(date1, date2) {
+                return date1.getFullYear() === date2.getFullYear() &&
+                       date1.getMonth() === date2.getMonth() &&
+                       date1.getDate() === date2.getDate();
+            }
+
+            function showEnhancedMovieDetails(movie) {
+                const date = new Date(movie.ShowDate).toLocaleDateString('vi-VN');
+                const fromTime = formatEnhancedTime(movie.FromTime);
+                const toTime = formatEnhancedTime(movie.ToTime);
+
+                const modal = document.createElement('div');
+                modal.className = 'modal-overlay';
+
+                const modalContent = document.createElement('div');
+                modalContent.className = 'modal-content';
+
+                modalContent.innerHTML = `
+                    <span class="modal-icon">🎬</span>
+                    <h3 class="modal-title">${movie.MovieName}</h3>
+                    <div class="modal-info">
+                        <span>🏛️</span>
+                        <span><strong>Phòng:</strong> ${movie.RoomName}</span>
+                    </div>
+                    <div class="modal-info">
+                        <span>📅</span>
+                        <span><strong>Ngày:</strong> ${date}</span>
+                    </div>
+                    <div class="modal-info">
+                        <span>🕐</span>
+                        <span><strong>Giờ chiếu:</strong> ${fromTime} - ${toTime}</span>
+                    </div>
+                    <div class="modal-button-container">
+                        <button class="modal-close-btn modal-view-room-btn" onclick="viewRoom(${movie.RoomId || 0})">
+                            <span>👁️</span>
+                            <span>Xem phòng chiếu</span>
+                        </button>
+                        <button class="modal-close-btn" onclick="closeModal(this)">
+                            <span>✖️</span>
+                            <span>Đóng</span>
+                        </button>
+                    </div>
+                `;
+
+                modal.appendChild(modalContent);
+                document.body.appendChild(modal);
+
+                // Enhanced modal animation
+                requestAnimationFrame(() => {
+                    modal.style.opacity = '1';
+                    modalContent.style.transform = 'translateY(0) scale(1)';
+                });
+
+                // Enhanced close handlers
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        closeModal(modal);
+                    }
+                });
+
+                const handleEscape = function(e) {
+                    if (e.key === 'Escape') {
+                        closeModal(modal);
+                        document.removeEventListener('keydown', handleEscape);
+                    }
+                };
+                document.addEventListener('keydown', handleEscape);
+            }
+
+            function closeModal(element) {
+                const modal = element.closest ? element.closest('.modal-overlay') : element;
+                if (modal) {
+                    modal.style.opacity = '0';
+                    const modalContent = modal.querySelector('.modal-content');
+                    if (modalContent) {
+                        modalContent.style.transform = 'translateY(30px) scale(0.95)';
+                    }
+                    setTimeout(() => {
+                        modal.remove();
+                    }, 400);
+                }
+            }
+
+            function viewRoom(roomId) {
+                const currentModal = document.querySelector('.modal-overlay');
+                if (currentModal) {
+                    closeModal(currentModal);
+                }
+
+                if (!roomId || roomId === 0) {
+                    showNotification('Không tìm thấy thông tin phòng chiếu!', 'error');
+                    return;
+                }
+
+                showNotification('Đang chuyển đến phòng chiếu...', 'info');
+
+                setTimeout(() => {
+                    window.location.href = `/Booking/CinemaRoom/ShowSeats?roomId=${roomId}`;
+                }, 1200);
+            }
+
+
+
+            // Make functions global
+            window.viewRoom = viewRoom;
+            window.closeModal = closeModal;
+            window.initCalendar = initCalendar; // THÊM DÒNG NÀY
+
+            // Initialize everything
+            setupNavigation();
+            initCalendar();
+
+            // Enhanced keyboard navigation
+            document.addEventListener('keydown', function(e) {
+                if (isLoading) return;
+
+                switch(e.key) {
+                    case 'ArrowLeft':
+                        if (!e.ctrlKey) break;
+                        e.preventDefault();
+                        currentWeekOffset -= 1;
+                        initCalendar();
+                        break;
+                    case 'ArrowRight':
+                        if (!e.ctrlKey) break;
+                        e.preventDefault();
+                        currentWeekOffset += 1;
+                        initCalendar();
+                        break;
+                    case 'Home':
+                        if (!e.ctrlKey) break;
+                        e.preventDefault();
+                        currentWeekOffset = 0;
+                        initCalendar();
+                        break;
+                }
+            });
+
+            console.log('✅ Enhanced 24/7 Movie Calendar Ready with Advanced Features');
+        });
+
+</script>

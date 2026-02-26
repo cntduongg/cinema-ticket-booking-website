@@ -1,0 +1,623 @@
+@model MovieTheater.Web.Areas.MovieManagement.Models.MovieViewModel
+@{
+    ViewData["SidebarActive"] = "MovieManagement";
+    ViewData["Title"] = "Chỉnh sửa phim";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --primary-light: #5dade2;
+            --primary-dark: #2c81ba;
+            --danger-color: #e74c3c;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --gray-light: #f3f4f6;
+            --gray-dark: #6b7280;
+            --text-color: #2c3e50;
+            --shadow: 0 4px 12px rgba(52, 152, 219, 0.2);
+            --shadow-hover: 0 6px 16px rgba(52, 152, 219, 0.3);
+            --card-border: 1px solid #e5e7eb;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f9fafb;
+            color: var(--text-color);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .admin-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            flex: 1;
+            margin-left: 250px;
+            padding: 30px;
+            background-color: #f9fafb;
+        }
+
+        .page-header {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+            border: var(--card-border);
+        }
+
+        .page-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+            .page-title h1 {
+                font-size: 28px;
+                color: var(--primary-dark);
+            }
+
+            .page-title p {
+                color: var(--gray-dark);
+                margin-top: 8px;
+            }
+
+            .page-title i {
+                font-size: 32px;
+                color: var(--primary-color);
+            }
+
+        /* Form Container */
+        .form-container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+            border: var(--card-border);
+        }
+
+        .form-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .form-icon {
+            font-size: 48px;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        .form-title {
+            font-size: 28px;
+            color: var(--primary-dark);
+            margin-bottom: 10px;
+        }
+
+        .form-subtitle {
+            color: var(--gray-dark);
+            font-size: 16px;
+        }
+
+        /* Form Sections */
+        .form-section {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+            .section-header i {
+                font-size: 24px;
+                color: var(--primary-color);
+            }
+
+            .section-header h3 {
+                font-size: 20px;
+                color: var(--primary-dark);
+            }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+            .form-group.span-2 {
+                grid-column: span 2;
+            }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--text-color);
+            font-size: 16px;
+        }
+
+            .form-label i {
+                color: var(--primary-color);
+                margin-right: 8px;
+                width: 20px;
+            }
+
+            .form-label.required:after {
+                content: " *";
+                color: var(--danger-color);
+            }
+
+        .input-wrapper, .textarea-wrapper, .select-wrapper {
+            position: relative;
+        }
+
+        .form-input, .form-textarea, .form-select {
+            width: 100%;
+            padding: 14px 20px 14px 45px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .form-select {
+            appearance: none;
+        }
+
+            .form-input:focus, .form-textarea:focus, .form-select:focus {
+                outline: none;
+                border-color: var(--primary-light);
+                box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+            }
+
+        .input-icon, .textarea-icon, .select-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray-dark);
+        }
+
+        .textarea-icon {
+            top: 20px;
+            transform: none;
+        }
+
+        .select-icon {
+            pointer-events: none;
+            right: 15px;
+            left: auto;
+        }
+
+        .error-message {
+            display: block;
+            margin-top: 8px;
+            color: var(--danger-color);
+            font-size: 14px;
+        }
+
+        /* Form Actions */
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            justify-content: center;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 14px 30px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 16px;
+            border: none;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+            .btn-primary:hover {
+                background: var(--primary-dark);
+                transform: translateY(-2px);
+                box-shadow: var(--shadow-hover);
+            }
+
+        .btn-secondary {
+            background: var(--gray-light);
+            color: var(--text-color);
+        }
+
+            .btn-secondary:hover {
+                background: #e5e7eb;
+                transform: translateY(-2px);
+            }
+
+        /* Alert styles */
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+
+            .alert:before {
+                content: "";
+                position: absolute;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                width: 5px;
+            }
+
+        .alert-success {
+            background-color: #eafaf1;
+            border: 1px solid #a9dfbf;
+            color: #27ae60;
+        }
+
+            .alert-success:before {
+                background-color: var(--success-color);
+            }
+
+        .alert-error {
+            background-color: #fdecea;
+            border: 1px solid #f5b7b1;
+            color: #c0392b;
+        }
+
+            .alert-error:before {
+                background-color: var(--danger-color);
+            }
+
+        /* Focus state for inputs */
+        .input-wrapper.focused, .textarea-wrapper.focused, .select-wrapper.focused {
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        /* Validation states */
+        .input-validation-error {
+            border-color: var(--danger-color) !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Success Alert -->
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i>
+                    <div>@TempData["Success"]</div>
+                </div>
+            }
+
+            <!-- Error Alert -->
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <div>@TempData["Error"]</div>
+                </div>
+            }
+
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="page-title">
+                    <i class="fas fa-film"></i>
+                    <div>
+                        <h1>Chỉnh sửa thông tin phim</h1>
+                        <p>Cập nhật thông tin chi tiết cho bộ phim</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Form -->
+            <div class="form-container">
+                <form asp-action="Edit" method="post" class="movie-form">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="Id" />
+
+                    <!-- Movie Poster Section -->
+                    <div class="form-section">
+                        <div class="section-header">
+                            <i class="fas fa-image"></i>
+                            <h3>Hình ảnh & Poster</h3>
+                        </div>
+                        <div class="form-group full-width">
+                            <label asp-for="ImagePath" class="form-label">
+                                <i class="fas fa-link"></i>
+                                Đường dẫn ảnh poster
+                            </label>
+                            <div class="input-wrapper">
+                                <input asp-for="ImagePath" class="form-input" placeholder="Nhập URL hình ảnh poster phim" />
+                                <div class="input-icon">
+                                    <i class="fas fa-external-link-alt"></i>
+                                </div>
+                            </div>
+                            <span asp-validation-for="ImagePath" class="error-message"></span>
+                        </div>
+                    </div>
+
+                    <!-- Basic Information -->
+                    <div class="form-section">
+                        <div class="section-header">
+                            <i class="fas fa-info-circle"></i>
+                            <h3>Thông tin cơ bản</h3>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group span-2">
+                                <label asp-for="Name" class="form-label required">
+                                    <i class="fas fa-movie"></i>
+                                    Tên phim
+                                </label>
+                                <div class="input-wrapper">
+                                    <input asp-for="Name" class="form-input" placeholder="Nhập tên phim" />
+                                    <div class="input-icon">
+                                        <i class="fas fa-film"></i>
+                                    </div>
+                                </div>
+                                <span asp-validation-for="Name" class="error-message"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="ReleaseDate" class="form-label">
+                                    <i class="fas fa-calendar-plus"></i>
+                                    Ngày công chiếu
+                                </label>
+                                <div class="input-wrapper">
+                                    <input asp-for="ReleaseDate" class="form-input" type="date" />
+                                    <div class="input-icon">
+                                        <i class="fas fa-calendar"></i>
+                                    </div>
+                                </div>
+                                <span asp-validation-for="ReleaseDate" class="error-message"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="RunningTime" class="form-label">
+                                    <i class="fas fa-clock"></i>
+                                    Thời lượng (phút)
+                                </label>
+                                <div class="input-wrapper">
+                                    <input asp-for="RunningTime" class="form-input" type="number" min="0" placeholder="120" />
+                                    <div class="input-icon">
+                                        <i class="fas fa-stopwatch"></i>
+                                    </div>
+                                </div>
+                                <span asp-validation-for="RunningTime" class="error-message"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="Type" class="form-label">
+                                    <i class="fas fa-tags"></i>
+                                    Thể loại
+                                </label>
+                                <div class="input-wrapper">
+                                    <input asp-for="Type" class="form-input" placeholder="Hành động, Phiêu lưu, Khoa học viễn tưởng" />
+                                    <div class="input-icon">
+                                        <i class="fas fa-layer-group"></i>
+                                    </div>
+                                </div>
+                                <span asp-validation-for="Type" class="error-message"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="Version" class="form-label">
+                                    <i class="fas fa-cube"></i>
+                                    Phiên bản
+                                </label>
+                                <div class="input-wrapper">
+                                    <input asp-for="Version" class="form-input" placeholder="2D, 3D, IMAX" />
+                                    <div class="input-icon">
+                                        <i class="fas fa-cubes"></i>
+                                    </div>
+                                </div>
+                                <span asp-validation-for="Version" class="error-message"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="Status" class="form-label">
+                                    <i class="fas fa-toggle-on"></i>
+                                    Trạng thái
+                                </label>
+                                <div class="select-wrapper">
+                                    <select asp-for="Status" class="form-select">
+                                        <option value="true">🟢 Đang chiếu</option>
+                                        <option value="false">🔴 Chưa chiếu</option>
+                                    </select>
+                                    <div class="select-icon">
+                                        <i class="fas fa-chevron-down"></i>
+                                    </div>
+                                </div>
+                                <span asp-validation-for="Status" class="error-message"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cast & Crew -->
+                    <div class="form-section">
+                        <div class="section-header">
+                            <i class="fas fa-users"></i>
+                            <h3>Diễn viên & Đoàn làm phim</h3>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label asp-for="Director" class="form-label">
+                                    <i class="fas fa-video"></i>
+                                    Đạo diễn
+                                </label>
+                                <div class="input-wrapper">
+                                    <input asp-for="Director" class="form-input" placeholder="Tên đạo diễn" />
+                                    <div class="input-icon">
+                                        <i class="fas fa-user-tie"></i>
+                                    </div>
+                                </div>
+                                <span asp-validation-for="Director" class="error-message"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="Actors" class="form-label">
+                                    <i class="fas fa-user-friends"></i>
+                                    Diễn viên chính
+                                </label>
+                                <div class="input-wrapper">
+                                    <input asp-for="Actors" class="form-input" placeholder="Tên các diễn viên, cách nhau bằng dấu phẩy" />
+                                    <div class="input-icon">
+                                        <i class="fas fa-masks-theater"></i>
+                                    </div>
+                                </div>
+                                <span asp-validation-for="Actors" class="error-message"></span>
+                            </div>
+
+                            <div class="form-group span-2">
+                                <label asp-for="ProductionCompany" class="form-label">
+                                    <i class="fas fa-building"></i>
+                                    Hãng sản xuất
+                                </label>
+                                <div class="input-wrapper">
+                                    <input asp-for="ProductionCompany" class="form-input" placeholder="Tên hãng sản xuất phim" />
+                                    <div class="input-icon">
+                                        <i class="fas fa-industry"></i>
+                                    </div>
+                                </div>
+                                <span asp-validation-for="ProductionCompany" class="error-message"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Content & Media -->
+                    <div class="form-section">
+                        <div class="section-header">
+                            <i class="fas fa-file-alt"></i>
+                            <h3>Nội dung & Media</h3>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group span-2">
+                                <label asp-for="Content" class="form-label">
+                                    <i class="fas fa-align-left"></i>
+                                    Nội dung phim
+                                </label>
+                                <div class="textarea-wrapper">
+                                    <textarea asp-for="Content" class="form-textarea" rows="4" placeholder="Nhập nội dung tóm tắt về bộ phim..."></textarea>
+                                    <div class="textarea-icon">
+                                        <i class="fas fa-edit"></i>
+                                    </div>
+                                </div>
+                                <span asp-validation-for="Content" class="error-message"></span>
+                            </div>
+
+                            <div class="form-group span-2">
+                                <label asp-for="Trailer" class="form-label">
+                                    <i class="fas fa-play-circle"></i>
+                                    Đường dẫn Trailer
+                                </label>
+                                <div class="input-wrapper">
+                                    <input asp-for="Trailer" class="form-input" placeholder="https://www.youtube.com/watch?v=..." />
+                                    <div class="input-icon">
+                                        <i class="fab fa-youtube"></i>
+                                    </div>
+                                </div>
+                                <span asp-validation-for="Trailer" class="error-message"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i>
+                            Lưu thay đổi
+                        </button>
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i>
+                            Quay lại danh sách
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Form validation enhancements
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('.movie-form');
+            const inputs = form.querySelectorAll('.form-input, .form-textarea, .form-select');
+
+            inputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    this.closest('.input-wrapper, .textarea-wrapper, .select-wrapper').classList.add('focused');
+                });
+
+                input.addEventListener('blur', function() {
+                    this.closest('.input-wrapper, .textarea-wrapper, .select-wrapper').classList.remove('focused');
+
+                    if (this.value.trim() !== '') {
+                        this.closest('.input-wrapper, .textarea-wrapper, .select-wrapper').classList.add('has-value');
+                    } else {
+                        this.closest('.input-wrapper, .textarea-wrapper, .select-wrapper').classList.remove('has-value');
+                    }
+                });
+
+                // Check initial values
+                if (input.value.trim() !== '') {
+                    input.closest('.input-wrapper, .textarea-wrapper, .select-wrapper').classList.add('has-value');
+                }
+            });
+        });
+    </script>
+
+    @section Scripts {
+        @{
+            await Html.RenderPartialAsync("_ValidationScriptsPartial");
+        }
+    }
+</body>
+</html>

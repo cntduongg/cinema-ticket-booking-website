@@ -1,0 +1,608 @@
+﻿@model List<MovieTheater.Web.Areas.Booking.Models.ScheduleViewModel>
+
+@{
+    ViewData["SidebarActive"] = "ScheduleManagement";
+    ViewData["Title"] = "Quản lý lịch chiếu";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<style>
+    .admin-layout {
+        display: flex;
+        min-height: 100vh;
+    }
+
+    .sidebar-3d {
+        height: 100vh;
+        flex-shrink: 0;
+        background: #2c3e50; /* Dark sidebar background */
+    }
+
+    .main-content {
+        flex: 1;
+        overflow-x: auto;
+        padding: 20px;
+        background-color: #f5f7f9;
+    }
+
+    .management-container {
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        padding: 25px;
+        margin-bottom: 30px;
+    }
+
+    .page-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+
+    .header-icon {
+        background: #3498db;
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+        .header-icon i {
+            font-size: 28px;
+            color: white;
+        }
+
+    .header-text h1 {
+        font-size: 28px;
+        font-weight: 700;
+        margin: 0;
+        color: #2c3e50;
+    }
+
+    .header-text p {
+        color: #7f8c8d;
+        margin: 5px 0 0;
+    }
+
+    .btn-primary {
+        background: #3498db;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 20px;
+        font-weight: 600;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+    .filter-section {
+        background: #f8fafc;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 25px;
+        border: 1px solid #eaeff5;
+    }
+
+    .filter-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 15px;
+    }
+
+    .input-wrapper, .select-wrapper {
+        position: relative;
+    }
+
+    .search-input, .filter-select {
+        width: 100%;
+        padding: 12px 15px 12px 45px;
+        border-radius: 8px;
+        border: 1px solid #e0e6ed;
+        background-color: #fff;
+        font-size: 15px;
+        transition: all 0.3s;
+    }
+
+        .search-input:focus, .filter-select:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+            outline: none;
+        }
+
+    .input-icon, .select-icon {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #7f8c8d;
+    }
+
+    .action-group {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        justify-content: flex-end;
+    }
+
+    .btn-search {
+        background-color: #3498db;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 12px 20px;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+
+    .btn-clear {
+        background-color: #95a5a6;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 12px 20px;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+
+        .btn-search:hover, .btn-clear:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+    .table-container {
+        overflow-x: auto;
+        margin-bottom: 25px;
+    }
+
+    .schedule-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        background: #fff;
+    }
+
+        .schedule-table thead {
+            background: #3498db;
+            color: white;
+        }
+
+        .schedule-table th {
+            padding: 16px 20px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .schedule-table tbody tr {
+            transition: background-color 0.2s;
+        }
+
+            .schedule-table tbody tr:nth-child(even) {
+                background-color: #f8fafc;
+            }
+
+            .schedule-table tbody tr:hover {
+                background-color: #eef5ff;
+            }
+
+        .schedule-table td {
+            padding: 14px 20px;
+            border-bottom: 1px solid #eaeff5;
+            color: #2c3e50;
+            vertical-align: middle;
+        }
+
+    .badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .badge-success {
+        background-color: rgba(46, 204, 113, 0.15);
+        color: #27ae60;
+    }
+
+    .badge-secondary {
+        background-color: rgba(149, 165, 166, 0.15);
+        color: #7f8c8d;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+    }
+
+    .btn-action {
+        padding: 8px 15px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 14px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        transition: all 0.2s;
+        border: none;
+    }
+
+    .btn-edit {
+        background-color: rgba(52, 152, 219, 0.15);
+        color: #2980b9;
+    }
+
+    .btn-delete {
+        background-color: rgba(231, 76, 60, 0.15);
+        color: #c0392b;
+    }
+
+    .btn-edit:hover {
+        background-color: #3498db;
+        color: white;
+    }
+
+    .btn-delete:hover {
+        background-color: #e74c3c;
+        color: white;
+    }
+
+    .no-schedule {
+        text-align: center;
+        padding: 40px;
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+        .no-schedule i {
+            font-size: 48px;
+            color: #bdc3c7;
+            margin-bottom: 20px;
+        }
+
+        .no-schedule h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .no-schedule p {
+            color: #7f8c8d;
+            margin-bottom: 20px;
+        }
+
+    .alert {
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .alert-success {
+        background-color: rgba(46, 204, 113, 0.15);
+        border-left: 4px solid #27ae60;
+    }
+
+    .alert-danger {
+        background-color: rgba(231, 76, 60, 0.15);
+        border-left: 4px solid #c0392b;
+    }
+
+    .alert-warning {
+        background-color: rgba(241, 196, 15, 0.15);
+        border-left: 4px solid #f39c12;
+    }
+
+    .alert-icon {
+        font-size: 24px;
+    }
+
+    .alert-success .alert-icon {
+        color: #27ae60;
+    }
+
+    .alert-danger .alert-icon {
+        color: #c0392b;
+    }
+
+    .alert-warning .alert-icon {
+        color: #f39c12;
+    }
+
+    .alert-content {
+        flex: 1;
+    }
+
+    .alert-title {
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+
+    .alert-close {
+        background: transparent;
+        border: none;
+        color: #7f8c8d;
+        cursor: pointer;
+    }
+
+    /* Responsive Adjustments */
+    @@media (max-width: 768px) {
+        .filter-grid
+
+    {
+        grid-template-columns: 1fr;
+    }
+
+    .action-group {
+        justify-content: flex-start;
+    }
+
+    }
+</style>
+
+<div class="admin-layout">
+   
+    <div class="main-content">
+        <div class="management-container">
+            <!-- Header Section -->
+            <div class="page-header">
+                <div class="header-icon">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <div class="header-text">
+                    <h1>Quản lý lịch chiếu</h1>
+                    <p>Hệ thống quản lý lịch chiếu phim tại các phòng chiếu</p>
+                </div>
+                <a href="/Booking/Schedule/Create" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Tạo lịch chiếu mới
+                </a>
+            </div>
+
+            <!-- Alerts -->
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success">
+                    <div class="alert-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="alert-content">
+                        <div class="alert-title">Thành công!</div>
+                        <div>@TempData["SuccessMessage"]</div>
+                    </div>
+                    <button class="alert-close" onclick="this.parentElement.remove()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            }
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger">
+                    <div class="alert-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="alert-content">
+                        <div class="alert-title">Lỗi!</div>
+                        <div>@TempData["ErrorMessage"]</div>
+                    </div>
+                    <button class="alert-close" onclick="this.parentElement.remove()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            }
+
+            <!-- Search and Filter Section -->
+            <div class="filter-section">
+                <form method="get" asp-action="AdminIndexWithFilter" class="filter-form">
+                    <div class="filter-grid">
+                        <div class="search-group">
+                            <div class="input-wrapper">
+                                <input type="text" class="search-input" name="movieKeyword"
+                                       placeholder="Tìm kiếm theo tên phim..."
+                                       value="@ViewBag.MovieKeyword" />
+                                <div class="input-icon">
+                                    <i class="fas fa-search"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="filter-group">
+                            <div class="select-wrapper">
+                                <select class="filter-select" name="cinemaRoomId">
+                                    <option value="">Tất cả phòng chiếu</option>
+                                    @foreach (var room in ViewBag.CinemaRooms)
+                                    {
+                                        @if (ViewBag.SelectedRoomId == room.Id)
+                                        {
+                                            <option value="@room.Id" selected>@room.CinemaRoomName</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@room.Id">@room.CinemaRoomName</option>
+                                        }
+                                    }
+                                </select>
+                                <div class="select-icon">
+                                    <i class="fas fa-chevron-down"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="filter-group">
+                            <div class="input-wrapper">
+                                <input type="date" class="search-input" name="showDate"
+                                       value="@ViewBag.SelectedShowDate" />
+                                <div class="input-icon">
+                                    <i class="fas fa-calendar"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="filter-group">
+                            <div class="input-wrapper">
+                                <input type="time" class="search-input" name="startTimeFrom"
+                                       value="@ViewBag.SelectedStartTimeFrom" />
+                                <div class="input-icon">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="filter-group">
+                            <div class="input-wrapper">
+                                <input type="time" class="search-input" name="startTimeTo"
+                                       value="@ViewBag.SelectedStartTimeTo" />
+                                <div class="input-icon">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="action-group">
+                            <button type="submit" class="btn btn-search">
+                                <i class="fas fa-search"></i>
+                                Tìm kiếm
+                            </button>
+                            <a href="/Booking/Schedule/AdminIndexWithFilter" class="btn btn-clear">
+                                <i class="fas fa-times"></i>
+                                Xóa bộ lọc
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Schedule Table -->
+            <div class="table-container">
+                @if (Model == null || !Model.Any())
+                {
+                    <div class="no-schedule">
+                        <i class="fas fa-calendar-times"></i>
+                        <h3>Không có lịch chiếu nào</h3>
+                        <p>Thử thay đổi bộ lọc hoặc tạo lịch chiếu mới</p>
+                        <a href="/Booking/Schedule/Create" class="btn btn-primary">
+                            <i class="fas fa-plus"></i>
+                            Tạo lịch chiếu mới
+                        </a>
+                    </div>
+                }
+                else
+                {
+                    <table class="schedule-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Phim</th>
+                                <th>Phòng chiếu</th>
+                                <th>Ngày chiếu</th>
+                                <th>Bắt đầu</th>
+                                <th>Kết thúc</th>
+                                <th>Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var schedule in Model)
+                            {
+                                <tr>
+                                    <td>#@schedule.Id</td>
+                                    <td>@schedule.MovieName</td>
+                                    <td>@schedule.RoomName</td>
+                                    <td>@schedule.ShowDate.ToString("dd/MM/yyyy")</td>
+                                    <td>
+                                        <span class="badge badge-success">
+                                            @schedule.FromTime.ToString("HH:mm")
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-secondary">
+                                            @schedule.ToTime.ToString("HH:mm")
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <a href="/Booking/Schedule/Edit/@schedule.Id"
+                                               class="btn-action btn-edit">
+                                                <i class="fas fa-edit"></i>
+                                                Sửa
+                                            </a>
+                                            <a href="/Booking/Schedule/Delete/@schedule.Id"
+                                               class="btn-action btn-delete"
+                                               onclick="return confirmDelete('@schedule.MovieName', '@schedule.ShowDate.ToString("dd/MM/yyyy")', '@schedule.FromTime.ToString("HH:mm")');">
+                                                <i class="fas fa-trash"></i>
+                                                Xóa
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function confirmDelete(movieName, showDate, startTime) {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: 'Xác nhận xóa lịch chiếu',
+                    html: `Bạn có chắc chắn muốn xóa lịch chiếu?<br><br>
+                           <strong>Phim:</strong> ${movieName}<br>
+                           <strong>Ngày:</strong> ${showDate}<br>
+                           <strong>Giờ:</strong> ${startTime}`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#e74c3c',
+                    cancelButtonColor: '#95a5a6',
+                    confirmButtonText: 'Xóa',
+                    cancelButtonText: 'Hủy bỏ'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        return true;
+                    }
+                    return false;
+                });
+                return false;
+            } else {
+                return confirm(`Bạn có chắc chắn muốn xóa lịch chiếu của phim "${movieName}" vào ngày ${showDate} lúc ${startTime} không?`);
+            }
+        }
+
+        // Auto-focus first input when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            const firstInput = document.querySelector('input[name="movieKeyword"]');
+            if (firstInput && !firstInput.value) {
+                firstInput.focus();
+            }
+        });
+
+        // Add loading state to search button
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const submitBtn = this.querySelector('button[type="submit"]');
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang tìm...';
+            submitBtn.disabled = true;
+        });
+    </script>
+}

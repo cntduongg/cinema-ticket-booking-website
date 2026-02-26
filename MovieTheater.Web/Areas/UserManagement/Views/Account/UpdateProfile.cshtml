@@ -1,0 +1,801 @@
+@model MovieTheater.Web.Areas.UserManagement.Models.UpdateProfileViewModel
+@using MovieTheater.Web.Areas.UserManagement.Models
+@{
+    ViewData["Title"] = "Cập nhật thông tin cá nhân";
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"] - MovieTheater</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Color Variables - Matching Homepage Theme */
+        :root {
+            --primary-blue: #E8F4FD;
+            --secondary-blue: #D1E9F6;
+            --accent-blue: #B8DDFF;
+            --deep-blue: #7FB8D3;
+            --dark-blue: #4A90A4;
+            --text-dark: #1A365D;
+            --text-light: #4A5568;
+            --white: #FFFFFF;
+            --gray-50: #F7FAFC;
+            --gray-100: #EDF2F7;
+            --gray-200: #E2E8F0;
+            --red-accent: #FF6B7A;
+            --green-accent: #48BB78;
+            --gradient-primary: linear-gradient(135deg, var(--primary-blue) 0%, var(--accent-blue) 50%, var(--deep-blue) 100%);
+            --gradient-secondary: linear-gradient(135deg, var(--secondary-blue) 0%, var(--primary-blue) 100%);
+            --gradient-header: linear-gradient(135deg, rgba(26, 54, 93, 0.95) 0%, rgba(74, 144, 164, 0.9) 100%);
+            --shadow-soft: 0 4px 20px rgba(127, 184, 211, 0.15);
+            --shadow-medium: 0 8px 30px rgba(127, 184, 211, 0.2);
+            --shadow-strong: 0 15px 40px rgba(127, 184, 211, 0.3);
+            --border-radius: 20px;
+            --border-radius-small: 12px;
+        }
+
+        /* Global Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--gradient-primary);
+            color: var(--text-dark);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Page Header */
+        .page-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem 0;
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+
+        .page-title i {
+            color: var(--deep-blue);
+            font-size: 2.8rem;
+        }
+
+        .page-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-light);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Profile Card */
+        .profile-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: var(--border-radius);
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-soft);
+            backdrop-filter: blur(20px);
+            transition: all 0.3s ease;
+        }
+
+        .profile-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--primary-blue);
+        }
+
+        .section-title i {
+            color: var(--deep-blue);
+            font-size: 1.3rem;
+        }
+
+        /* Form Styles */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            position: relative;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .form-control, .form-select {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            border: 2px solid var(--gray-200);
+            border-radius: var(--border-radius-small);
+            font-size: 1rem;
+            font-weight: 500;
+            background: white;
+            color: var(--text-dark);
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--deep-blue);
+            box-shadow: 0 0 0 4px rgba(127, 184, 211, 0.1);
+            background: var(--gray-50);
+        }
+
+        .form-control::placeholder {
+            color: var(--text-light);
+            opacity: 0.7;
+        }
+
+        /* Select Dropdown */
+        .form-select {
+            cursor: pointer;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.75rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 3rem;
+        }
+
+        .form-select option {
+            background: white;
+            color: var(--text-dark);
+            padding: 0.75rem;
+        }
+
+        /* Input Icons */
+        .input-group {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+            font-size: 1rem;
+            z-index: 2;
+        }
+
+        .input-group .form-control {
+            padding-left: 3rem;
+        }
+
+        /* Validation */
+        .text-danger {
+            color: var(--red-accent) !important;
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+            display: block;
+        }
+
+        .form-control.is-invalid, .form-select.is-invalid {
+            border-color: var(--red-accent);
+            box-shadow: 0 0 0 4px rgba(255, 107, 122, 0.1);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: var(--border-radius-small);
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            min-height: 50px;
+        }
+
+        .btn-primary {
+            background: var(--deep-blue);
+            color: white;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--dark-blue);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .btn-primary:disabled {
+            background: var(--gray-200);
+            color: var(--text-light);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-full {
+            width: 100%;
+        }
+
+        /* Alerts */
+        .alert {
+            padding: 1rem 1.5rem;
+            border-radius: var(--border-radius-small);
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+            position: relative;
+            border: none;
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, #48BB78, #68D391);
+            color: white;
+        }
+
+        .alert-danger {
+            background: linear-gradient(135deg, #FF6B7A, #FF8E8E);
+            color: white;
+        }
+
+        .alert-dismissible .btn-close {
+            position: absolute;
+            top: 50%;
+            right: 1rem;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: inherit;
+            opacity: 0.8;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        .alert-dismissible .btn-close:hover {
+            opacity: 1;
+        }
+
+        /* Change Password Section */
+        .change-password-card {
+            background: var(--gradient-header);
+            color: white;
+            border-radius: var(--border-radius);
+            padding: 2.5rem;
+            box-shadow: var(--shadow-medium);
+            backdrop-filter: blur(20px);
+        }
+
+        .change-password-card .section-title {
+            color: white;
+            border-bottom-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .change-password-card .form-control {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .change-password-card .form-control:focus {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .change-password-card .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .change-password-card .form-label {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .change-password-card .btn-secondary {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .change-password-card .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        /* Loading States */
+        .loading {
+            position: relative;
+        }
+
+        .loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            margin: -10px 0 0 -10px;
+            border: 2px solid transparent;
+            border-top: 2px solid currentColor;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @@keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive Design */
+        @@media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .page-title {
+                font-size: 2rem;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .profile-card, .change-password-card {
+                padding: 1.5rem;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .btn {
+                padding: 0.875rem 1.5rem;
+                font-size: 0.95rem;
+            }
+        }
+
+        @@media (max-width: 480px) {
+            .page-title {
+                font-size: 1.75rem;
+            }
+
+            .profile-card, .change-password-card {
+                padding: 1rem;
+            }
+
+            .form-control, .form-select {
+                padding: 0.875rem 1rem;
+                font-size: 0.95rem;
+            }
+
+            .input-group .form-control {
+                padding-left: 2.75rem;
+            }
+        }
+
+        /* Animation for page load */
+        .fade-in {
+            animation: fadeIn 0.8s ease-in-out;
+        }
+
+        @@keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Notification Modal Styles */
+        .notification-modal-content {
+            text-align: center;
+            padding: 3rem 2rem;
+            background: var(--gradient-primary);
+            color: var(--text-dark);
+        }
+
+        .notification-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 2.5rem;
+            color: white;
+            animation: modalIconPulse 2s infinite;
+        }
+
+        .notification-icon.success {
+            background: linear-gradient(135deg, #48BB78, #68D391);
+        }
+
+        .notification-icon.error {
+            background: linear-gradient(135deg, #FF6B7A, #FF8E8E);
+        }
+
+        @@keyframes modalIconPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .notification-modal-content h4 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-dark);
+        }
+
+        .notification-modal-content p {
+            font-size: 1.1rem;
+            color: var(--text-light);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .notification-btn {
+            background: var(--deep-blue);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .notification-btn:hover {
+            background: var(--dark-blue);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-medium);
+        }
+    </style>
+</head>
+
+<body class="fade-in">
+    <div class="container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">
+                <i class="fas fa-user-edit"></i>
+                Thông Tin Cá Nhân
+            </h1>
+            <p class="page-subtitle">Cập nhật và quản lý thông tin tài khoản của bạn</p>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <!-- Profile Update Card -->
+                <div class="profile-card">
+                    <h2 class="section-title">
+                        <i class="fas fa-user-circle"></i>
+                        Cập nhật thông tin cá nhân
+                    </h2>
+
+                    @if (TempData["UpdateProfileSuccess"] != null || TempData["UpdateProfileError"] != null)
+                    {
+                        <input type="hidden" id="notificationData" 
+                               data-type="@(TempData["UpdateProfileSuccess"] != null ? "success" : "error")"
+                               data-message="@(TempData["UpdateProfileSuccess"] ?? TempData["UpdateProfileError"])" />
+                    }
+
+                    <form asp-action="UpdateProfile" method="post" id="updateProfileForm">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label asp-for="FullName" class="form-label">
+                                    <i class="fas fa-user me-1"></i>Họ và tên
+                                </label>
+                                <div class="input-group">
+                                    <i class="input-icon fas fa-user"></i>
+                                    <input asp-for="FullName" class="form-control" placeholder="Nhập họ tên đầy đủ" />
+                                </div>
+                                <span asp-validation-for="FullName" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="DateOfBirth" class="form-label">
+                                    <i class="fas fa-calendar me-1"></i>Ngày sinh
+                                </label>
+                                <div class="input-group">
+                                    <i class="input-icon fas fa-calendar"></i>
+                                    <input asp-for="DateOfBirth" class="form-control" type="date" />
+                                </div>
+                                <span asp-validation-for="DateOfBirth" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="Sex" class="form-label">
+                                    <i class="fas fa-venus-mars me-1"></i>Giới tính
+                                </label>
+                                <select asp-for="Sex" class="form-select">
+                                    <option value="">Chọn giới tính</option>
+                                    <option value="Nam">Nam</option>
+                                    <option value="Nữ">Nữ</option>
+                                    <option value="Khác">Khác</option>
+                                </select>
+                                <span asp-validation-for="Sex" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="Email" class="form-label">
+                                    <i class="fas fa-envelope me-1"></i>Email
+                                </label>
+                                <div class="input-group">
+                                    <i class="input-icon fas fa-envelope"></i>
+                                    <input asp-for="Email" class="form-control" placeholder="example@email.com" type="email" />
+                                </div>
+                                <span asp-validation-for="Email" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="IdentityCard" class="form-label">
+                                    <i class="fas fa-id-card me-1"></i>CMND/CCCD
+                                </label>
+                                <div class="input-group">
+                                    <i class="input-icon fas fa-id-card"></i>
+                                    <input asp-for="IdentityCard" class="form-control" placeholder="Số CMND/CCCD" />
+                                </div>
+                                <span asp-validation-for="IdentityCard" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="PhoneNumber" class="form-label">
+                                    <i class="fas fa-phone me-1"></i>Số điện thoại
+                                </label>
+                                <div class="input-group">
+                                    <i class="input-icon fas fa-phone"></i>
+                                    <input asp-for="PhoneNumber" class="form-control" placeholder="0xxx xxx xxx" />
+                                </div>
+                                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-group full-width">
+                                <label asp-for="Address" class="form-label">
+                                    <i class="fas fa-map-marker-alt me-1"></i>Địa chỉ
+                                </label>
+                                <div class="input-group">
+                                    <i class="input-icon fas fa-map-marker-alt"></i>
+                                    <input asp-for="Address" class="form-control" placeholder="Nhập địa chỉ đầy đủ" />
+                                </div>
+                                <span asp-validation-for="Address" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-full" id="updateButton">
+                            <i class="fas fa-save"></i>
+                            Cập nhật thông tin
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Change Password Card -->
+                <div class="change-password-card">
+                    <h2 class="section-title">
+                        <i class="fas fa-lock"></i>
+                        Đổi mật khẩu
+                    </h2>
+
+                    @if (TempData["Success"] != null || TempData["Error"] != null)
+                    {
+                        <input type="hidden" id="changePasswordNotificationData" 
+                               data-type="@(TempData["Success"] != null ? "success" : "error")"
+                               data-message="@(TempData["Success"] ?? TempData["Error"])" />
+                    }
+
+                    <form asp-action="ChangePassword" method="post" autocomplete="off" id="changePasswordForm">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="fas fa-key me-1"></i>Mật khẩu hiện tại
+                                </label>
+                                <div class="input-group">
+                                    <i class="input-icon fas fa-key"></i>
+                                    <input name="OldPassword" class="form-control" type="password" placeholder="Nhập mật khẩu hiện tại" required />
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="fas fa-lock me-1"></i>Mật khẩu mới
+                                </label>
+                                <div class="input-group">
+                                    <i class="input-icon fas fa-lock"></i>
+                                    <input name="NewPassword" class="form-control" type="password" placeholder="Nhập mật khẩu mới" required />
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="fas fa-check-circle me-1"></i>Xác nhận mật khẩu
+                                </label>
+                                <div class="input-group">
+                                    <i class="input-icon fas fa-check-circle"></i>
+                                    <input name="ConfirmPassword" class="form-control" type="password" placeholder="Nhập lại mật khẩu mới" required />
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-secondary btn-full">
+                            <i class="fas fa-shield-alt"></i>
+                            Đổi mật khẩu
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Modal -->
+    <div class="modal fade" id="notificationModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border: none; border-radius: 20px; overflow: hidden;">
+                <div class="modal-body" style="padding: 0;">
+                    <div class="notification-modal-content">
+                        <div class="notification-icon">
+                            <i id="notificationIcon"></i>
+                        </div>
+                        <h4 id="notificationTitle"></h4>
+                        <p id="notificationMessage"></p>
+                        <button type="button" class="notification-btn" data-bs-dismiss="modal">
+                            <i class="fas fa-check"></i>
+                            Đã hiểu
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @section Scripts {
+        @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+        <script>
+            // Notification Modal Handler
+            function showNotificationModal(type, message) {
+                const modal = document.getElementById('notificationModal');
+                const icon = document.getElementById('notificationIcon');
+                const title = document.getElementById('notificationTitle');
+                const messageEl = document.getElementById('notificationMessage');
+                const iconContainer = document.querySelector('.notification-icon');
+                
+                // Clear previous classes
+                iconContainer.classList.remove('success', 'error');
+                
+                if (type === 'success') {
+                    iconContainer.classList.add('success');
+                    icon.className = 'fas fa-check-circle';
+                    title.textContent = 'Thành công!';
+                } else {
+                    iconContainer.classList.add('error');
+                    icon.className = 'fas fa-exclamation-circle';
+                    title.textContent = 'Có lỗi xảy ra!';
+                }
+                
+                messageEl.textContent = message;
+                
+                // Show modal
+                const bootstrapModal = new bootstrap.Modal(modal);
+                bootstrapModal.show();
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                // Check for notifications on page load
+                const notificationData = document.getElementById('notificationData');
+                if (notificationData) {
+                    const type = notificationData.getAttribute('data-type');
+                    const message = notificationData.getAttribute('data-message');
+                    setTimeout(() => showNotificationModal(type, message), 500);
+                }
+                
+                // For change password notifications
+                const changePasswordData = document.getElementById('changePasswordNotificationData');
+                if (changePasswordData) {
+                    const type = changePasswordData.getAttribute('data-type');
+                    const message = changePasswordData.getAttribute('data-message');
+                    setTimeout(() => showNotificationModal(type, message), 500);
+                }
+
+                // Animate elements on load
+                const elements = document.querySelectorAll('.profile-card, .change-password-card');
+                elements.forEach((el, index) => {
+                    el.style.opacity = '0';
+                    el.style.transform = 'translateY(30px)';
+                    setTimeout(() => {
+                        el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                        el.style.opacity = '1';
+                        el.style.transform = 'translateY(0)';
+                    }, index * 200);
+                });
+
+                // Enable update button when form changes
+                const updateForm = document.getElementById('updateProfileForm');
+                const updateButton = document.getElementById('updateButton');
+                const formInputs = updateForm.querySelectorAll('input, select');
+                
+                formInputs.forEach(input => {
+                    input.addEventListener('change', function() {
+                        updateButton.disabled = false;
+                    });
+                });
+
+                // Form submission loading states
+                updateForm.addEventListener('submit', function() {
+                    updateButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang cập nhật...';
+                    updateButton.disabled = true;
+                });
+
+                const changePasswordForm = document.getElementById('changePasswordForm');
+                changePasswordForm.addEventListener('submit', function() {
+                    const submitBtn = this.querySelector('button[type="submit"]');
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang đổi mật khẩu...';
+                    submitBtn.disabled = true;
+                });
+
+                // Password confirmation validation
+                const newPassword = changePasswordForm.querySelector('input[name="NewPassword"]');
+                const confirmPassword = changePasswordForm.querySelector('input[name="ConfirmPassword"]');
+                
+                function validatePasswordMatch() {
+                    if (newPassword.value && confirmPassword.value) {
+                        if (newPassword.value !== confirmPassword.value) {
+                            confirmPassword.setCustomValidity('Mật khẩu xác nhận không khớp');
+                        } else {
+                            confirmPassword.setCustomValidity('');
+                        }
+                    }
+                }
+
+                newPassword.addEventListener('input', validatePasswordMatch);
+                confirmPassword.addEventListener('input', validatePasswordMatch);
+            });
+        </script>
+    }
+</body>
+</html>

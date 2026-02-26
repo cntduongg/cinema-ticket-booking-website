@@ -1,0 +1,1197 @@
+@{
+    ViewData["Title"] = "Chọn ghế ngồi";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var userId = User.FindFirst("UserId")?.Value;
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"] - MovieTheater</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* Color Variables - Matching Homepage Theme */
+        :root {
+            --primary-blue: #E8F4FD;
+            --secondary-blue: #D1E9F6;
+            --accent-blue: #B8DDFF;
+            --deep-blue: #7FB8D3;
+            --dark-blue: #4A90A4;
+            --text-dark: #1A365D;
+            --text-light: #4A5568;
+            --white: #FFFFFF;
+            --gray-50: #F7FAFC;
+            --gray-100: #EDF2F7;
+            --gray-200: #E2E8F0;
+            --red-accent: #FF6B7A;
+            --green-accent: #48BB78;
+            --gradient-primary: linear-gradient(135deg, var(--primary-blue) 0%, var(--accent-blue) 50%, var(--deep-blue) 100%);
+            --gradient-secondary: linear-gradient(135deg, var(--secondary-blue) 0%, var(--primary-blue) 100%);
+            --gradient-header: linear-gradient(135deg, rgba(26, 54, 93, 0.95) 0%, rgba(74, 144, 164, 0.9) 100%);
+            --shadow-soft: 0 4px 20px rgba(127, 184, 211, 0.15);
+            --shadow-medium: 0 8px 30px rgba(127, 184, 211, 0.2);
+            --shadow-strong: 0 15px 40px rgba(127, 184, 211, 0.3);
+            --border-radius: 20px;
+            --border-radius-small: 12px;
+        }
+
+        /* Global Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--gradient-primary);
+            color: var(--text-dark);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Movie Info Header */
+        .movie-info-header {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-soft);
+            backdrop-filter: blur(20px);
+        }
+
+        .movie-header-content {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .movie-poster-3d {
+            width: 120px;
+            height: 160px;
+            border-radius: var(--border-radius-small);
+            overflow: hidden;
+            box-shadow: var(--shadow-medium);
+            background: var(--gradient-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+            .movie-poster-3d img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                transition: transform 0.3s ease;
+            }
+
+            .movie-poster-3d:hover img {
+                transform: scale(1.05);
+            }
+
+        .movie-details {
+            flex: 1;
+        }
+
+        .movie-title {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--text-dark);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+            .movie-title::before {
+                content: '🎬';
+                font-size: 1.5rem;
+            }
+
+        .movie-meta-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: var(--gradient-secondary);
+            border-radius: var(--border-radius-small);
+            transition: all 0.3s ease;
+        }
+
+            .meta-item:hover {
+                transform: translateY(-2px);
+                box-shadow: var(--shadow-soft);
+            }
+
+            .meta-item i {
+                color: var(--deep-blue);
+                font-size: 1.2rem;
+                width: 20px;
+                text-align: center;
+            }
+
+            .meta-item strong {
+                color: var(--text-dark);
+                font-weight: 600;
+            }
+
+            .meta-item span {
+                color: var(--text-light);
+            }
+
+        /* Screen Container */
+        .screen-container {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .screen-3d {
+            background: var(--gradient-header);
+            color: white;
+            padding: 1.5rem 3rem;
+            border-radius: 50px;
+            margin: 0 auto 2rem;
+            max-width: 600px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            box-shadow: var(--shadow-medium);
+            position: relative;
+            overflow: hidden;
+        }
+
+            .screen-3d::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+                animation: shine 3s infinite;
+            }
+
+            .screen-3d i {
+                margin-right: 0.75rem;
+                font-size: 1.4rem;
+            }
+
+        @@keyframes shine {
+            0% {
+                left: -100%;
+            }
+
+            100% {
+                left: 100%;
+            }
+        }
+
+        /* Legend */
+        .legend-3d {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-soft);
+            backdrop-filter: blur(20px);
+        }
+
+        .legend-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .legend-items {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            background: var(--gradient-secondary);
+            border-radius: 25px;
+            font-weight: 600;
+            color: var(--text-dark);
+            transition: all 0.3s ease;
+        }
+
+            .legend-item:hover {
+                transform: translateY(-2px);
+                box-shadow: var(--shadow-soft);
+            }
+
+        .legend-seat-3d {
+            width: 35px;
+            height: 35px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+
+            .legend-seat-3d.selected {
+                background: var(--deep-blue);
+                color: white;
+                box-shadow: 0 0 15px rgba(127, 184, 211, 0.5);
+            }
+
+            .legend-seat-3d.sold {
+                background: var(--red-accent);
+                color: white;
+            }
+
+            .legend-seat-3d.held {
+                background: #FFA500;
+                color: white;
+            }
+
+            .legend-seat-3d.available {
+                background: var(--green-accent);
+                color: white;
+            }
+
+        /* Seat Map Container */
+        .seat-map-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-soft);
+            backdrop-filter: blur(20px);
+            overflow-x: auto;
+        }
+
+        .seat-map {
+            margin: 0 auto;
+            border-spacing: 8px;
+            border-collapse: separate;
+        }
+
+        .row-label {
+            background: var(--gradient-secondary);
+            color: var(--deep-blue);
+            font-weight: 700;
+            font-size: 1.1rem;
+            padding: 1rem;
+            border-radius: var(--border-radius-small);
+            text-align: center;
+            min-width: 50px;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .seat-3d {
+            width: 45px;
+            height: 45px;
+            border: 2px solid var(--gray-200);
+            border-radius: 10px;
+            background: var(--green-accent);
+            color: white;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+            .seat-3d:hover:not(:disabled) {
+                transform: translateY(-3px) scale(1.05);
+                box-shadow: var(--shadow-medium);
+            }
+
+            .seat-3d.selected {
+                background: var(--deep-blue);
+                border-color: var(--dark-blue);
+                box-shadow: 0 0 20px rgba(127, 184, 211, 0.6);
+                animation: selectedPulse 2s infinite;
+            }
+
+            .seat-3d.sold {
+                background: var(--red-accent);
+                border-color: #FF4444;
+                cursor: not-allowed;
+                opacity: 0.7;
+            }
+
+            .seat-3d.held {
+                background: #FFA500;
+                border-color: #FF8C00;
+                cursor: not-allowed;
+                opacity: 0.8;
+            }
+
+            .seat-3d:disabled {
+                cursor: not-allowed;
+                transform: none !important;
+            }
+
+        @@keyframes selectedPulse {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(127, 184, 211, 0.6);
+            }
+
+            50% {
+                box-shadow: 0 0 30px rgba(127, 184, 211, 0.9);
+            }
+        }
+
+        /* Booking Summary */
+        .booking-summary-3d {
+            background: var(--gradient-header);
+            color: white;
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: var(--shadow-strong);
+            position: relative;
+            backdrop-filter: blur(20px);
+        }
+
+        .selected-info-3d {
+            margin-bottom: 1.5rem;
+        }
+
+        .selected-seats-3d {
+            margin-bottom: 1rem;
+        }
+
+            .selected-seats-3d strong {
+                display: block;
+                font-size: 1.1rem;
+                margin-bottom: 0.75rem;
+                color: rgba(255, 255, 255, 0.95);
+            }
+
+        .seat-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .seat-tag-3d {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .total-price-3d {
+            font-size: 1.3rem;
+            font-weight: 700;
+            text-align: center;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: var(--border-radius-small);
+            margin-bottom: 1rem;
+            backdrop-filter: blur(10px);
+        }
+
+            .total-price-3d i {
+                margin-right: 0.5rem;
+                color: #FFD700;
+            }
+
+        .continue-btn-3d {
+            width: 100%;
+            padding: 1.25rem 2rem;
+            background: rgba(255, 255, 255, 0.95);
+            color: var(--deep-blue);
+            border: none;
+            border-radius: var(--border-radius-small);
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+            .continue-btn-3d:hover:not(:disabled) {
+                background: white;
+                transform: translateY(-2px);
+                box-shadow: var(--shadow-medium);
+            }
+
+            .continue-btn-3d:disabled {
+                background: rgba(255, 255, 255, 0.5);
+                color: rgba(127, 184, 211, 0.7);
+                cursor: not-allowed;
+                transform: none;
+            }
+
+            .continue-btn-3d i {
+                font-size: 1.2rem;
+            }
+
+        /* Loading States */
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-light);
+        }
+
+            .loading i {
+                font-size: 2rem;
+                margin-bottom: 1rem;
+                animation: spin 1s linear infinite;
+            }
+
+        @@keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Additional Legend Items */
+        .legend-seat-3d.available {
+            background: var(--green-accent);
+            color: white;
+        }
+
+        /* Responsive Design */
+        @@media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .movie-header-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+                gap: 1.5rem;
+            }
+
+            .movie-poster-3d {
+                margin: 0 auto;
+            }
+
+            .movie-meta-grid {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+
+            .meta-item {
+                padding: 0.75rem;
+                flex-direction: column;
+                text-align: center;
+                gap: 0.5rem;
+            }
+
+            .screen-3d {
+                padding: 1rem 2rem;
+                font-size: 1rem;
+                letter-spacing: 1px;
+            }
+
+            .legend-items {
+                gap: 1rem;
+            }
+
+            .legend-item {
+                flex-direction: column;
+                text-align: center;
+                gap: 0.5rem;
+                padding: 1rem;
+            }
+
+            .seat-map-container {
+                padding: 1rem;
+                overflow-x: scroll;
+            }
+
+            .seat-3d {
+                width: 40px;
+                height: 40px;
+                font-size: 0.8rem;
+            }
+
+            .row-label {
+                padding: 0.75rem;
+                min-width: 40px;
+            }
+
+            .booking-summary-3d {
+                padding: 1.5rem;
+                position: relative;
+                bottom: auto;
+                margin-top: 1rem;
+            }
+
+            .total-price-3d {
+                font-size: 1.1rem;
+            }
+
+            .continue-btn-3d {
+                padding: 1rem 1.5rem;
+                font-size: 1rem;
+            }
+        }
+
+        @@media (max-width: 480px) {
+            .movie-title {
+                font-size: 1.5rem;
+            }
+
+            .legend-items {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .seat-3d {
+                width: 35px;
+                height: 35px;
+                font-size: 0.75rem;
+            }
+
+            .seat-map {
+                border-spacing: 4px;
+            }
+
+            .booking-summary-3d {
+                padding: 1rem;
+            }
+
+            .seat-tags {
+                justify-content: center;
+            }
+        }
+
+        /* Animation for page load */
+        .fade-in {
+            animation: fadeIn 0.8s ease-in-out;
+        }
+
+        @@keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Seat availability indicator */
+        .seat-3d::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .seat-3d.sold::after {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .seat-3d.held::after {
+            background: rgba(255, 255, 255, 0.5);
+        }
+    </style>
+</head>
+
+<body class="fade-in">
+    <script>
+        window.realUserId = '@userId';
+    </script>
+
+    <div class="container">
+        <!-- Movie Info Header -->
+        <div class="movie-info-header">
+            <div class="movie-header-content">
+                <div class="movie-poster-3d" id="moviePoster">
+                    <i class="fas fa-film" style="font-size: 2rem; color: var(--deep-blue);"></i>
+                </div>
+                <div class="movie-details">
+                    <h2 class="movie-title" id="movieTitle">Đang tải thông tin phim...</h2>
+                    <div class="movie-meta-grid">
+                        <div class="meta-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span><strong>Rạp chiếu:</strong> <span id="cinemaName">Đang tải...</span></span>
+                        </div>
+                        <div class="meta-item">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span><strong>Ngày chiếu:</strong> <span id="showDate">Đang tải...</span></span>
+                        </div>
+                        <div class="meta-item">
+                            <i class="fas fa-clock"></i>
+                            <span><strong>Giờ chiếu:</strong> <span id="showTime">Đang tải...</span></span>
+                        </div>
+                        <div class="meta-item">
+                            <i class="fas fa-door-open"></i>
+                            <span><strong>Phòng chiếu:</strong> <span id="roomName">Đang tải...</span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen -->
+        <div class="screen-container">
+            <div class="screen-3d">
+                <i class="fas fa-video"></i> MÀN HÌNH CHIẾU
+            </div>
+        </div>
+
+        <!-- Legend -->
+        <div class="legend-3d" id="legendContainer">
+            <div class="legend-title">🎫 Chú thích ghế ngồi</div>
+            <div class="legend-items">
+                <div class="legend-item">
+                    <div class="legend-seat-3d available">A1</div>
+                    <span>Ghế trống</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-seat-3d selected">B2</div>
+                    <span>Ghế đang chọn</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-seat-3d held">C3</div>
+                    <span>Ghế đang giữ</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-seat-3d sold">X</div>
+                    <span>Ghế đã bán</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seat Map -->
+        <div class="seat-map-container" id="seatMapContainer">
+            <div class="loading">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Đang tải sơ đồ ghế...</p>
+            </div>
+        </div>
+
+        <!-- Booking Summary -->
+        <div class="booking-summary-3d">
+            <div class="selected-info-3d">
+                <div class="selected-seats-3d">
+                    <strong><i class="fas fa-chair"></i> Ghế đã chọn:</strong>
+                    <div class="seat-tags" id="selectedSeatTags">
+                        <span style="color: rgba(255,255,255,0.6);">Chưa chọn ghế</span>
+                    </div>
+                </div>
+                <div class="total-price-3d">
+                    <i class="fas fa-tag"></i> Tổng tiền: <span id="totalPrice">0</span> VND
+                </div>
+            </div>
+            <button class="continue-btn-3d" id="continueBtn" disabled onclick="goToCheckout()">
+                <i class="fas fa-arrow-right"></i>
+                <span>Tiếp theo</span>
+            </button>
+        </div>
+    </div>
+
+    @section Scripts {
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+        <script>
+                        // Khi load trang, lấy dữ liệu động từ API và render lại UI
+
+                        let connection; // SignalR connection
+                        // Đảm bảo userId lấy từ session/claim nếu đã đăng nhập
+                        let myUserId = null;
+                        if (window.realUserId && !isNaN(parseInt(window.realUserId))) {
+                            myUserId = parseInt(window.realUserId);
+                        } else if (localStorage.getItem('userId') && !isNaN(parseInt(localStorage.getItem('userId')))) {
+                            myUserId = parseInt(localStorage.getItem('userId'));
+                        }
+                        // Nếu không có userId, cảnh báo và disable booking
+                        if (!myUserId || isNaN(myUserId)) {
+                            alert('Bạn cần đăng nhập để đặt vé!');
+                            document.getElementById('continueBtn').disabled = true;
+                        } else {
+                            localStorage.setItem('userId', myUserId);
+                        }
+
+                        let latestSeatSchedules = [];
+
+                        function setupSignalR(scheduleId) {
+                            connection = new signalR.HubConnectionBuilder()
+                                .withUrl('https://localhost:7092/seathub')
+                                .build();
+                            connection.start().then(() => {
+                                connection.invoke('JoinScheduleGroup', scheduleId);
+                            });
+                            connection.on('ReceiveSeatHold', data => {
+                                console.log('SignalR: ReceiveSeatHold', data);
+                                fetchAndRenderSeatSchedules(scheduleId);
+                            });
+                            connection.on('ReceiveSeatReleased', data => {
+                                console.log('SignalR: ReceiveSeatReleased', data);
+                                fetchAndRenderSeatSchedules(scheduleId);
+                            });
+                            connection.on('ReceiveSeatBooked', data => {
+                                console.log('SignalR: ReceiveSeatBooked', data);
+                                fetchAndRenderSeatSchedules(scheduleId);
+                            });
+                            // Bổ sung lắng nghe sự kiện SeatReleased từ backend
+                            connection.on('SeatReleased', (seatId, scheduleId) => {
+                                console.log('SignalR: SeatReleased', seatId, scheduleId);
+                                fetchAndRenderSeatSchedules(scheduleId);
+                            });
+                        }
+
+                        async function fetchAndRenderSeatSchedules(scheduleId) {
+                            try {
+                                const res = await fetch(`https://localhost:7092/api/SeatSchedule/schedule/${scheduleId}`);
+                                let seatSchedules = await res.json();
+                                if (seatSchedules && seatSchedules.$values) seatSchedules = seatSchedules.$values;
+                                if (!Array.isArray(seatSchedules)) {
+                                    console.error('seatSchedules is not an array:', seatSchedules);
+                                return;
+                                }
+                                latestSeatSchedules = seatSchedules;
+                                renderLegendFromSeatSchedules(seatSchedules);
+                                renderSeatMapFromSeatSchedules(seatSchedules);
+                            } catch (e) {
+                                console.error('Error fetching seatSchedules:', e);
+                            }
+                        }
+
+                        let seatStatusMap = {}; // { seatId: { status, heldBy } }
+
+                        function updateSeatStatus(seatId, status, heldBy) {
+                            seatStatusMap[seatId] = { status, heldBy };
+                            // Cập nhật lại UI ghế
+                            const btn = document.querySelector(`button[data-seat-id='${seatId}']`);
+                            if (btn) {
+                                btn.classList.remove('sold', 'held', 'selected');
+                                if (status === 'Booked') btn.classList.add('sold');
+                                else if (status === 'Held') btn.classList.add(heldBy === myUserId ? 'selected' : 'held');
+                            }
+                        }
+
+                        // Map status enum về string cho dễ xử lý UI
+                        function getSeatStatusName(status) {
+                            if (typeof status === 'string') return status;
+                            if (status === 0) return 'Available';
+                            if (status === 1) return 'Held';
+                            if (status === 2) return 'Booked';
+                            return 'Unknown';
+                        }
+
+                        async function proceedToPayment() {
+                            try {
+                                const userId = myUserId;
+                                const bookingDate = new Date().toISOString().slice(0, 10); // yyyy-MM-dd
+                                const totalPrice = parseInt(document.getElementById('totalPrice').innerText.replace(/\D/g, '')) || 0;
+                                // Lưu danh sách ghế đã chọn vào localStorage trước khi thanh toán
+                                if (Array.isArray(window.myHeldSeats) && window.myHeldSeats.length > 0) {
+                                    localStorage.setItem('selectedSeats', JSON.stringify(
+                                        window.myHeldSeats.map(seat => ({
+                                            seatId: seat.id,
+                                            scheduleId: window.currentScheduleId
+                                        }))
+                                    ));
+                                }
+                                // Lấy danh sách seatId và scheduleId
+                                const seatIds = Array.isArray(window.myHeldSeats) ? window.myHeldSeats.map(seat => seat.id) : [];
+                                const scheduleId = window.currentScheduleId;
+                                if (!userId || !scheduleId || seatIds.length === 0) {
+                                    alert('Thiếu thông tin đặt vé!');
+                                    return;
+                                }
+
+                                // Show loading state
+                                const continueBtn = document.getElementById('continueBtn');
+                                const originalText = continueBtn.innerHTML;
+                                continueBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Đang xử lý...</span>';
+                                continueBtn.disabled = true;
+
+                                // 1. Gọi API tạo order + order detail (booking)
+                                const bookingPayload = {
+                                    scheduleId: scheduleId,
+                                    seatIds: seatIds,
+                                    userId: userId,
+                                    totalPrice: totalPrice
+                                };
+                                const bookingRes = await fetch('https://localhost:7092/api/Order/booking', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify(bookingPayload)
+                                });
+                                if (!bookingRes.ok) {
+                                    const err = await bookingRes.text();
+                                    alert('Tạo order thất bại! ' + err);
+                                    continueBtn.innerHTML = originalText;
+                                    continueBtn.disabled = false;
+                                    return;
+                                }
+                                const bookingData = await bookingRes.json();
+                                const orderId = bookingData.id || bookingData.data?.id || bookingData.orderId;
+                                if (!orderId) {
+                                    alert('Tạo order thất bại!');
+                                    continueBtn.innerHTML = originalText;
+                                    continueBtn.disabled = false;
+                                    return;
+                                }
+                                // 2. Gọi API lấy URL thanh toán
+                                const vnpayRes = await fetch(`https://localhost:7092/api/Vnpay/create-url?orderId=${orderId}`);
+                                const vnpayData = await vnpayRes.json();
+                                const paymentUrl = vnpayData.paymentUrl;
+                                if (!paymentUrl) {
+                                    alert('Không lấy được link thanh toán!');
+                                    continueBtn.innerHTML = originalText;
+                                    continueBtn.disabled = false;
+                                    return;
+                                }
+                                // 3. Chuyển hướng sang trang thanh toán
+                                window.location.href = paymentUrl;
+                            } catch (e) {
+                                alert('Có lỗi khi thanh toán: ' + e);
+                                const continueBtn = document.getElementById('continueBtn');
+                                continueBtn.innerHTML = '<i class="fas fa-credit-card"></i> <span>Thanh toán</span>';
+                                continueBtn.disabled = false;
+                            }
+                        }
+
+                        function goToCheckout() {
+                            // Lưu danh sách ghế đã chọn vào localStorage
+                            if (Array.isArray(window.myHeldSeats) && window.myHeldSeats.length > 0) {
+                                localStorage.setItem('selectedSeats', JSON.stringify(
+                                    window.myHeldSeats.map(seat => ({
+                                        seatId: seat.id,
+                                        seatName: seat.seatName,
+                                        scheduleId: window.currentScheduleId
+                                    }))
+                                ));
+                                // Lưu tổng tiền
+                                const totalPrice = parseInt(document.getElementById('totalPrice').innerText.replace(/\D/g, '')) || 0;
+                                localStorage.setItem('selectedSeatsTotal', totalPrice);
+                            }
+                            // Lấy các tham số trên URL hiện tại
+                            const urlParams = new URLSearchParams(window.location.search);
+                            const movieId = urlParams.get('movieId') || '';
+                            const date = urlParams.get('date') || '';
+                            const time = urlParams.get('time') || '';
+                            const scheduleId = window.currentScheduleId || '';
+                            // Chuyển sang trang checkout đúng route MVC
+                            window.location.href = `/Booking/Booking/Checkout?movieId=${movieId}&date=${date}&time=${time}&scheduleId=${scheduleId}`;
+                        }
+
+                        document.addEventListener('DOMContentLoaded', async function() {
+                            console.log('Script loaded!');
+                            const urlParams = new URLSearchParams(window.location.search);
+                            let scheduleId = urlParams.get('scheduleId');
+                            const movieId = urlParams.get('movieId');
+                            const date = urlParams.get('date');
+                            const time = urlParams.get('time');
+                            console.log('scheduleId:', scheduleId, 'movieId:', movieId, 'date:', date, 'time:', time);
+
+                            // Chuyển date từ yyyy-MM-dd sang dd-MM-yyyy nếu cần
+                            function toBackendDateFormat(dateStr) {
+                                // Nếu đã đúng định dạng dd-MM-yyyy thì giữ nguyên
+                                if (/^\d{2}-\d{2}-\d{4}$/.test(dateStr)) return dateStr;
+                                // Nếu là yyyy-MM-dd thì chuyển
+                                const parts = dateStr.split('-');
+                                if (parts.length === 3) return `${parts[2]}-${parts[1]}-${parts[0]}`;
+                                return dateStr;
+                            }
+
+                            // Nếu không có scheduleId nhưng có movieId, date, time thì tìm scheduleId phù hợp
+                            if (!scheduleId && movieId && date && time) {
+                                try {
+                                    // Đảm bảo date đúng định dạng dd-MM-yyyy
+                                    const backendDate = toBackendDateFormat(date);
+                                    const res = await fetch(`https://localhost:7092/api/GetMovieSchedule?movieId=${movieId}&date=${backendDate}`);
+                                    let schedules = await res.json();
+                                    console.log('Schedules for movie/date:', schedules);
+                                    // Nếu trả về object có $values thì lấy ra mảng
+                                    if (schedules.$values) schedules = schedules.$values;
+                                    if (schedules.data) schedules = schedules.data;
+                                    if (!Array.isArray(schedules)) {
+                                        console.warn('Không lấy được mảng lịch chiếu từ API:', schedules);
+                                        return;
+                                    }
+                                    const found = schedules.find(s => s.fromTime === time || s.toTime === time);
+                                    if (found) {
+                                        scheduleId = found.id;
+                                        console.log('Found scheduleId:', scheduleId);
+                            } else {
+                                        console.warn('Không tìm thấy lịch chiếu phù hợp với time:', time);
+                                        return;
+                                    }
+                                } catch (e) {
+                                    console.error('Error fetching schedules for movie/date:', e);
+                                    return;
+                                }
+                            }
+
+                            if (!scheduleId) {
+                                console.error('scheduleId missing and cannot be determined from movieId/date/time');
+                                            return;
+                                        }
+
+                            // 1. Lấy thông tin suất chiếu (Schedule)
+                            let schedule = {};
+                            try {
+                                const res = await fetch(`https://localhost:7092/api/schedule/get-by-id/${scheduleId}`);
+                                schedule = await res.json();
+                                console.log('Schedule:', schedule);
+                            } catch (e) {
+                                console.error('Error fetching schedule:', e);
+                                return;
+                            }
+                            if (!schedule || !schedule.movieId || !schedule.cinemaRoomId) {
+                                console.error('Schedule missing movieId or cinemaRoomId:', schedule);
+                                return;
+                            }
+
+                            // 2. Lấy thông tin phòng chiếu (CinemaRoom)
+                            let room = {};
+                            try {
+                                const res = await fetch(`https://localhost:7092/api/cinemaroom/${schedule.cinemaRoomId}`);
+                                room = await res.json();
+                                console.log('Room:', room);
+                            } catch (e) {
+                                console.error('Error fetching room:', e);
+                                return;
+                            }
+
+                            // 3. Lấy thông tin phim (Movie)
+                            let movie = {};
+                            try {
+                                const res = await fetch(`https://localhost:7214/api/admin/movies/GetById/${schedule.movieId}`);
+                                movie = await res.json();
+                                if (movie.data) movie = movie.data;
+                                console.log('Movie:', movie);
+                            } catch (e) {
+                                console.error('Error fetching movie:', e);
+                            }
+
+                            // 4. Render lại UI header
+                            renderBanner(movie, schedule, room);
+
+                            // 5. Lấy roomId thực tế để gọi API ghế
+                            let roomId = room.id || room.cinemaRoomId || room.roomId;
+                            console.log('roomId for seat API:', roomId);
+                            if (!roomId) {
+                                console.error('Không tìm thấy roomId hợp lệ trong object room:', room);
+                                        return;
+                                    }
+
+                            // 6. Lấy danh sách ghế của phòng
+                            let seats = [];
+                            try {
+                                const res = await fetch(`https://localhost:7092/api/Seat/room/${roomId}`);
+                                seats = await res.json();
+                                if (seats.$values) seats = seats.$values;
+                                console.log('Seats:', seats);
+                            } catch (e) {
+                                console.error('Error fetching seats:', e);
+                                return;
+                            }
+                            if (!Array.isArray(seats) || seats.length === 0) {
+                                console.warn('Không có ghế nào được trả về từ API seats:', seats);
+                                return;
+                            }
+
+                            // 7. Lấy trạng thái ghế của suất chiếu
+                            let seatSchedules = [];
+                            try {
+                                const res = await fetch(`https://localhost:7092/api/SeatSchedule/schedule/${scheduleId}`);
+                                seatSchedules = await res.json();
+                                console.log('SeatSchedules raw:', seatSchedules);
+                                if (seatSchedules && seatSchedules.$values) seatSchedules = seatSchedules.$values;
+                                if (!Array.isArray(seatSchedules)) {
+                                    console.error('seatSchedules is not an array:', seatSchedules);
+                                    return;
+                                }
+                                console.log('SeatSchedules:', seatSchedules);
+                            } catch (e) {
+                                console.error('Error fetching seatSchedules:', e);
+                                return;
+                            }
+
+                            // 8. Render lại UI ghế, legend, seat map
+                            renderLegendFromSeatSchedules(seatSchedules);
+                            renderSeatMapFromSeatSchedules(seatSchedules);
+                            window.currentScheduleId = scheduleId;
+                            setupSignalR(scheduleId);
+                            await fetchAndRenderSeatSchedules(scheduleId);
+                        });
+
+                        function renderBanner(movie, schedule, room) {
+                            document.getElementById('movieTitle').innerText = movie.name || 'Tên phim';
+                            // Fallback: nếu không có cinemaName thì dùng cinemaRoomName cho Rạp chiếu
+                            document.getElementById('cinemaName').innerText = room.cinemaName || room.cinemaRoomName || 'Rạp chiếu';
+                            document.getElementById('showDate').innerText = schedule.showDate || 'Ngày chiếu';
+                            // Giờ chiếu: fromTime - toTime
+                            let timeStr = '';
+                            if (schedule.fromTime && schedule.toTime) {
+                                timeStr = `${schedule.fromTime} - ${schedule.toTime}`;
+                            } else if (schedule.fromTime) {
+                                timeStr = schedule.fromTime;
+                            }
+                            document.getElementById('showTime').innerText = timeStr || 'Giờ chiếu';
+                            // Hiển thị tên phòng chiếu ở mục Phòng chiếu
+                            document.getElementById('roomName').innerText = room.cinemaRoomName || 'Phòng chiếu';
+                            // Render poster nếu có
+                            if (movie.imagePath) {
+                                document.getElementById('moviePoster').innerHTML = `<img src="${movie.imagePath}" alt="${movie.name}" style="width: 100%; height: 100%; object-fit: cover;">`;
+                            }
+                        }
+
+            function renderLegendFromSeatSchedules(seatSchedules) {
+                // Legend is already rendered in HTML, no need to re-render
+            }
+
+            function renderSeatMapFromSeatSchedules(seatSchedules) {
+                // Group theo row
+                const rows = {};
+                let myHeldSeats = [];
+                seatSchedules.forEach(ss => {
+                    const seat = ss.seat || ss.Seat || {};
+                    const seatName = (seat.seatRow || seat.SeatRow || '') + (seat.seatColumn || seat.SeatColumn || '');
+                    if (!seatName) return;
+                    const row = seat.seatRow || seat.SeatRow;
+                    if (!rows[row]) rows[row] = [];
+                    const seatObj = {
+                        id: ss.seatId || ss.SeatId,
+                        seatName,
+                        status: ss.status,
+                        heldBy: ss.heldByUserId
+                    };
+                    rows[row].push(seatObj);
+                    // Nếu ghế đang held bởi mình, thêm vào danh sách ghế đã chọn
+                    const statusName = getSeatStatusName(seatObj.status);
+                    if (statusName === 'Held' && seatObj.heldBy === myUserId) {
+                        myHeldSeats.push(seatObj);
+                    }
+                });
+                window.myHeldSeats = myHeldSeats; // Đảm bảo biến toàn cục luôn cập nhật
+                let html = '<table class="seat-map">';
+                Object.keys(rows).sort().reverse().forEach(row => {
+                    html += `<tr><td class="row-label">${row}</td>`;
+                    rows[row].sort((a, b) => (a.seatName > b.seatName ? 1 : -1)).forEach(seat => {
+                        let cls = 'seat-3d';
+                        const statusName = getSeatStatusName(seat.status);
+                        if (statusName === 'Booked') cls += ' sold';
+                        else if (statusName === 'Held') cls += (seat.heldBy === myUserId ? ' selected' : ' held');
+                        // Không còn seatType
+                        const disabled = (statusName === 'Held' && seat.heldBy !== myUserId) || statusName === 'Booked' ? 'disabled' : '';
+                        html += `<td><button class="${cls}" data-seat-id="${seat.id}" ${disabled}>${seat.seatName}</button></td>`;
+                    });
+                    html += '</tr>';
+                });
+                html += '</table>';
+                document.getElementById('seatMapContainer').innerHTML = html;
+                // Hiển thị danh sách ghế đã chọn và tổng tiền
+                renderSelectedSeatsAndTotal(myHeldSeats);
+                const seatBtns = document.querySelectorAll('.seat-3d');
+                seatBtns.forEach(btn => {
+                    btn.onclick = async function() {
+                        if (this.disabled) return;
+
+                        // Add loading state to button
+                        const originalText = this.innerText;
+                        this.innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size: 0.7rem;"></i>';
+                        this.disabled = true;
+
+                        const seatId = parseInt(this.getAttribute('data-seat-id'));
+                        const seatObj = Object.values(rows).flat().find(s => s.id === seatId);
+                        const statusName = getSeatStatusName(seatObj.status);
+
+                        try {
+                            if (statusName === 'Available') {
+                                await fetch('https://localhost:7092/api/SeatSchedule/hold', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ seatId, scheduleId: window.currentScheduleId, userId: myUserId })
+                                });
+                            } else if (statusName === 'Held' && seatObj.heldBy === myUserId) {
+                                await fetch('https://localhost:7092/api/SeatSchedule/release', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ seatId, scheduleId: window.currentScheduleId, userId: myUserId })
+                                });
+                            }
+                        } catch (error) {
+                            console.error('Error updating seat:', error);
+                            this.innerText = originalText;
+                            this.disabled = false;
+                        }
+                    };
+                });
+            }
+
+            function renderSelectedSeatsAndTotal(myHeldSeats) {
+                const seatTagsDiv = document.getElementById('selectedSeatTags');
+                const totalPriceSpan = document.getElementById('totalPrice');
+                const continueBtn = document.getElementById('continueBtn');
+
+                if (!myHeldSeats || myHeldSeats.length === 0) {
+                    seatTagsDiv.innerHTML = '<span style="color: rgba(255,255,255,0.6);">Chưa chọn ghế</span>';
+                    totalPriceSpan.innerText = '0';
+                    continueBtn.disabled = true;
+                    return;
+                }
+                seatTagsDiv.innerHTML = myHeldSeats.map(s => `<span class="seat-tag-3d">${s.seatName}</span>`).join(' ');
+                const total = myHeldSeats.length * 80000;
+                totalPriceSpan.innerText = total.toLocaleString('vi-VN');
+                continueBtn.disabled = false;
+            }
+
+                        // Add smooth scrolling and page load animations
+                        document.addEventListener('DOMContentLoaded', function() {
+                            // Animate elements on load
+                            const elements = document.querySelectorAll('.movie-info-header, .screen-container, .legend-3d, .seat-map-container, .booking-summary-3d');
+                            elements.forEach((el, index) => {
+                                el.style.opacity = '0';
+                                el.style.transform = 'translateY(30px)';
+                                setTimeout(() => {
+                                    el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                                    el.style.opacity = '1';
+                                    el.style.transform = 'translateY(0)';
+                                }, index * 200);
+                            });
+                        });
+        </script>
+    }
+</body>
+</html>

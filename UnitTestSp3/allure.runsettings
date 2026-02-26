@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+	<RunConfiguration>
+		<!-- Thư mục chứa kết quả test -->
+		<ResultsDirectory>allure-results</ResultsDirectory>
+
+		<!-- Có thể đặt thời gian timeout, thiết lập nền tảng nếu cần -->
+		<!-- <TargetPlatform>x64</TargetPlatform> -->
+		<!-- <TargetFrameworkVersion>net8.0</TargetFrameworkVersion> -->
+	</RunConfiguration>
+
+	<!-- Cấu hình data collectors (nếu hỗ trợ Allure) -->
+	<DataCollectionRunSettings>
+		<DataCollectors>
+			<DataCollector friendlyName="allure" uri="datacollector://Allure.Net/">
+				<Configuration>
+					<OutputDirectory>allure-results</OutputDirectory>
+					<!-- Các config khác tùy package allure -->
+				</Configuration>
+			</DataCollector>
+		</DataCollectors>
+	</DataCollectionRunSettings>
+</RunSettings>

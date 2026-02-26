@@ -1,0 +1,333 @@
+@model MovieTheater.Web.Areas.UserManagement.Models.UpdateUserViewModel
+@{
+    ViewData["SidebarActive"] = "UserManagement";
+    ViewData["Title"] = "Chỉnh sửa người dùng";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+
+}
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+<link rel="stylesheet" href="~/css/edit-profile.css" />
+
+<div class="edit-user-page-3d">
+    <div class="background-overlay-3d"></div>
+
+    <div class="container-3d">
+        <!-- Header Section -->
+        <div class="page-header-3d">
+            <div class="header-content-3d">
+                <div class="header-icon-3d">
+                    <i class="fas fa-user-edit"></i>
+                </div>
+                <div class="header-text-3d">
+                    <h1 class="page-title-3d">Chỉnh sửa người dùng</h1>
+                    <p class="page-subtitle-3d">Cập nhật thông tin tài khoản trong hệ thống</p>
+                </div>
+            </div>
+            <div class="breadcrumb-3d">
+                <a href="#" class="breadcrumb-item-3d">
+                    <i class="fas fa-tachometer-alt"></i>
+                    Dashboard
+                </a>
+                <i class="fas fa-chevron-right breadcrumb-separator"></i>
+                <a href="#" class="breadcrumb-item-3d">
+                    <i class="fas fa-users"></i>
+                    Quản lý người dùng
+                </a>
+                <i class="fas fa-chevron-right breadcrumb-separator"></i>
+                <span class="breadcrumb-item-3d active">
+                    <i class="fas fa-edit"></i>
+                    Chỉnh sửa
+                </span>
+            </div>
+        </div>
+
+        <!-- Form Card -->
+        <div class="form-card-3d">
+            <div class="card-header-3d">
+                <div class="card-header-content-3d">
+                    <div class="card-icon-3d">
+                        <i class="fas fa-user-cog"></i>
+                    </div>
+                    <div class="card-title-3d">
+                        <h2>Thông tin cá nhân</h2>
+                        <p>Cập nhật thông tin chi tiết của người dùng</p>
+                    </div>
+                </div>
+                <div class="card-status-3d">
+                    <i class="fas fa-circle status-online"></i>
+                    <span>Đang chỉnh sửa</span>
+                </div>
+            </div>
+
+            <div class="card-body-3d">
+                <!-- Error Messages -->
+                @if (!ViewContext.ModelState.IsValid)
+                {
+                    <div class="alert-3d error">
+                        <div class="alert-icon-3d">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="alert-content-3d">
+                            <div class="alert-title-3d">Có lỗi xảy ra!</div>
+                            <ul class="alert-list-3d">
+                                @foreach (var error in ViewContext.ModelState.Values.SelectMany(v => v.Errors))
+                                {
+                                    <li>@error.ErrorMessage</li>
+                                }
+                            </ul>
+                        </div>
+                        <button class="alert-close-3d" onclick="closeAlert(this)">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                }
+
+                <form asp-action="Edit" method="post" class="user-form-3d" id="editUserForm">
+                    <div class="form-grid-3d">
+                        <!-- Personal Information Section -->
+                        <div class="form-section-3d">
+                            <div class="section-header-3d">
+                                <div class="section-icon-3d personal">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div class="section-title-3d">
+                                    <h3>Thông tin cá nhân</h3>
+                                    <p>Thông tin cơ bản của người dùng</p>
+                                </div>
+                            </div>
+
+                            <div class="form-row-3d">
+                                <div class="form-group-3d">
+                                    <label asp-for="FullName" class="form-label-3d">
+                                        <i class="fas fa-signature"></i>
+                                        Họ và tên
+                                        <span class="required-star">*</span>
+                                    </label>
+                                    <div class="input-wrapper-3d">
+                                        <input asp-for="FullName" class="form-input-3d" placeholder="Nhập họ và tên đầy đủ" />
+                                        <div class="input-icon-3d">
+                                            <i class="fas fa-user"></i>
+                                        </div>
+                                    </div>
+                                    @* <span asp-validation-for="FullName" class="error-message-3d">@Html.ValidationMessageFor(m => m.FullName)</span> *@
+                                </div>
+
+                                <div class="form-group-3d">
+                                    <label asp-for="DateOfBirth" class="form-label-3d">
+                                        <i class="fas fa-birthday-cake"></i>
+                                        Ngày sinh
+                                    </label>
+                                    <div class="input-wrapper-3d">
+                                        <input asp-for="DateOfBirth" class="form-input-3d" type="date" />
+                                        <div class="input-icon-3d">
+                                            <i class="fas fa-calendar-alt"></i>
+                                        </div>
+                                    </div>
+                                    @* <span asp-validation-for="DateOfBirth" class="error-message-3d">@Html.ValidationMessageFor(m => m.DateOfBirth)</span> *@
+                                </div>
+                            </div>
+
+                            <div class="form-row-3d">
+                                <div class="form-group-3d">
+                                    <label asp-for="Sex" class="form-label-3d">
+                                        <i class="fas fa-venus-mars"></i>
+                                        Giới tính
+                                    </label>
+                                    <div class="select-wrapper-3d">
+                                        <select asp-for="Sex" class="form-select-3d">
+                                            <option value="">Chọn giới tính</option>
+                                            <option value="Nam">👨 Nam</option>
+                                            <option value="Nữ">👩 Nữ</option>
+                                        </select>
+                                        <div class="select-icon-3d">
+                                            <i class="fas fa-chevron-down"></i>
+                                        </div>
+                                    </div>
+                                    @* <span asp-validation-for="Sex" class="error-message-3d">@Html.ValidationMessageFor(m => m.Sex)</span> *@
+                                </div>
+
+                                <div class="form-group-3d">
+                                    <label asp-for="IdentityCard" class="form-label-3d">
+                                        <i class="fas fa-id-card"></i>
+                                        CMND/CCCD
+                                        <span class="required-star">*</span>
+                                    </label>
+                                    <div class="input-wrapper-3d">
+                                        <input asp-for="IdentityCard" class="form-input-3d" placeholder="Nhập số CMND/CCCD" />
+                                        <div class="input-icon-3d">
+                                            <i class="fas fa-id-card"></i>
+                                        </div>
+                                    </div>
+                                    @* <span asp-validation-for="IdentityCard" class="error-message-3d">@Html.ValidationMessageFor(m => m.IdentityCard)</span> *@
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Contact Information Section -->
+                        <div class="form-section-3d">
+                            <div class="section-header-3d">
+                                <div class="section-icon-3d contact">
+                                    <i class="fas fa-address-book"></i>
+                                </div>
+                                <div class="section-title-3d">
+                                    <h3>Thông tin liên hệ</h3>
+                                    <p>Email, số điện thoại và địa chỉ</p>
+                                </div>
+                            </div>
+
+                            <div class="form-row-3d">
+                                <div class="form-group-3d full-width">
+                                    <label asp-for="Email" class="form-label-3d">
+                                        <i class="fas fa-envelope"></i>
+                                        Email
+                                        <span class="required-star">*</span>
+                                    </label>
+                                    <div class="input-wrapper-3d">
+                                        <input asp-for="Email" class="form-input-3d" type="email" placeholder="example@domain.com" />
+                                        <div class="input-icon-3d">
+                                            <i class="fas fa-at"></i>
+                                        </div>
+                                    </div>
+                                    @* <span asp-validation-for="Email" class="error-message-3d">@Html.ValidationMessageFor(m => m.Email)</span> *@
+                                </div>
+                            </div>
+
+                            <div class="form-row-3d">
+                                <div class="form-group-3d">
+                                    <label asp-for="PhoneNumber" class="form-label-3d">
+                                        <i class="fas fa-phone"></i>
+                                        Số điện thoại
+                                        <span class="required-star">*</span>
+                                    </label>
+                                    <div class="input-wrapper-3d">
+                                        <input asp-for="PhoneNumber" class="form-input-3d" placeholder="0xxx xxx xxx" />
+                                        <div class="input-icon-3d">
+                                            <i class="fas fa-phone"></i>
+                                        </div>
+                                    </div>
+                                    @* <span asp-validation-for="PhoneNumber" class="error-message-3d">@Html.ValidationMessageFor(m => m.PhoneNumber)</span> *@
+                                </div>
+
+                                <div class="form-group-3d">
+                                    <label asp-for="Address" class="form-label-3d">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        Địa chỉ
+                                    </label>
+                                    <div class="input-wrapper-3d">
+                                        <input asp-for="Address" class="form-input-3d" placeholder="Nhập địa chỉ đầy đủ" />
+                                        <div class="input-icon-3d">
+                                            <i class="fas fa-home"></i>
+                                        </div>
+                                    </div>
+                                    @* <span asp-validation-for="Address" class="error-message-3d">@Html.ValidationMessageFor(m => m.Address)</span> *@
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- System Settings Section -->
+                        <div class="form-section-3d">
+                            <div class="section-header-3d">
+                                <div class="section-icon-3d system">
+                                    <i class="fas fa-cogs"></i>
+                                </div>
+                                <div class="section-title-3d">
+                                    <h3>Cài đặt hệ thống</h3>
+                                    <p>Vai trò và trạng thái tài khoản</p>
+                                </div>
+                            </div>
+
+                            <div class="form-row-3d">
+                                <div class="form-group-3d">
+                                    <label asp-for="Role" class="form-label-3d">
+                                        <i class="fas fa-user-tag"></i>
+                                        Vai trò
+                                        <span class="required-star">*</span>
+                                    </label>
+                                    <div class="select-wrapper-3d">
+                                        <select asp-for="Role" class="form-select-3d">
+                                            <option value="">Chọn vai trò</option>
+                                            <option value="Employee">👨‍💼 Nhân viên</option>
+                                            <option value="Customer">👤 Khách hàng</option>
+                                        </select>
+                                        <div class="select-icon-3d">
+                                            <i class="fas fa-chevron-down"></i>
+                                        </div>
+                                    </div>
+                                    @* <span asp-validation-for="Role" class="error-message-3d">@Html.ValidationMessageFor(m => m.Role)</span> *@
+                                </div>
+
+                                <div class="form-group-3d">
+                                    <label class="form-label-3d">
+                                        <i class="fas fa-shield-alt"></i>
+                                        Trạng thái tài khoản
+                                    </label>
+                                    <div class="toggle-wrapper-3d">
+                                        <input asp-for="IsLocked" class="toggle-input-3d" type="checkbox" id="lockToggle" />
+                                        <label for="lockToggle" class="toggle-label-3d">
+                                            <span class="toggle-slider-3d"></span>
+                                            <span class="toggle-text-3d">
+                                                <span class="toggle-on">🔒 Khóa tài khoản</span>
+                                                <span class="toggle-off">🔓 Tài khoản hoạt động</span>
+                                            </span>
+                                        </label>
+                                    </div>
+                                    @* <span asp-validation-for="IsLocked" class="error-message-3d">@Html.ValidationMessageFor(m => m.IsLocked)</span> *@
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="form-actions-3d">
+                        <div class="actions-left-3d">
+                            <button type="button" class="action-btn-3d secondary" onclick="resetForm()">
+                                <i class="fas fa-undo"></i>
+                                <span>Đặt lại</span>
+                            </button>
+                        </div>
+                        <div class="actions-right-3d">
+                            <a asp-action="UserManagement" class="action-btn-3d outline">
+                                <i class="fas fa-arrow-left"></i>
+                                <span>Quay lại</span>
+                            </a>
+                            <button type="submit" class="action-btn-3d primary" id="saveBtn">
+                                <i class="fas fa-save"></i>
+                                <span>Lưu thay đổi</span>
+                                <div class="btn-loader-3d" style="display: none;">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div class="modal-overlay-3d" id="successModal" style="display: none;">
+        <div class="modal-3d success">
+            <div class="modal-content-3d">
+                <div class="modal-icon-3d">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h3 class="modal-title-3d">Thành công!</h3>
+                <p class="modal-message-3d">Thông tin người dùng đã được cập nhật thành công.</p>
+                <button class="modal-btn-3d" onclick="closeSuccessModal()">
+                    <i class="fas fa-check"></i>
+                    Đồng ý
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/js/edit-user-3d.js"></script>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

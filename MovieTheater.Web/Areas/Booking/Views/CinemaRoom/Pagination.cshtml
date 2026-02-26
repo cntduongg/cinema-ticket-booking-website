@@ -1,0 +1,107 @@
+﻿@model MovieTheater.Web.Areas.Booking.Models.PagingInfo
+
+<style>
+    .pagination-wrapper {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        margin-top: 10px;
+    }
+
+    .pagination-info {
+        font-size: 0.95rem;
+        color: #6c757d;
+    }
+
+    .pagination-container ul.pagination {
+        display: flex;
+        list-style: none;
+        padding-left: 0;
+        margin-bottom: 0;
+    }
+
+    .pagination-container .page-item {
+        margin: 0 2px;
+    }
+
+    .pagination-container .page-link {
+        padding: 6px 12px;
+        border: 1px solid #dee2e6;
+        color: #0d6efd;
+        background-color: #fff;
+        border-radius: 0.25rem;
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+    .pagination-container .page-item.active .page-link {
+        background-color: #0d6efd;
+        color: #fff;
+        border-color: #0d6efd;
+    }
+
+    .pagination-container .page-item.disabled .page-link {
+        cursor: default;
+        opacity: 0.5;
+        pointer-events: none;
+    }
+</style>
+
+<div class="pagination-wrapper d-flex justify-content-between align-items-center mt-3">
+    <div class="pagination-info text-muted ms-2">
+        Hiển thị @(((Model.PageIndex - 1) * Model.PageSize) + 1)
+        –
+        @(((Model.PageIndex - 1) * Model.PageSize) + (Model.TotalRecords > 0 && Model.PageIndex <= Model.TotalPages ? Math.Min(Model.PageSize, Model.TotalRecords - (Model.PageIndex - 1) * Model.PageSize) : 0))
+        của @Model.TotalRecords phòng chiếu
+    </div>
+
+    <nav class="pagination-container me-2">
+        <ul class="pagination mb-0">
+
+            <li class="page-item @(Model.PageIndex <= 1 ? "disabled" : "")">
+                <a class="page-link" href="@Url.Action("CinemaRooms", new { pageIndex = Model.PageIndex - 1, pageSize = Model.PageSize })">‹</a>
+            </li>
+
+            @if (Model.TotalPages > 1)
+            {
+                int startPage = Math.Max(1, Model.PageIndex - 2);
+                int endPage = Math.Min(Model.TotalPages, Model.PageIndex + 2);
+
+                if (startPage > 1)
+                {
+                    <li class="page-item">
+                        <a class="page-link" href="@Url.Action("CinemaRooms", new { pageIndex = 1, pageSize = Model.PageSize })">1</a>
+                    </li>
+                    @if (startPage > 2)
+                    {
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                    }
+                }
+
+                for (int i = startPage; i <= endPage; i++)
+                {
+                    <li class="page-item @(i == Model.PageIndex ? "active" : "")">
+                        <a class="page-link" href="@Url.Action("CinemaRooms", new { pageIndex = i, pageSize = Model.PageSize })">@i</a>
+                    </li>
+                }
+
+                if (endPage < Model.TotalPages)
+                {
+                    if (endPage < Model.TotalPages - 1)
+                    {
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                    }
+                    <li class="page-item">
+                        <a class="page-link" href="@Url.Action("CinemaRooms", new { pageIndex = Model.TotalPages, pageSize = Model.PageSize })">@Model.TotalPages</a>
+                    </li>
+                }
+            }
+
+            <li class="page-item @(Model.PageIndex >= Model.TotalPages ? "disabled" : "")">
+                <a class="page-link" href="@Url.Action("CinemaRooms", new { pageIndex = Model.PageIndex + 1, pageSize = Model.PageSize })">›</a>
+            </li>
+
+        </ul>
+    </nav>
+</div>

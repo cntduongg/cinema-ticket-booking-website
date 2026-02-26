@@ -1,0 +1,28 @@
+@{
+    ViewData["Title"] = "Giao diện nhân viên";
+}
+<div class="container py-5">
+    <div class="card p-4 shadow-lg">
+        <h2 class="mb-4 text-center text-warning fw-bold">Giao diện nhân viên</h2>
+        <div class="row mb-4">
+            <div class="col-md-4 text-center">
+                <img src="https://cdn-icons-png.flaticon.com/512/3135/3135768.png" width="90" alt="Support Icon" />
+                <h5 class="mt-3">Hỗ trợ khách hàng</h5>
+                <p>Kiểm tra vé, hỗ trợ đặt vé, giải đáp thắc mắc khách hàng.</p>
+                <a href="#" class="btn btn-outline-warning btn-sm">Xem chi tiết</a>
+            </div>
+            <div class="col-md-4 text-center">
+                <img src="https://cdn-icons-png.flaticon.com/512/1170/1170627.png" width="90" alt="Showtime Icon" />
+                <h5 class="mt-3">Quản lý suất chiếu</h5>
+                <p>Xem, cập nhật thông tin suất chiếu, phòng chiếu.</p>
+                <a href="#" class="btn btn-outline-warning btn-sm">Quản lý</a>
+            </div>
+            <div class="col-md-4 text-center">
+                <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" width="90" alt="Customer Icon" />
+                <h5 class="mt-3">Quản lý khách hàng</h5>
+                <p>Xem và quản lý thông tin tài khoản khách hàng.</p>
+                <a href="@Url.Action("ViewCustomers","Employee", new { currentPage = 1, size = 10 })" class="btn btn-outline-warning btn-sm">Quản lý</a>
+            </div>
+        </div>
+    </div>
+</div> 

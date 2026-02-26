@@ -1,0 +1,593 @@
+﻿@model MovieTheater.Web.Areas.Booking.Models.CinemaRoom
+
+@{
+    ViewData["SidebarActive"] = "RoomManagement";  
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tạo Phòng Chiếu</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --primary-light: #5dade2;
+            --primary-dark: #2c81ba;
+            --secondary-color: #2ecc71;
+            --danger-color: #e74c3c;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --gray-light: #f3f4f6;
+            --gray-dark: #6b7280;
+            --text-color: #2c3e50;
+            --shadow: 0 4px 12px rgba(52, 152, 219, 0.2);
+            --shadow-hover: 0 6px 16px rgba(52, 152, 219, 0.3);
+            --card-border: 1px solid #e5e7eb;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f9fafb;
+            color: var(--text-color);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .admin-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            flex: 1;
+            margin-left: 250px;
+            padding: 30px;
+            background-color: #f9fafb;
+        }
+
+        .form-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: calc(100vh - 60px);
+            position: relative;
+            z-index: 1;
+        }
+
+        .form-card {
+            width: 100%;
+            max-width: 600px;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+            border: var(--card-border);
+            position: relative;
+            z-index: 2;
+        }
+
+        .form-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .form-icon {
+            font-size: 48px;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        .form-title {
+            font-size: 28px;
+            color: var(--primary-dark);
+            margin-bottom: 10px;
+        }
+
+        .form-subtitle {
+            color: var(--gray-dark);
+            font-size: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--text-color);
+            font-size: 16px;
+        }
+
+        .form-label i {
+            color: var(--primary-color);
+            margin-right: 8px;
+            width: 20px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px 20px 14px 45px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray-dark);
+        }
+
+        .validation-error {
+            display: block;
+            margin-top: 8px;
+            color: var(--danger-color);
+            font-size: 14px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-top: 15px;
+        }
+
+        .checkbox-input {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            color: var(--text-color);
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .checkbox-label i {
+            color: var(--success-color);
+            margin-right: 8px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .submit-btn, .cancel-btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 14px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 16px;
+            border: none;
+        }
+
+        .submit-btn {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .submit-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .cancel-btn {
+            background: var(--gray-light);
+            color: var(--text-color);
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .cancel-btn:hover {
+            background: #e5e7eb;
+            transform: translateY(-2px);
+        }
+
+        /* Background particles */
+        .bg-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background-color: var(--primary-light);
+            border-radius: 50%;
+            opacity: 0.5;
+            animation: float 10s infinite ease-in-out;
+        }
+
+        @@keyframes float {
+            0%, 100% {
+                transform: translate(0, 0);
+            }
+            50% {
+                transform: translate(20px, 20px);
+            }
+        }
+
+        /* Success/error states */
+        .form-input.success {
+            border-color: var(--success-color);
+        }
+
+        .form-input.error {
+            border-color: var(--danger-color);
+        }
+
+        .page-header {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+            border: var(--card-border);
+        }
+
+        .page-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .page-title h1 {
+            font-size: 28px;
+            color: var(--primary-dark);
+        }
+
+        .page-title p {
+            color: var(--gray-dark);
+            margin-top: 8px;
+        }
+
+        .page-title i {
+            font-size: 32px;
+            color: var(--primary-color);
+        }
+
+        /* Alert styles */
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+
+        .alert:before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 5px;
+        }
+
+        .alert-success {
+            background-color: #eafaf1;
+            border: 1px solid #a9dfbf;
+            color: #27ae60;
+        }
+
+        .alert-success:before {
+            background-color: var(--success-color);
+        }
+
+        .alert-error {
+            background-color: #fdecea;
+            border: 1px solid #f5b7b1;
+            color: #c0392b;
+        }
+
+        .alert-error:before {
+            background-color: var(--danger-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Success Alert -->
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i>
+                    <div>@TempData["Success"]</div>
+                </div>
+            }
+
+            <!-- Error Alert -->
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <div>@TempData["Error"]</div>
+                </div>
+            }
+
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="page-title">
+                    <i class="fas fa-film"></i>
+                    <div>
+                        <h1>Tạo Phòng Chiếu Mới</h1>
+                        <p>Thêm thông tin phòng chiếu mới cho rạp của bạn</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-container">
+                <div class="form-card">
+                    <div class="form-header">
+                        <div class="form-icon">
+                            <i class="fas fa-plus-circle"></i>
+                        </div>
+                        <h2 class="form-title">Tạo Phòng Chiếu</h2>
+                        <p class="form-subtitle">Điền thông tin để tạo phòng chiếu mới cho rạp của bạn</p>
+                    </div>
+
+                    <form asp-action="Create" method="post" id="createRoomForm">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-door-open"></i>
+                                Tên Phòng Chiếu
+                            </label>
+                            <div class="input-wrapper">
+                                <input 
+                                    asp-for="CinemaRoomName"
+                                    type="text" 
+                                    name="CinemaRoomName" 
+                                    class="form-input"
+                                    placeholder="VD: Phòng VIP 01, Phòng Thường 02..."
+                                    required
+                                />
+                                <i class="fas fa-door-open input-icon"></i>
+                            </div>
+                            <span asp-validation-for="CinemaRoomName" class="validation-error" id="name-error"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-chair"></i>
+                                Số Lượng Ghế
+                            </label>
+                            <div class="input-wrapper">
+                                <input 
+                                    asp-for="SeatQuantity"
+                                    type="number" 
+                                    name="SeatQuantity" 
+                                    class="form-input"
+                                    placeholder="Nhập số lượng ghế (1-500)"
+                                    min="1" 
+                                    max="500"
+                                    required
+                                />
+                                <i class="fas fa-calculator input-icon"></i>
+                            </div>
+                            <span asp-validation-for="SeatQuantity" class="validation-error" id="seat-error"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-cog"></i>
+                                Cài Đặt Phòng
+                            </label>
+                            <div class="checkbox-group">
+                                <input type="hidden" name="Status" value="false" />
+                                <input 
+                                    asp-for="Status"
+                                    type="checkbox" 
+                                    name="Status" 
+                                    id="statusCheckbox" 
+                                    class="checkbox-input"
+                                    value="true"
+                                />
+                                <label for="statusCheckbox" class="checkbox-label">
+                                    <i class="fas fa-power-off"></i>
+                                    Kích hoạt phòng chiếu ngay sau khi tạo
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="button-group">
+                            <button type="submit" class="submit-btn">
+                                <i class="fas fa-plus"></i>
+                                Tạo Phòng Chiếu
+                            </button>
+                            <a href="@Url.Action("CinemaRooms", "CinemaRoom", new { area = "Booking" })" class="cancel-btn">
+                                <i class="fas fa-times"></i>
+                                Hủy Bỏ
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="bg-particles" id="particles"></div>
+
+    <script>
+        // Create particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 40;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDuration = (Math.random() * 4 + 4) + 's';
+                particle.style.animationDelay = Math.random() * 3 + 's';
+                particle.style.opacity = Math.random() * 0.5 + 0.3;
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // Form validation
+        function validateInput(input) {
+            const value = input.value.trim();
+            const inputName = input.name;
+            let isValid = true;
+            let errorMsg = '';
+
+            // Remove previous states
+            input.classList.remove('error', 'success');
+
+            if (inputName === 'CinemaRoomName') {
+                if (value.length === 0) {
+                    errorMsg = 'Tên phòng chiếu không được để trống';
+                    isValid = false;
+                } else if (value.length < 3) {
+                    errorMsg = 'Tên phòng chiếu phải có ít nhất 3 ký tự';
+                    isValid = false;
+                } else if (value.length > 50) {
+                    errorMsg = 'Tên phòng chiếu không được vượt quá 50 ký tự';
+                    isValid = false;
+                }
+                
+                document.getElementById('name-error').textContent = errorMsg;
+            }
+
+            if (inputName === 'SeatQuantity') {
+                const numValue = parseInt(value);
+                if (isNaN(numValue) || numValue < 1) {
+                    errorMsg = 'Số lượng ghế phải lớn hơn 0';
+                    isValid = false;
+                } else if (numValue > 500) {
+                    errorMsg = 'Số lượng ghế không được vượt quá 500';
+                    isValid = false;
+                }
+                
+                document.getElementById('seat-error').textContent = errorMsg;
+            }
+
+            if (isValid) {
+                input.classList.add('success');
+            } else {
+                input.classList.add('error');
+            }
+
+            return isValid;
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+
+            const form = document.getElementById('createRoomForm');
+            const inputs = form.querySelectorAll('.form-input');
+            const statusCheckbox = document.getElementById('statusCheckbox');
+
+            // Input validation
+            inputs.forEach(input => {
+                input.addEventListener('blur', function() {
+                    validateInput(this);
+                });
+
+                input.addEventListener('input', function() {
+                    if (this.classList.contains('error')) {
+                        validateInput(this);
+                    }
+                });
+            });
+
+            // Form submission
+            if (form) {
+                form.addEventListener('submit', function (e) {
+                    // Validate form before submission
+                    let isValid = true;
+                    inputs.forEach(input => {
+                        if (!validateInput(input)) {
+                            isValid = false;
+                        }
+                    });
+
+                    if (!isValid) {
+                        e.preventDefault();
+                        return false;
+                    }
+
+                    // --- Ensure Status is always sent as true/false ---
+                    // Remove any existing hidden Status
+                    const hiddenStatus = form.querySelector('input[type="hidden"][name="Status"]');
+                    if (hiddenStatus) hiddenStatus.remove();
+                    // Add hidden input with value false if checkbox is not checked
+                    if (!statusCheckbox.checked) {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = 'Status';
+                        input.value = 'false';
+                        form.appendChild(input);
+                    }
+                    // ---------------------------------------------------
+
+                    // Show loading state
+                    const submitBtn = form.querySelector('.submit-btn');
+                    const originalText = submitBtn.innerHTML;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang tạo...';
+                    submitBtn.disabled = true;
+
+                    // Allow form to submit normally
+                    return true;
+                });
+            }
+        });
+    </script>
+
+    @section Scripts {
+        @await Html.PartialAsync("_ValidationScriptsPartial")
+    }
+</body>
+</html>

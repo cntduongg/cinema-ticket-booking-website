@@ -1,0 +1,370 @@
+﻿@model MovieTheater.Web.Areas.Booking.Models.Schedule
+@{
+    ViewData["SidebarActive"] = "ScheduleManagement";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+
+    ViewBag.Title = "Chỉnh Sửa Lịch Chiếu";
+}
+
+
+
+<style>
+    /* === STYLE y hệt Create.cshtml === */
+    .form-container {
+        max-width: 600px;
+        margin: 40px auto;
+        padding: 0 20px;
+    }
+
+    .form-card {
+        background: white;
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        border: 1px solid #e9ecef;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .form-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #667eea, #ff8a95);
+        }
+
+    .form-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 8px;
+        text-align: center;
+    }
+
+    .form-subtitle {
+        color: #6c757d;
+        text-align: center;
+        margin-bottom: 32px;
+        font-size: 16px;
+    }
+
+    .form-group {
+        margin-bottom: 24px;
+        position: relative;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #2c3e50;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .form-input, .form-select {
+        width: 100%;
+        padding: 16px 20px;
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        background: #f8f9fa;
+        box-sizing: border-box;
+        appearance: none;
+    }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+
+    .form-select {
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 16px center;
+        background-size: 16px;
+        padding-right: 50px;
+        cursor: pointer;
+    }
+
+    .icon-input,
+    .icon-select {
+        position: relative;
+    }
+
+        .icon-input::before,
+        .icon-select::before {
+            content: attr(data-icon);
+            position: absolute;
+            right: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.25rem;
+            color: #a8b2d1;
+            pointer-events: none;
+            z-index: 2;
+            line-height: 1;
+        }
+
+    .form-input,
+    .form-select {
+        padding-right: 2.5rem !important; /* Đủ chỗ cho icon */
+    }
+
+    .submit-btn {
+        width: 100%;
+        padding: 18px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border: none;
+        border-radius: 12px;
+        color: white;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-top: 16px;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+            .submit-btn:hover::before {
+                left: 100%;
+            }
+
+    .validation-error {
+        color: #dc3545;
+        font-size: 12px;
+        margin-top: 6px;
+        display: block;
+        font-weight: 500;
+    }
+
+    @@media (max-width: 768px) {
+        .form-container {
+            margin: 20px auto;
+            padding: 0 15px;
+        }
+
+        .form-card {
+            padding: 24px;
+        }
+
+        .form-title {
+            font-size: 24px;
+        }
+    }
+
+    /* --- OVERRIDE FORM INPUT/SELECT STYLE FOR EDIT SCHEDULE FORM (ĐỒNG BỘ VỚI MODAL CREATE) --- */
+    body {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        color: #e2e8f0;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    .form-card {
+        background: rgba(30, 41, 59, 0.95) !important;
+        color: #e2e8f0 !important;
+        border: 1px solid rgba(148,163,184,0.13);
+        border-radius: 18px;
+        box-shadow: 0 8px 32px rgba(30,41,59,0.18);
+    }
+
+    .form-title, .form-subtitle {
+        color: #e2e8f0 !important;
+    }
+
+    .form-label {
+        color: #e2e8f0 !important;
+        font-weight: 600;
+        font-size: 1rem;
+    }
+
+    .form-input, .form-select {
+        background: rgba(15,23,42,0.85) !important;
+        border: 2px solid #60a5fa;
+        color: #e2e8f0;
+        border-radius: 12px;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        margin-bottom: 8px;
+        transition: all 0.3s;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #a78bfa;
+            background: rgba(15,23,42,0.95) !important;
+            color: #fff;
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .form-input:disabled {
+            background: rgba(15,23,42,0.85) !important;
+            color: #94a3b8 !important;
+            border: 2px solid #60a5fa !important;
+            opacity: 1 !important;
+            cursor: not-allowed !important;
+        }
+
+        .form-input::placeholder {
+            color: #94a3b8;
+        }
+</style>
+
+@if (!ViewData.ModelState.IsValid && ViewData.ModelState.Values.Any(v => v.Errors.Count > 0))
+{
+    <div class="validation-summary-errors" style="color: #dc3545; margin-bottom: 16px; text-align: center; font-weight: 500;">
+        @Html.ValidationSummary(false, "", new { @class = "validation-error" })
+    </div>
+}
+
+<div class="form-container">
+    <div class="form-card fade-in">
+        <h2 class="form-title">Chỉnh Sửa Lịch Chiếu</h2>
+        <p class="form-subtitle">Cập nhật thông tin lịch chiếu hiện tại</p>
+
+        <form asp-action="Edit" method="post" id="scheduleForm">
+            <input type="hidden" asp-for="Id" />
+
+            <!-- Phòng chiếu -->
+            <div class="form-group">
+                <label asp-for="CinemaRoomId" class="form-label">🏢 Phòng Chiếu</label>
+                <div class="icon-select" data-icon="🎭">
+                    <select asp-for="CinemaRoomId" class="form-select" name="CinemaRoomId">
+                        <option value="">-- Chọn phòng chiếu --</option>
+                        @foreach (var room in Model.RoomOptions ?? new List<SelectListItem>())
+                        {
+                            <option value="@room.Value" selected="@(Model.CinemaRoomId.ToString() == room.Value)">
+                                @room.Text
+                            </option>
+                        }
+                    </select>
+                </div>
+                <span asp-validation-for="CinemaRoomId" class="validation-error"></span>
+            </div>
+
+            <!-- Phim -->
+            <div class="form-group">
+                <label asp-for="MovieId" class="form-label">🎬 Phim</label>
+                <div class="icon-select" data-icon="🍿">
+                    <select asp-for="MovieId" class="form-select" name="MovieId">
+                        <option value="">-- Chọn phim --</option>
+                        @foreach (var movie in Model.MovieOptions ?? new List<SelectListItem>())
+                        {
+                            <option value="@movie.Value" selected="@(Model.MovieId.ToString() == movie.Value)">
+                                @movie.Text
+                            </option>
+                        }
+                    </select>
+                </div>
+                <span asp-validation-for="MovieId" class="validation-error"></span>
+            </div>
+
+            <!-- Ngày chiếu -->
+            <div class="form-group">
+                <label asp-for="ShowDate" class="form-label">📅 Ngày Chiếu</label>
+                <div class="icon-input" data-icon="📆">
+                    <input type="date" name="ShowDate" class="form-input" value="@Model.ShowDate.ToString("yyyy-MM-dd")" />
+                </div>
+                <span asp-validation-for="ShowDate" class="validation-error"></span>
+            </div>
+
+            <!-- Giờ bắt đầu -->
+            <div class="form-group">
+                <label asp-for="FromTime" class="form-label">⏰ Giờ Bắt Đầu</label>
+                <div class="icon-input" data-icon="🕐">
+                    <input type="time" name="FromTime" class="form-input" value="@Model.FromTime.ToString("HH\\:mm")" />
+                </div>
+                <span asp-validation-for="FromTime" class="validation-error"></span>
+            </div>
+
+            <!-- Giờ kết thúc -->
+            <div class="form-group">
+                <label asp-for="ToTime" class="form-label">⏰ Giờ Kết Thúc</label>
+                <div class="icon-input" data-icon="🕕">
+                    <input type="time" name="ToTime" class="form-input" value="@Model.ToTime.ToString("HH\\:mm")" />
+                </div>
+                <span asp-validation-for="ToTime" class="validation-error"></span>
+            </div>
+
+            <button type="submit" class="submit-btn">
+                💾 Lưu Thay Đổi
+            </button>
+            <a href="@Url.Action("AdminIndexWithFilter", "Schedule", new { area = "Booking" })" class="cancel-btn" style="margin-top: 16px; display: inline-block; width: 100%; text-align: center; background: #e2e8f0; color: #2c3e50; border-radius: 12px; padding: 14px 0; font-weight: 600; text-decoration: none; transition: background 0.2s;">
+                ← Quay lại
+            </a>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const form = document.getElementById('scheduleForm');
+            const inputs = form.querySelectorAll('.form-input, .form-select');
+
+            inputs.forEach(input => {
+                input.addEventListener('blur', () => validateInput(input));
+                input.addEventListener('change', () => validateInput(input));
+                input.addEventListener('input', () => validateInput(input));
+            });
+
+            function validateInput(input) {
+                const name = input.name;
+                const value = input.value.trim();
+                input.classList.remove('error', 'success');
+
+                if ((name === "CinemaRoomId" || name === "MovieId") && value) {
+                    input.classList.add('success');
+                } else if (name === "ShowDate") {
+                    const selected = new Date(value);
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    if (selected >= today) input.classList.add('success');
+                    else input.classList.add('error');
+                } else if (name === "FromTime" || name === "ToTime") {
+                    if (value) input.classList.add('success');
+                    if (name === "ToTime") {
+                        const from = form.querySelector('input[name="FromTime"]').value;
+                        if (from && value <= from) {
+                            input.classList.remove('success');
+                            input.classList.add('error');
+                        }
+                    }
+                } else {
+                    input.classList.add('error');
+                }
+            }
+        });
+    </script>
+}

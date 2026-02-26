@@ -1,0 +1,76 @@
+﻿@model MovieTheater.Web.Areas.MovieManagement.Models.PagedResult<MovieViewModel>
+
+<div class="container mt-4">
+
+  <!-- Filter form -->
+  <form class="d-flex mb-3" method="get"
+        asp-area="MovieManagement"
+        asp-controller="Home"
+        asp-action="Index">
+    <input type="text" name="search"
+           value="@(Context.Request.Query["search"])" 
+           placeholder="Tìm theo tên phim..."
+           class="form-control me-2" />
+    <select name="sort" class="form-select me-2">
+      <option value="Name"
+          selected="@(Context.Request.Query["sort"] == "Name")">
+        Tên phim
+      </option>
+      <option value="ReleaseDate"
+          selected="@(Context.Request.Query["sort"] == "ReleaseDate")">
+        Ngày chiếu
+      </option>
+    </select>
+    <button class="btn btn-primary">Lọc</button>
+  </form>
+
+  <!-- Movie list -->
+  <div class="row g-3">
+    @foreach (var m in Model.Items)
+    {
+      <div class="col-6 col-md-3">
+        <div class="card h-100">
+          <!-- Sửa lại đường dẫn ảnh để luôn bắt đầu từ wwwroot -->
+          <img src="@Url.Content("~/" + m.ImagePath)" 
+               class="card-img-top" 
+               alt="@m.Name" />
+
+          <div class="card-body p-2">
+            <h5 class="card-title fs-6">@m.Name</h5>
+            <p class="card-text small mb-1">
+              @m.ReleaseDate.ToString("dd/MM/yyyy")
+            </p>
+            <a asp-area="MovieManagement"
+               asp-controller="Home"
+               asp-action="Details"
+               asp-route-id="@m.Id"
+               class="btn btn-sm btn-outline-primary w-100">
+              Xem chi tiết
+            </a>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Pagination -->
+  <nav class="mt-4">
+    <ul class="pagination justify-content-center">
+      @for (int p = 1; p <= Model.TotalPages; p++)
+      {
+        <li class="page-item @(p == Model.CurrentPage ? "active" : "")">
+          <a class="page-link"
+             href="@Url.Action("Index", "Home", new {
+               area      = "MovieManagement",
+               pageIndex = p,
+               search    = Context.Request.Query["search"].ToString(),
+               sort      = Context.Request.Query["sort"].ToString()
+             })">
+            @p
+          </a>
+        </li>
+      }
+    </ul>
+  </nav>
+
+</div>

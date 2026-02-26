@@ -1,0 +1,648 @@
+﻿﻿@using MovieTheater.Web.Areas.Booking.Models
+@using MovieTheater.Web.Areas.Booking.Models.DTOs
+@model PagedViewModel<CinemaRoomDTO>
+
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Phòng Chiếu</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #3498db; /* Màu xanh dương chính */
+            --primary-light: #5dade2;
+            --primary-dark: #2c81ba;
+            --secondary-color: #2ecc71; /* Màu xanh lá cho các nút */
+            --danger-color: #e74c3c;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --gray-light: #f3f4f6;
+            --gray-dark: #6b7280;
+            --text-color: #2c3e50;
+            --shadow: 0 4px 12px rgba(52, 152, 219, 0.2);
+            --shadow-hover: 0 6px 16px rgba(52, 152, 219, 0.3);
+            --card-border: 1px solid #e5e7eb;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f9fafb;
+            color: var(--text-color);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .admin-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar-3d {
+            width: 250px;
+            background: linear-gradient(180deg, #3498db 0%, #2c81ba 100%); /* Gradient xanh dương */
+            color: white;
+            height: 100vh;
+            position: fixed;
+            box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+            padding-top: 20px;
+        }
+
+        .sidebar-header {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .sidebar-logo {
+            font-size: 24px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar-menu li {
+            padding: 12px 20px;
+            transition: all 0.3s;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 16px;
+        }
+
+        .sidebar-menu li:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-menu li.active {
+            background: rgba(255, 255, 255, 0.2);
+            border-left: 4px solid white;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            flex: 1;
+            margin-left: 250px;
+            padding: 30px;
+            background-color: #f9fafb;
+        }
+
+        /* Header Styles */
+        .page-header {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+            border: var(--card-border);
+        }
+
+        .page-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .page-title h1 {
+            font-size: 28px;
+            color: var(--primary-dark);
+        }
+
+        .page-title p {
+            color: var(--gray-dark);
+            margin-top: 8px;
+        }
+
+        .page-title i {
+            font-size: 32px;
+            color: var(--primary-color);
+        }
+
+        /* Filter Section */
+        .filter-section {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+            border: var(--card-border);
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .search-box {
+            flex: 1;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 20px 12px 45px;
+            border-radius: 8px;
+            border: 1px solid #d1d5db;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray-dark);
+        }
+
+        .filter-btn, .add-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 16px;
+            border: none;
+        }
+
+        .filter-btn {
+            background: var(--gray-light);
+            color: var(--text-color);
+        }
+
+        .filter-btn:hover {
+            background: #e5e7eb;
+        }
+
+        .add-btn {
+            background: var(--primary-color);
+            color: white;
+            text-decoration: none;
+        }
+
+        .add-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        /* Table Container */
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            border: var(--card-border);
+        }
+
+        .table-header {
+            padding: 20px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 20px;
+            color: var(--primary-dark);
+        }
+
+        .record-count {
+            background-color: var(--primary-light);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        /* Table Styles */
+        .modern-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .modern-table th {
+            background-color: var(--primary-color);
+            color: white;
+            text-align: left;
+            padding: 16px 20px;
+            font-weight: 600;
+        }
+
+        .modern-table th i {
+            margin-right: 8px;
+        }
+
+        .modern-table td {
+            padding: 14px 20px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .modern-table tr:nth-child(even) {
+            background-color: #f9fafb;
+        }
+
+        .modern-table tr:hover {
+            background-color: #ecf6fd;
+        }
+
+        /* Switch Styles */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 26px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--success-color);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+
+        /* Action Buttons - Cải tiến giao diện phần thao tác */
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 14px;
+            transition: all 0.3s;
+            text-decoration: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .action-btn i {
+            margin: 0;
+        }
+
+        .action-btn.edit {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .action-btn.edit:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+        }
+
+        .empty-icon {
+            margin-bottom: 20px;
+        }
+
+        .empty-icon i {
+            font-size: 64px;
+            color: var(--primary-color);
+        }
+
+        .empty-title {
+            font-size: 24px;
+            color: var(--primary-dark);
+            margin-bottom: 10px;
+        }
+
+        .empty-text {
+            color: var(--gray-dark);
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        .empty-action {
+            background: var(--primary-color);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s;
+        }
+
+        .empty-action:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        /* Pagination */
+        .pagination-container {
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        /* Alerts */
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+
+        .alert:before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 5px;
+        }
+
+        .alert-success {
+            background-color: #eafaf1;
+            border: 1px solid #a9dfbf;
+            color: #27ae60;
+        }
+
+        .alert-success:before {
+            background-color: var(--success-color);
+        }
+
+        .alert-error {
+            background-color: #fdecea;
+            border: 1px solid #f5b7b1;
+            color: #c0392b;
+        }
+
+        .alert-error:before {
+            background-color: var(--danger-color);
+        }
+
+        /* Status indicator */
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .status-active {
+            background-color: #eafaf1;
+            color: #27ae60;
+        }
+
+        .status-inactive {
+            background-color: #fdecea;
+            color: #c0392b;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Success Alert -->
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i>
+                    <div>@TempData["Success"]</div>
+                </div>
+            }
+
+            <!-- Error Alert -->
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <div>@TempData["Error"]</div>
+                </div>
+            }
+
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="page-title">
+                    <i class="fas fa-film"></i>
+                    <div>
+                        <h1>Quản Lý Phòng Chiếu</h1>
+                        <p>Quản lý thông tin phòng chiếu của rạp</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search and Filter -->
+            <div class="filter-section">
+                <div class="filter-row">
+                    <div class="search-box">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" placeholder="ID phòng chiếu, tên phòng chiếu...">
+                    </div>
+                    <button class="filter-btn">
+                        <i class="fas fa-filter"></i>
+                        <span>Lọc</span>
+                    </button>
+                    <a href="@Url.Action("Create", "CinemaRoom", new { area = "Booking" })" class="add-btn">
+                        <i class="fas fa-plus"></i>
+                        <span>Thêm Phòng Chiếu</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="table-container">
+                <div class="table-header">
+                    <h3 class="table-title">
+                        <i class="fas fa-list-ul"></i>
+                        Danh Sách Phòng Chiếu
+                    </h3>
+                </div>
+
+                @if (!Model.IsSuccess || !Model.Items.Any())
+                {
+                    <div class="empty-state">
+                        <div class="empty-icon">
+                            <i class="fas fa-film" style="font-size: 64px; color: #7c3aed;"></i>
+                        </div>
+                        <h3 class="empty-title">Chưa có phòng chiếu nào</h3>
+                        <p class="empty-text">Bắt đầu thêm phòng chiếu mới để quản lý</p>
+                    </div>
+                }
+                else
+                {
+                    <table class="modern-table">
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-hashtag"></i> ID</th>
+                                <th><i class="fas fa-door-open"></i> Tên Phòng</th>
+                                <th><i class="fas fa-chair"></i> Số Ghế</th>
+                                <th><i class="fas fa-toggle-on"></i> Trạng Thái</th>
+                                <th><i class="fas fa-cogs"></i> Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var room in Model.Items)
+                            {
+                                <tr>
+                                    <td>@room.Id</td>
+                                    <td>@room.CinemaRoomName</td>
+                                    <td>@room.SeatQuantity</td>
+                                    <td>
+                                        <form asp-area="Booking" asp-controller="CinemaRoom" asp-action="ToggleRoomStatus" method="post" style="margin: 0;">
+                                            <input type="hidden" name="id" value="@room.Id" />
+                                            <label class="switch">
+                                                <input type="checkbox" onchange="this.form.submit()" @(room.Status ? "checked" : "") />
+                                                <span class="slider"></span>
+                                            </label>
+                                        </form>
+                                    </td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <a href="@Url.Action("Edit", "CinemaRoom", new { area = "Booking", id = room.Id })" class="action-btn edit">
+                                                <i class="fas fa-edit"></i>
+                                                <span>Sửa</span>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+
+                    <!-- Pagination -->
+                    @if (Model.PagingInfo != null && Model.PagingInfo.TotalPages > 1)
+                    {
+                        <div class="pagination-container">
+                            @Html.Partial("Pagination", Model.PagingInfo)
+                        </div>
+                    }
+                }
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Auto-hide alerts
+            setTimeout(() => {
+                const alerts = document.querySelectorAll('.alert');
+                alerts.forEach(alert => {
+                    alert.style.transition = 'opacity 0.5s ease-out, transform 0.5s ease-out';
+                    alert.style.opacity = '0';
+                    alert.style.transform = 'translateX(100px)';
+                    setTimeout(() => alert.style.display = 'none', 500);
+                });
+            }, 5000);
+
+            // Add click to dismiss functionality for alerts
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                alert.style.cursor = 'pointer';
+                alert.addEventListener('click', function() {
+                    this.style.transition = 'opacity 0.3s ease-out, transform 0.3s ease-out';
+                    this.style.opacity = '0';
+                    this.style.transform = 'translateX(100px)';
+                    setTimeout(() => this.style.display = 'none', 300);
+                });
+            });
+
+            // Enhanced hover effects for table rows
+            const tableRows = document.querySelectorAll('.modern-table tbody tr');
+            tableRows.forEach(row => {
+                row.addEventListener('mouseenter', function() {
+                    this.style.boxShadow = '0 10px 20px rgba(124, 58, 237, 0.1)';
+                    this.style.transform = 'translateY(-2px)';
+                });
+
+                row.addEventListener('mouseleave', function() {
+                    this.style.boxShadow = 'none';
+                    this.style.transform = 'none';
+                });
+            });
+        });
+    </script>
+</body>
+</html>

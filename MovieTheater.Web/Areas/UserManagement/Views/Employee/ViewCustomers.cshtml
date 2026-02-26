@@ -1,0 +1,75 @@
+@model MovieTheater.Web.Areas.UserManagement.Controllers.EmployeeController.ApiResponse<List<MovieTheater.Web.Areas.UserManagement.Models.UserViewModel>>
+@{
+    ViewData["Title"] = "Xem thông tin khách hàng";
+}
+
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h2 class="text-warning">
+                <i class="bi bi-people-fill me-2"></i>Thông tin khách hàng
+            </h2>
+        </div>
+    </div>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger d-flex align-items-center justify-content-center gap-2 text-center fw-bold" role="alert" style="font-size:1.1rem;">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            @TempData["Error"]
+        </div>
+    }
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Tài khoản</th>
+                <th>Họ và tên</th>
+                <th>Email</th>
+                <th>Số điện thoại</th>
+                <th>Địa chỉ</th>
+                <th>Ngày sinh</th>
+                <th>Giới tính</th>
+                <th>CMND/CCCD</th>
+                <th>Trạng thái</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in Model.Data)
+            {
+                <tr>
+                    <td>@user.Id</td>
+                    <td>@user.Account</td>
+                    <td>@user.FullName</td>
+                    <td>@user.Email</td>
+                    <td>@user.PhoneNumber</td>
+                    <td>@user.Address</td>
+                    <td>@user.DateOfBirth.ToShortDateString()</td>
+                    <td>@user.Sex</td>
+                    <td>@user.IdentityCard</td>
+                    <td>@(user.IsLocked ? "Đã khóa" : "Hoạt động")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <nav aria-label="Page navigation example">
+        <ul class="pagination justify-content-center">
+            <li class="page-item @(Model.CurrentPage <= 1 ? "disabled" : "")">
+                <a class="page-link" href="@Url.Action("ViewCustomers", new { currentPage = Model.CurrentPage - 1, size = Model.Size })" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            @for (int i = 1; i <= Model.TotalPage; i++)
+            {
+                <li class="page-item @(i == Model.CurrentPage ? "active" : "")"><a class="page-link" href="@Url.Action("ViewCustomers", new { currentPage = i, size = Model.Size })">@i</a></li>
+            }
+            <li class="page-item @(Model.CurrentPage >= Model.TotalPage ? "disabled" : "")">
+                <a class="page-link" href="@Url.Action("ViewCustomers", new { currentPage = Model.CurrentPage + 1, size = Model.Size })" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</div> 

@@ -1,0 +1,176 @@
+@{
+    ViewData["Title"] = "Trang thành viên";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/member-homepage.css" />
+}
+
+<div class="member-dashboard">
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <div class="container">
+            <div class="welcome-card">
+                <div class="welcome-header">
+                    <div class="welcome-icon">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <div class="welcome-text">
+                        <h1>Xin chào, @User.FindFirst("FullName")?.Value!</h1>
+                        <p>Chào mừng bạn đến với MovieTheater Cinema</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Features -->
+    <div class="features-section">
+        <div class="container">
+            <div class="row g-4">
+                <!-- Book Ticket Card -->
+                <div class="col-lg-6">
+                    <div class="feature-card book-ticket-card">
+                        <div class="card-header">
+                            <div class="card-icon">
+                                <i class="fas fa-ticket-alt"></i>
+                            </div>
+                            <div class="card-title">
+                                <h3>Đặt vé mới</h3>
+                                <p>Chọn phim, suất chiếu, chỗ ngồi và đặt vé nhanh chóng</p>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <ul class="feature-list">
+                                <li><i class="fas fa-check"></i> Chọn phim yêu thích</li>
+                                <li><i class="fas fa-check"></i> Xem suất chiếu</li>
+                                <li><i class="fas fa-check"></i> Chọn ghế ngồi</li>
+                                <li><i class="fas fa-check"></i> Thanh toán an toàn</li>
+                            </ul>
+                            <a href="#" class="btn btn-primary">
+                                <i class="fas fa-shopping-cart me-2"></i>
+                                Đặt vé ngay
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- History Card -->
+                <div class="col-lg-6">
+                    <div class="feature-card history-card">
+                        <div class="card-header">
+                            <div class="card-icon">
+                                <i class="fas fa-history"></i>
+                            </div>
+                            <div class="card-title">
+                                <h3>Lịch sử đặt vé</h3>
+                                <p>Xem lại các vé đã đặt, thông tin phim, suất chiếu</p>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <ul class="feature-list">
+                                <li><i class="fas fa-check"></i> Xem vé đã đặt</li>
+                                <li><i class="fas fa-check"></i> In vé điện tử</li>
+                                <li><i class="fas fa-check"></i> Theo dõi trạng thái</li>
+                                <li><i class="fas fa-check"></i> Đánh giá phim</li>
+                            </ul>
+                            <a href="#" class="btn btn-secondary">
+                                <i class="fas fa-list me-2"></i>
+                                Xem lịch sử
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions-section">
+        <div class="container">
+            <div class="quick-actions-card">
+                <h3>
+                    <i class="fas fa-bolt me-2"></i>
+                    Thao tác nhanh
+                </h3>
+                <div class="row g-3">
+                    <div class="col-md-3 col-6">
+                        <a href="#" class="quick-action-item">
+                            <i class="fas fa-film"></i>
+                            <span>Phim đang chiếu</span>
+                        </a>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <a href="#" class="quick-action-item">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span>Phim sắp chiếu</span>
+                        </a>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <a href="#" class="quick-action-item">
+                            <i class="fas fa-gift"></i>
+                            <span>Ưu đãi</span>
+                        </a>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <a href="#" class="quick-action-item">
+                            <i class="fas fa-headset"></i>
+                            <span>Hỗ trợ</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Section -->
+    <div class="stats-section">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-ticket-alt"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h4>12</h4>
+                            <p>Vé đã đặt</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h4>8</h4>
+                            <p>Phim đã xem</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-coins"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h4>150</h4>
+                            <p>Điểm tích lũy</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Footer -->
+    <div class="navigation-footer">
+        <div class="container text-center">
+            <a href="/" class="btn btn-outline-primary btn-lg">
+                <i class="fas fa-home me-2"></i>
+                Về trang chủ
+            </a>
+        </div>
+    </div>
+</div>

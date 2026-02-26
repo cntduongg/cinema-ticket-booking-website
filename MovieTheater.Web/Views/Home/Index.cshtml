@@ -1,0 +1,2524 @@
+@model IEnumerable<MovieTheater.Web.Areas.MovieManagement.Models.MovieViewModel>
+@{
+    ViewData["Title"] = "Trang chủ đặt vé xem phim";
+
+    // Helper function để convert YouTube URL thành embed format
+    string GetEmbedUrl(string youtubeUrl)
+    {
+        if (string.IsNullOrEmpty(youtubeUrl)) return "";
+
+        var videoId = "";
+        if (youtubeUrl.Contains("watch?v="))
+        {
+            videoId = youtubeUrl.Split("watch?v=")[1].Split("&")[0];
+        }
+        else if (youtubeUrl.Contains("youtu.be/"))
+        {
+            videoId = youtubeUrl.Split("youtu.be/")[1].Split("?")[0];
+        }
+
+        return $"https://www.youtube.com/embed/{videoId}?autoplay=1&mute=1&loop=1&playlist={videoId}&controls=0&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1&playsinline=1";
+    }
+}
+
+<link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+<link rel="stylesheet" href="~/css/site.css" />
+<link rel="stylesheet" href="~/css/index-custom.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<!-- Loading Screen -->
+<div id="loadingScreen" class="loading-screen">
+    <div class="loading-content">
+        <div class="cinema-logo">
+            <i class="fas fa-film"></i>
+            <h2>Cinema</h2>
+        </div>
+        <div class="loading-bar">
+            <div class="loading-progress"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Floating Action Button -->
+<div class="floating-action-menu">
+    <button class="fab-main" id="fabMain">
+        <i class="fas fa-plus"></i>
+    </button>
+    <div class="fab-options">
+        <button class="fab-option" data-tooltip="Phim sắp chiếu">
+            <i class="fas fa-calendar-alt"></i>
+        </button>
+        <button class="fab-option" data-tooltip="Ưu đãi">
+            <i class="fas fa-gift"></i>
+        </button>
+        <button class="fab-option" data-tooltip="Hỗ trợ">
+            <i class="fas fa-headset"></i>
+        </button>
+    </div>
+</div>
+
+<!-- Hero Banner with Video -->
+<section class="hero-banner">
+    <div class="hero-particles"></div>
+    <div class="hero-carousel-container">
+        @{
+            var random = new Random();
+            var randomMovies = Model.OrderBy(x => random.Next()).Take(4).ToList();
+        }
+        @foreach (var movie in randomMovies.Select((m, i) => new { Movie = m, Index = i }))
+        {
+            <div class="hero-slide @(movie.Index == 0 ? "active" : "")" data-index="@movie.Index">
+                <div class="hero-video-container">
+                    <iframe class="hero-video"
+                            src="@GetEmbedUrl(movie.Movie.Trailer)"
+                            frameborder="0"
+                            allow="autoplay; encrypted-media"
+                            allowfullscreen>
+                    </iframe>
+                </div>
+                <div class="hero-overlay"></div>
+                <div class="hero-content">
+                    <div class="movie-badge">
+                        <i class="fas fa-star"></i>
+                        <span>Phim Hot</span>
+                    </div>
+                    <h1 class="hero-title">@movie.Movie.Name</h1>
+                    <p class="hero-description">@movie.Movie.Content</p>
+                    <div class="movie-info-tags">
+                        <span class="tag">@movie.Movie.Type</span>
+                        <span class="tag"><i class="fas fa-clock"></i> 120 phút</span>
+                        <span class="tag"><i class="fas fa-star"></i> 8.5/10</span>
+                    </div>
+                    <div class="hero-buttons">
+                        @if (User.Identity != null && User.Identity.IsAuthenticated)
+                        {
+                            <a asp-area="Booking" asp-controller="Booking" asp-action="SeatMap" asp-route-movieId="@movie.Movie.Id" class="btn btn-primary btn-booking" data-logged-in="true">
+                                <i class="bi bi-ticket-perforated"></i>
+                                <span>Đặt vé ngay</span>
+                                <div class="btn-ripple"></div>
+                            </a>
+                        }
+                        else
+                        {
+                            <a asp-area="UserManagement" asp-controller="Account" asp-action="Login" class="btn btn-primary">
+                                <i class="bi bi-ticket-perforated"></i>
+                                <span>Đặt vé ngay</span>
+                                <div class="btn-ripple"></div>
+                            </a>
+                        }
+                        <a asp-area="MovieManagement" asp-controller="Movie" asp-action="Details" asp-route-id="@movie.Movie.Id" class="btn btn-outline-light ms-2">
+                            <i class="bi bi-info-circle"></i>
+                            <span>Xem chi tiết</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+        @if (!Model.Any())
+        {
+            <div class="hero-slide active">
+                <div class="hero-video-container">
+                    <div class="hero-placeholder">
+                        <h2>Không có phim nào để hiển thị</h2>
+                    </div>
+                </div>
+                <div class="hero-overlay"></div>
+                <div class="hero-content">
+                    <h1 class="hero-title">Rạp Chiếu Phim</h1>
+                </div>
+            </div>
+        }
+        <div class="hero-controls">
+            <button class="hero-nav prev" id="prevSlide">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <button class="hero-nav next" id="nextSlide">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+        <div class="hero-dots">
+            @for (int i = 0; i < Math.Min(4, Model.Count()); i++)
+            {
+                <span class="dot @(i == 0 ? "active" : "")" data-index="@i"></span>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- Cinema Stats Section -->
+<section class="stats-section">
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat-item" data-aos="fade-up" data-aos-delay="100">
+                <div class="stat-icon">
+                    <i class="fas fa-film"></i>
+                </div>
+                <div class="stat-number" data-count="150">0</div>
+                <div class="stat-label">Phim đã chiếu</div>
+            </div>
+            <div class="stat-item" data-aos="fade-up" data-aos-delay="200">
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-number" data-count="50000">0</div>
+                <div class="stat-label">Khách hàng hài lòng</div>
+            </div>
+            <div class="stat-item" data-aos="fade-up" data-aos-delay="300">
+                <div class="stat-icon">
+                    <i class="fas fa-star"></i>
+                </div>
+                <div class="stat-number" data-count="5">0</div>
+                <div class="stat-label">Đánh giá trung bình</div>
+            </div>
+            <div class="stat-item" data-aos="fade-up" data-aos-delay="400">
+                <div class="stat-icon">
+                    <i class="fas fa-award"></i>
+                </div>
+                <div class="stat-number" data-count="25">0</div>
+                <div class="stat-label">Giải thưởng</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Movies Section -->
+<section class="section movies-section">
+    <div class="container">
+        <div class="section-header" data-aos="fade-up">
+            <h2 class="section-title">
+                <i class="fas fa-fire"></i>
+                Phim Nổi Bật
+            </h2>
+            <p class="section-subtitle">Những bộ phim được yêu thích nhất hiện tại</p>
+        </div>
+
+        <!-- Movie Filter Tabs -->
+        
+        <div class="movies-grid">
+            @if (Model != null && Model.Any())
+            {
+                @foreach (var movie in Model.Select((m, i) => new { Movie = m, Index = i }))
+                {
+                    <div class="movie-card" data-aos="fade-up" data-aos-delay="@((movie.Index % 3 + 1) * 100)" data-category="@movie.Movie.Type.ToLower()">
+                        <div class="movie-poster">
+                            <img src="@movie.Movie.ImagePath" alt="@movie.Movie.Name" loading="lazy" />
+                            <div class="movie-overlay">
+                                <button class="play-trailer" data-trailer="@movie.Movie.Trailer">
+                                    <i class="fas fa-play"></i>
+                                </button>
+                            </div>
+                            <div class="movie-rating">
+                                <i class="fas fa-star"></i>
+                                <span>8.@(new Random().Next(0, 9))</span>
+                            </div>
+                            <div class="movie-status">
+                                <span class="status-badge hot">Hot</span>
+                            </div>
+                        </div>
+                        <div class="movie-info">
+                            <h3 class="movie-title">@movie.Movie.Name</h3>
+                            <div class="movie-meta">
+                                <span class="movie-genre">
+                                    <i class="fas fa-tag"></i>
+                                    @movie.Movie.Type
+                                </span>
+                                <span class="movie-duration">
+                                    <i class="fas fa-clock"></i>
+                                    120 phút
+                                </span>
+                            </div>
+                            <div class="movie-description">@movie.Movie.Content</div>
+                            <div class="movie-actions">
+                                @if (User.Identity != null && User.Identity.IsAuthenticated)
+                                {
+                                    <a asp-area="Booking" asp-controller="Booking" asp-action="SeatMap" asp-route-movieId="@movie.Movie.Id" class="btn btn-primary btn-booking" data-logged-in="true">
+                                        <i class="bi bi-ticket-perforated"></i>
+                                        Đặt vé
+                                    </a>
+                                }
+                                else
+                                {
+                                    <a asp-area="UserManagement" asp-controller="Account" asp-action="Login" class="btn btn-primary">
+                                        <i class="bi bi-ticket-perforated"></i>
+                                        Đặt vé
+                                    </a>
+                                }
+                                <a asp-area="MovieManagement" asp-controller="Movie" asp-action="Details" asp-route-id="@movie.Movie.Id" class="btn btn-outline">
+                                    <i class="bi bi-info-circle"></i>
+                                    Chi tiết
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="no-movies">
+                    <i class="fas fa-film"></i>
+                    <h3>Hiện tại chưa có phim nào được chiếu</h3>
+                    <p>Hãy quay lại sau để xem những bộ phim mới nhất!</p>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- Customer Reviews Section - Redesigned -->
+<section class="reviews-section-new">
+    <div class="container">
+        <div class="section-header-new" data-aos="fade-up">
+            <div class="heart-icon">❤️</div>
+            <h2 class="section-title-new">Khách Hàng Nói Gì</h2>
+            <p class="section-subtitle-new">Những chia sẻ chân thành từ khách hàng của chúng tôi</p>
+        </div>
+
+        <div class="reviews-grid-new" data-aos="fade-up" data-aos-delay="200">
+            <div class="review-card-new">
+                <div class="review-avatar">
+                    <div class="avatar-circle">
+                        <i class="fas fa-user"></i>
+                    </div>
+                </div>
+                <div class="review-content">
+                    <h4 class="customer-name">Nguyễn Văn A</h4>
+                    <div class="review-stars">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <p class="review-text">"Rạp chiếu phim tuyệt vời! Chất lượng hình ảnh và âm thanh rất tốt. Ghế ngồi thoải mái, nhân viên phục vụ chu đáo. Tôi sẽ quay lại nhiều lần nữa!"</p>
+                </div>
+            </div>
+
+            <div class="review-card-new">
+                <div class="review-avatar">
+                    <div class="avatar-circle">
+                        <i class="fas fa-user"></i>
+                    </div>
+                </div>
+                <div class="review-content">
+                    <h4 class="customer-name">Trần Thị B</h4>
+                    <div class="review-stars">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <p class="review-text">"Lần đầu tiên tôi có trải nghiệm xem phim tuyệt vời như vậy. Hệ thống đặt vé online rất tiện lợi, không phải xếp hàng chờ đợi."</p>
+                </div>
+            </div>
+
+            <div class="review-card-new">
+                <div class="review-avatar">
+                    <div class="avatar-circle">
+                        <i class="fas fa-user"></i>
+                    </div>
+                </div>
+                <div class="review-content">
+                    <h4 class="customer-name">Lê Minh C</h4>
+                    <div class="review-stars">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="far fa-star"></i>
+                    </div>
+                    <p class="review-text">"Giá vé hợp lý, chất lượng dịch vụ tốt. Đặc biệt thích combo bắp rang bơ và nước ngọt. Khuyến mãi thường xuyên rất hấp dẫn."</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Promotions Section - Redesigned -->
+<section class="promotions-section-new">
+    <div class="container">
+        <div class="section-header-new" data-aos="fade-up">
+            <div class="gift-icon">🎁</div>
+            <h2 class="section-title-new">Ưu Đãi Đặc Biệt</h2>
+            <p class="section-subtitle-new">Những chương trình khuyến mãi hấp dẫn dành cho bạn</p>
+        </div>
+
+        <div class="promotions-grid-new" data-aos="fade-up" data-aos-delay="200">
+            <div class="promotion-card-new">
+                <div class="promotion-header">
+                    <div class="promotion-icon-new">
+                        <i class="fas fa-percentage"></i>
+                    </div>
+                    <div class="hot-badge">HOT</div>
+                </div>
+                <h3 class="promotion-title">Giảm 30% Vé Thứ 2</h3>
+                <p class="promotion-desc">Mua vé xem phim vào thứ 2 hàng tuần và nhận ngay ưu đãi giảm 30% cho tất cả các suất chiếu.</p>
+                <button class="btn-promotion-new">Sử dụng ngay</button>
+            </div>
+
+            <div class="promotion-card-new">
+                <div class="promotion-header">
+                    <div class="promotion-icon-new">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                </div>
+                <h3 class="promotion-title">Combo Cặp Đôi</h3>
+                <p class="promotion-desc">2 vé + 2 bắp rang + 2 nước ngọt chỉ với 299.000đ. Hoàn hảo cho buổi hẹn hò lãng mạn.</p>
+                <button class="btn-promotion-new">Đặt combo</button>
+            </div>
+
+            <div class="promotion-card-new">
+                <div class="promotion-header">
+                    <div class="promotion-icon-new">
+                        <i class="fas fa-birthday-cake"></i>
+                    </div>
+                </div>
+                <h3 class="promotion-title">Sinh Nhật Vui Vẻ</h3>
+                <p class="promotion-desc">Miễn phí vé sinh nhật + tặng combo bắp rang bơ đặc biệt khi xuất trình CMND trong tháng sinh.</p>
+                <button class="btn-promotion-new">Tìm hiểu</button>
+            </div>
+
+            <div class="promotion-card-new">
+                <div class="promotion-header">
+                    <div class="promotion-icon-new">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                </div>
+                <h3 class="promotion-title">Ưu Đãi Sinh Viên</h3>
+                <p class="promotion-desc">Giảm 20% cho sinh viên với thẻ sinh viên còn hiệu lực. Áp dụng từ thứ 2 đến thứ 5.</p>
+                <button class="btn-promotion-new">Áp dụng</button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Cinema Services Section - Redesigned -->
+<section class="services-section-new">
+    <div class="container">
+        <div class="section-header-new" data-aos="fade-up">
+            <div class="triangle-icon">🔺</div>
+            <h2 class="section-title-new">Dịch Vụ Tại Rạp</h2>
+            <p class="section-subtitle-new">Trải nghiệm hoàn hảo với đầy đủ tiện ích hiện đại</p>
+        </div>
+
+        <div class="services-grid-new" data-aos="fade-up" data-aos-delay="200">
+            <div class="service-card-new">
+                <div class="service-icon-new">
+                    <i class="fas fa-couch"></i>
+                </div>
+                <h3 class="service-title">Ghế VIP Sang Trọng</h3>
+                <p class="service-desc">Ghế da cao cấp có thể ngả, thoải mái tối đa cho những suất chiếu dài</p>
+            </div>
+
+            <div class="service-card-new">
+                <div class="service-icon-new">
+                    <i class="fas fa-volume-up"></i>
+                </div>
+                <h3 class="service-title">Âm Thanh Dolby Atmos</h3>
+                <p class="service-desc">Hệ thống âm thanh vòm 360° mang đến trải nghiệm chân thực nhất</p>
+            </div>
+
+            <div class="service-card-new">
+                <div class="service-icon-new">
+                    <i class="fas fa-tv"></i>
+                </div>
+                <h3 class="service-title">Màn Hình 4K Laser</h3>
+                <p class="service-desc">Công nghệ chiếu laser 4K cho hình ảnh sắc nét, màu sắc sống động</p>
+            </div>
+
+            <div class="service-card-new">
+                <div class="service-icon-new">
+                    <i class="fas fa-utensils"></i>
+                </div>
+                <h3 class="service-title">Quầy Bar & Đồ Ăn</h3>
+                <p class="service-desc">Đa dạng đồ ăn nhẹ, nước uống và combo hấp dẫn</p>
+            </div>
+
+            <div class="service-card-new">
+                <div class="service-icon-new">
+                    <i class="fas fa-car"></i>
+                </div>
+                <h3 class="service-title">Bãi Đậu Xe Miễn Phí</h3>
+                <p class="service-desc">Không gian đậu xe rộng rãi, an toàn và hoàn toàn miễn phí</p>
+            </div>
+
+            <div class="service-card-new">
+                <div class="service-icon-new">
+                    <i class="fas fa-wifi"></i>
+                </div>
+                <h3 class="service-title">WiFi Tốc Độ Cao</h3>
+                <p class="service-desc">Kết nối internet miễn phí cho tất cả khách hàng</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    /* New Color Variables */
+    :root {
+        --light-blue: #E3F2FD;
+        --soft-blue: #BBDEFB;
+        --medium-blue: #64B5F6;
+        --coral-red: #FF5A5A;
+        --coral-hover: #FF4444;
+        --text-primary: #2C3E50;
+        --text-secondary: #5A6C7D;
+        --white: #FFFFFF;
+        --shadow-light: 0 4px 20px rgba(0, 0, 0, 0.1);
+        --shadow-medium: 0 8px 30px rgba(0, 0, 0, 0.15);
+        --border-radius: 20px;
+        --gradient-blue: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
+        --gradient-coral: linear-gradient(135deg, #FF6B6B 0%, #FF5A5A 100%);
+    }
+
+    /* Section Headers */
+    .section-header-new {
+        text-align: center;
+        margin-bottom: 60px;
+    }
+
+    .heart-icon, .gift-icon, .triangle-icon {
+        font-size: 3rem;
+        margin-bottom: 20px;
+        display: block;
+    }
+
+    .section-title-new {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--text-primary);
+        margin-bottom: 15px;
+    }
+
+    .section-subtitle-new {
+        font-size: 1.2rem;
+        color: var(--text-secondary);
+        max-width: 600px;
+        margin: 0 auto;
+        line-height: 1.6;
+    }
+
+    /* Customer Reviews Section */
+    .reviews-section-new {
+        padding: 80px 0;
+        background: linear-gradient(135deg, #F8FBFF 0%, #EDF4FF 100%);
+    }
+
+    .reviews-grid-new {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 30px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .review-card-new {
+        background: var(--gradient-blue);
+        border-radius: var(--border-radius);
+        padding: 30px;
+        box-shadow: var(--shadow-light);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .review-card-new:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .review-card-new::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--medium-blue);
+        }
+
+    .review-avatar {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .avatar-circle {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: white;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: var(--medium-blue);
+        box-shadow: var(--shadow-light);
+    }
+
+    .review-content {
+        text-align: center;
+    }
+
+    .customer-name {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 10px;
+    }
+
+    .review-stars {
+        margin-bottom: 20px;
+    }
+
+        .review-stars i {
+            color: #FFD700;
+            font-size: 1.1rem;
+            margin: 0 2px;
+        }
+
+    .review-text {
+        font-size: 1rem;
+        line-height: 1.6;
+        color: var(--text-secondary);
+        font-style: italic;
+    }
+
+    /* Promotions Section */
+    .promotions-section-new {
+        padding: 80px 0;
+        background: white;
+    }
+
+    .promotions-grid-new {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 30px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .promotion-card-new {
+        background: white;
+        border-radius: var(--border-radius);
+        padding: 30px;
+        box-shadow: var(--shadow-light);
+        transition: all 0.3s ease;
+        position: relative;
+        border: 2px solid #F0F8FF;
+    }
+
+        .promotion-card-new:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-medium);
+            border-color: var(--soft-blue);
+        }
+
+    .promotion-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 20px;
+    }
+
+    .promotion-icon-new {
+        width: 60px;
+        height: 60px;
+        border-radius: 15px;
+        background: var(--gradient-blue);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: var(--medium-blue);
+    }
+
+    .hot-badge {
+        background: var(--gradient-coral);
+        color: white;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .promotion-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 15px;
+        line-height: 1.3;
+    }
+
+    .promotion-desc {
+        font-size: 0.95rem;
+        line-height: 1.6;
+        color: var(--text-secondary);
+        margin-bottom: 25px;
+    }
+
+    .btn-promotion-new {
+        width: 100%;
+        padding: 12px 20px;
+        background: var(--gradient-coral);
+        border: none;
+        border-radius: 12px;
+        color: white;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+        .btn-promotion-new:hover {
+            background: var(--coral-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(255, 90, 90, 0.3);
+        }
+
+    /* Services Section */
+    .services-section-new {
+        padding: 80px 0;
+        background: var(--gradient-blue);
+    }
+
+    .services-grid-new {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 30px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .service-card-new {
+        background: white;
+        border-radius: var(--border-radius);
+        padding: 30px;
+        text-align: center;
+        box-shadow: var(--shadow-light);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .service-card-new:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .service-card-new::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 4px;
+            background: var(--medium-blue);
+            border-radius: 0 0 10px 10px;
+        }
+
+    .service-icon-new {
+        width: 80px;
+        height: 80px;
+        border-radius: 20px;
+        background: var(--gradient-blue);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: var(--medium-blue);
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+    }
+
+    .service-card-new:hover .service-icon-new {
+        transform: scale(1.1);
+        background: var(--medium-blue);
+        color: white;
+    }
+
+    .service-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 15px;
+        line-height: 1.3;
+    }
+
+    .service-desc {
+        font-size: 0.95rem;
+        line-height: 1.6;
+        color: var(--text-secondary);
+    }
+
+    /* Responsive Design */
+    @@media (max-width: 768px) {
+        .section-title-new
+
+    {
+        font-size: 2rem;
+    }
+
+    .reviews-grid-new,
+    .promotions-grid-new {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .services-grid-new {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+
+    .review-card-new,
+    .promotion-card-new,
+    .service-card-new {
+        padding: 20px;
+    }
+
+    }
+
+    @@media (max-width: 480px) {
+        .services-grid-new
+
+    {
+        grid-template-columns: 1fr;
+    }
+
+    .heart-icon, .gift-icon, .triangle-icon {
+        font-size: 2.5rem;
+    }
+
+    .section-title-new {
+        font-size: 1.8rem;
+    }
+
+    .section-subtitle-new {
+        font-size: 1rem;
+    }
+
+    }
+
+    /* Animation for cards */
+    @@keyframes fadeInUp {
+        from
+
+    {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    }
+
+    .review-card-new,
+    .promotion-card-new,
+    .service-card-new {
+        animation: fadeInUp 0.6s ease forwards;
+    }
+
+        /* Stagger animation delay for grid items */
+        .review-card-new:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        .review-card-new:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .review-card-new:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+
+        .promotion-card-new:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        .promotion-card-new:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .promotion-card-new:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+
+        .promotion-card-new:nth-child(4) {
+            animation-delay: 0.4s;
+        }
+
+        .service-card-new:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        .service-card-new:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .service-card-new:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+
+        .service-card-new:nth-child(4) {
+            animation-delay: 0.4s;
+        }
+
+        .service-card-new:nth-child(5) {
+            animation-delay: 0.5s;
+        }
+
+        .service-card-new:nth-child(6) {
+            animation-delay: 0.6s;
+        }
+</style>
+
+<!-- Modal 1: Chọn suất chiếu -->
+<div class="modal fade" id="showtimeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-calendar-check"></i>
+                    LỊCH CHIẾU - <span id="modalMovieName"></span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="movie-info-header">
+                    <div class="cinema-info-display">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>Rạp Beta Thái Nguyên</span>
+                    </div>
+                </div>
+                <ul class="nav nav-tabs" id="dateTabs"></ul>
+                <div class="tab-content" id="showtimeTabContent"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal 2: Xác nhận thông tin -->
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-ticket-alt"></i>
+                    XÁC NHẬN ĐẶT VÉ
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="confirm-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h4 class="confirm-movie-title" id="confirmMovieName"></h4>
+                <div class="booking-details-table">
+                    <table class="table">
+                        <tr>
+                            <th><i class="fas fa-map-marker-alt"></i> Rạp chiếu</th>
+                            <td id="confirmCinema"></td>
+                        </tr>
+                        <tr>
+                            <th><i class="fas fa-calendar-alt"></i> Ngày chiếu</th>
+                            <td id="confirmDate"></td>
+                        </tr>
+                        <tr>
+                            <th><i class="fas fa-clock"></i> Giờ chiếu</th>
+                            <td class="special-time" id="confirmTime"></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-arrow-left"></i>
+                    Quay lại
+                </button>
+                <button class="btn btn-primary" id="confirmGoBtn">
+                    <i class="fas fa-arrow-right"></i>
+                    Đồng ý
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Trailer Modal -->
+<div class="modal fade" id="trailerModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Xem Trailer</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="trailer-container">
+                    <iframe id="trailerIframe" width="100%" height="600" frameborder="0" allowfullscreen></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Root Variables - Updated Color Scheme */
+    :root {
+        --primary-blue: #E8F4FD;
+        --secondary-blue: #D1E9F6;
+        --accent-blue: #B8DDFF;
+        --deep-blue: #7FB8D3;
+        --dark-blue: #4A90A4;
+        --text-dark: #1A365D;
+        --text-light: #4A5568;
+        --white: #FFFFFF;
+        --gray-50: #F7FAFC;
+        --gray-100: #EDF2F7;
+        --gray-200: #E2E8F0;
+        --red-accent: #FF6B7A;
+        --green-accent: #48BB78;
+        --gradient-primary: linear-gradient(135deg, var(--primary-blue) 0%, var(--accent-blue) 50%, var(--deep-blue) 100%);
+        --gradient-secondary: linear-gradient(135deg, var(--secondary-blue) 0%, var(--primary-blue) 100%);
+        --shadow-soft: 0 4px 20px rgba(127, 184, 211, 0.15);
+        --shadow-medium: 0 8px 30px rgba(127, 184, 211, 0.2);
+        --shadow-strong: 0 15px 40px rgba(127, 184, 211, 0.3);
+    }
+
+    /* Global Styles */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body, html {
+        background: var(--gradient-primary) !important;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        line-height: 1.6;
+        color: var(--text-dark);
+        overflow-x: hidden;
+    }
+
+    main {
+        background: transparent !important;
+    }
+
+    /* Loading Screen */
+    .loading-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: var(--gradient-primary);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: opacity 0.5s ease, visibility 0.5s ease;
+    }
+
+        .loading-screen.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+    .loading-content {
+        text-align: center;
+        color: var(--text-dark);
+    }
+
+    .cinema-logo {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+        margin-bottom: 30px;
+    }
+
+        .cinema-logo i {
+            font-size: 3rem;
+            color: var(--deep-blue);
+            animation: rotate 2s linear infinite;
+        }
+
+        .cinema-logo h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+    .loading-bar {
+        width: 200px;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 2px;
+        overflow: hidden;
+        margin: 0 auto;
+    }
+
+    .loading-progress {
+        width: 0%;
+        height: 100%;
+        background: var(--deep-blue);
+        border-radius: 2px;
+        animation: loading 2s ease-in-out infinite;
+    }
+
+    @@keyframes loading {
+        0%
+
+    {
+        width: 0%;
+    }
+
+    50% {
+        width: 70%;
+    }
+
+    100% {
+        width: 100%;
+    }
+
+    }
+
+    @@keyframes rotate {
+        from
+
+    {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+
+    }
+
+    /* Floating Action Menu */
+    .floating-action-menu {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        z-index: 1000;
+    }
+
+    .fab-main {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: var(--deep-blue);
+        border: none;
+        color: white;
+        font-size: 1.2rem;
+        cursor: pointer;
+        box-shadow: var(--shadow-medium);
+        transition: all 0.3s ease;
+        position: relative;
+        z-index: 1001;
+    }
+
+        .fab-main:hover {
+            transform: scale(1.1);
+            box-shadow: var(--shadow-strong);
+        }
+
+        .fab-main.active {
+            transform: rotate(45deg);
+        }
+
+    .fab-options {
+        position: absolute;
+        bottom: 70px;
+        right: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.3s ease;
+        pointer-events: none;
+    }
+
+        .fab-options.show {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: all;
+        }
+
+    .fab-option {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: white;
+        border: none;
+        color: var(--deep-blue);
+        font-size: 1rem;
+        cursor: pointer;
+        box-shadow: var(--shadow-soft);
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+        .fab-option:hover {
+            transform: scale(1.1);
+            background: var(--primary-blue);
+        }
+
+        .fab-option::before {
+            content: attr(data-tooltip);
+            position: absolute;
+            right: 60px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--text-dark);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .fab-option:hover::before {
+            opacity: 1;
+        }
+
+    /* Hero Banner Enhanced */
+    .hero-banner {
+        position: relative;
+        min-height: 100vh;
+        z-index: 2;
+        background: var(--gradient-primary);
+        overflow: hidden;
+    }
+
+    .hero-particles {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="1" fill="%23ffffff" opacity="0.1"><animate attributeName="opacity" values="0.1;0.3;0.1" dur="3s" repeatCount="indefinite"/></circle><circle cx="80" cy="40" r="1.5" fill="%23ffffff" opacity="0.1"><animate attributeName="opacity" values="0.1;0.4;0.1" dur="4s" repeatCount="indefinite"/></circle><circle cx="40" cy="80" r="1" fill="%23ffffff" opacity="0.1"><animate attributeName="opacity" values="0.1;0.25;0.1" dur="5s" repeatCount="indefinite"/></circle></svg>') repeat;
+        animation: float 20s linear infinite;
+        z-index: 1;
+    }
+
+    @@keyframes float {
+        0%
+
+    {
+        transform: translateY(0px);
+    }
+
+    100% {
+        transform: translateY(-100px);
+    }
+
+    }
+
+    .hero-carousel-container {
+        position: relative;
+        width: 100%;
+        height: 100vh;
+        overflow: hidden;
+    }
+
+    .hero-slide {
+        display: none;
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+        .hero-slide.active {
+            display: block;
+            opacity: 1;
+            z-index: 2;
+            animation: slideIn 0.8s ease-out;
+        }
+
+    @@keyframes slideIn {
+        from
+
+    {
+        opacity: 0;
+        transform: scale(1.1);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    }
+
+    .hero-video-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        overflow: hidden;
+    }
+
+    .hero-video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .hero-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient( 135deg, rgba(232, 244, 253, 0.8) 0%, rgba(209, 233, 246, 0.6) 30%, rgba(184, 221, 255, 0.4) 70%, rgba(127, 184, 211, 0.7) 100% );
+        z-index: -1;
+    }
+
+    .hero-content {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 3;
+        text-align: center;
+        width: 90%;
+        max-width: 800px;
+        color: var(--text-dark);
+    }
+
+    .movie-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255, 255, 255, 0.95);
+        color: var(--deep-blue);
+        padding: 8px 20px;
+        border-radius: 25px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-bottom: 20px;
+        box-shadow: var(--shadow-soft);
+        animation: pulse 2s infinite;
+    }
+
+    @@keyframes pulse {
+        0%, 100%
+
+    {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+
+    }
+
+    .hero-title {
+        font-size: clamp(2.5rem, 6vw, 4rem);
+        font-weight: 800;
+        margin-bottom: 20px;
+        text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+        animation: fadeInUp 1s ease-out 0.3s both;
+    }
+
+    .hero-description {
+        font-size: 1.2rem;
+        margin-bottom: 25px;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+        line-height: 1.6;
+        animation: fadeInUp 1s ease-out 0.6s both;
+    }
+
+    .movie-info-tags {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+        animation: fadeInUp 1s ease-out 0.9s both;
+    }
+
+    .tag {
+        background: rgba(255, 255, 255, 0.9);
+        color: var(--text-dark);
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        box-shadow: var(--shadow-soft);
+    }
+
+    @@keyframes fadeInUp {
+        from
+
+    {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    }
+
+    .hero-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        flex-wrap: wrap;
+        animation: fadeInUp 1s ease-out 1.2s both;
+    }
+
+        .hero-buttons .btn {
+            position: relative;
+            min-width: 180px;
+            font-size: 1.1rem;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            overflow: hidden;
+            box-shadow: var(--shadow-medium);
+        }
+
+    .btn-primary {
+        background: var(--deep-blue);
+        border: none;
+        color: white;
+    }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-strong);
+            background: var(--dark-blue);
+        }
+
+    .btn-outline-light {
+        border: 2px solid white;
+        color: var(--text-dark);
+        background: rgba(255, 255, 255, 0.9);
+    }
+
+        .btn-outline-light:hover {
+            background: white;
+            transform: translateY(-3px);
+            color: var(--deep-blue);
+        }
+
+    .btn-ripple {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+    }
+
+    .btn:active .btn-ripple {
+        width: 300px;
+        height: 300px;
+    }
+
+    /* Hero Controls */
+    .hero-controls {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 10;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        padding: 0 30px;
+    }
+
+    .hero-nav {
+        width: 50px;
+        height: 50px;
+        border: none;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.9);
+        color: var(--deep-blue);
+        font-size: 1.2rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: var(--shadow-soft);
+    }
+
+        .hero-nav:hover {
+            background: white;
+            transform: scale(1.1);
+            box-shadow: var(--shadow-medium);
+        }
+
+    /* Hero Dots Enhanced */
+    .hero-dots {
+        position: absolute;
+        bottom: 40px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 10;
+        display: flex;
+        gap: 12px;
+    }
+
+        .hero-dots .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+            .hero-dots .dot.active {
+                background: white;
+                box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.3);
+            }
+
+            .hero-dots .dot:hover {
+                transform: scale(1.2);
+            }
+
+    /* Stats Section */
+    .stats-section {
+        padding: 80px 0;
+        background: rgba(255, 255, 255, 0.95);
+        position: relative;
+        z-index: 3;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 40px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 40px 20px;
+        background: white;
+        border-radius: 20px;
+        box-shadow: var(--shadow-soft);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .stat-item:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow-strong);
+        }
+
+        .stat-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--gradient-primary);
+        }
+
+    .stat-icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 20px;
+        background: var(--gradient-secondary);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: var(--deep-blue);
+    }
+
+    .stat-number {
+        font-size: 3rem;
+        font-weight: 800;
+        color: var(--text-dark);
+        margin-bottom: 10px;
+    }
+
+    .stat-label {
+        font-size: 1.1rem;
+        color: var(--text-light);
+        font-weight: 500;
+    }
+
+    /* Movies Section Enhanced */
+    .movies-section {
+        padding: 80px 0;
+        background: white;
+        position: relative;
+        z-index: 3;
+    }
+
+    .section-header {
+        text-align: center;
+        margin-bottom: 60px;
+    }
+
+    .section-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--text-dark);
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+    }
+
+        .section-title i {
+            color: var(--deep-blue);
+        }
+
+    .section-subtitle {
+        font-size: 1.2rem;
+        color: var(--text-light);
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    /* Movie Filter Tabs */
+    .movie-filters {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-bottom: 50px;
+        flex-wrap: wrap;
+    }
+
+    .filter-btn {
+        padding: 12px 24px;
+        border: 2px solid var(--gray-200);
+        background: white;
+        color: var(--text-light);
+        border-radius: 25px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+        .filter-btn.active,
+        .filter-btn:hover {
+            background: var(--deep-blue);
+            border-color: var(--deep-blue);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+    /* Movies Grid Enhanced */
+    .movies-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 30px;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .movie-card {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: var(--shadow-soft);
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+        .movie-card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow-strong);
+        }
+
+    .movie-poster {
+        position: relative;
+        height: 400px;
+        overflow: hidden;
+    }
+
+        .movie-poster img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+    .movie-card:hover .movie-poster img {
+        transform: scale(1.05);
+    }
+
+    .movie-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .movie-card:hover .movie-overlay {
+        opacity: 1;
+    }
+
+    .play-trailer {
+        width: 70px;
+        height: 70px;
+        border: none;
+        border-radius: 50%;
+        background: var(--deep-blue);
+        color: white;
+        font-size: 1.5rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+        .play-trailer:hover {
+            transform: scale(1.1);
+            background: var(--dark-blue);
+        }
+
+    .movie-rating {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 8px 12px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+        .movie-rating i {
+            color: #ffd700;
+        }
+
+    .movie-status {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+    }
+
+    .status-badge {
+        background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+        color: white;
+        padding: 6px 12px;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        animation: pulse 2s infinite;
+    }
+
+    .movie-info {
+        padding: 25px;
+    }
+
+    .movie-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin-bottom: 10px;
+        line-height: 1.3;
+    }
+
+    .movie-meta {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 15px;
+        font-size: 0.9rem;
+        color: var(--text-light);
+    }
+
+        .movie-meta span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+    .movie-description {
+        color: var(--text-light);
+        font-size: 0.95rem;
+        line-height: 1.6;
+        margin-bottom: 20px;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .movie-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+        .movie-actions .btn {
+            flex: 1;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-weight: 600;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .movie-actions .btn-primary {
+            background: var(--deep-blue);
+            border: none;
+            color: white;
+        }
+
+            .movie-actions .btn-primary:hover {
+                background: var(--dark-blue);
+                transform: translateY(-2px);
+            }
+
+        .movie-actions .btn-outline {
+            border: 2px solid var(--gray-200);
+            color: var(--text-light);
+            background: transparent;
+        }
+
+            .movie-actions .btn-outline:hover {
+                border-color: var(--deep-blue);
+                color: var(--deep-blue);
+                background: var(--primary-blue);
+            }
+
+    /* No Movies State */
+    .no-movies {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 80px 20px;
+        color: var(--text-light);
+    }
+
+        .no-movies i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: var(--gray-200);
+        }
+
+        .no-movies h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: var(--text-dark);
+        }
+
+    /* Coming Soon Section */
+    .coming-soon-section {
+        padding: 80px 0;
+        background: var(--gradient-secondary);
+    }
+
+    .coming-soon-slider {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 25px;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .coming-soon-card {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: var(--shadow-soft);
+        transition: all 0.3s ease;
+    }
+
+        .coming-soon-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-medium);
+        }
+
+    .coming-soon-poster {
+        position: relative;
+        height: 300px;
+        background: var(--gray-100);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-light);
+    }
+
+    .release-date {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: var(--deep-blue);
+        color: white;
+        padding: 10px;
+        border-radius: 10px;
+        text-align: center;
+        font-weight: 600;
+    }
+
+        .release-date .month {
+            display: block;
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+
+        .release-date .day {
+            display: block;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+    .coming-soon-info {
+        padding: 20px;
+        text-align: center;
+    }
+
+        .coming-soon-info h4 {
+            color: var(--text-dark);
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .coming-soon-info p {
+            color: var(--text-light);
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+        }
+
+    .btn-notify {
+        background: var(--primary-blue);
+        border: 2px solid var(--deep-blue);
+        color: var(--deep-blue);
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+        .btn-notify:hover {
+            background: var(--deep-blue);
+            color: white;
+        }
+
+    /* Newsletter Section */
+    .newsletter-section {
+        padding: 60px 0;
+        background: var(--text-dark);
+        color: white;
+    }
+
+    .newsletter-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+        align-items: center;
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+
+    .newsletter-text h3 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 15px;
+    }
+
+    .newsletter-text p {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 1.1rem;
+    }
+
+    .input-group {
+        display: flex;
+        gap: 0;
+        box-shadow: var(--shadow-medium);
+        border-radius: 50px;
+        overflow: hidden;
+    }
+
+        .input-group .form-control {
+            flex: 1;
+            padding: 15px 20px;
+            border: none;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .input-group .btn {
+            padding: 15px 25px;
+            background: var(--deep-blue);
+            border: none;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+            .input-group .btn:hover {
+                background: var(--dark-blue);
+            }
+
+    /* Modal Enhancements */
+    .modal-content {
+        border: none;
+        border-radius: 20px;
+        box-shadow: var(--shadow-strong);
+        overflow: hidden;
+    }
+
+    .modal-header {
+        background: var(--gradient-primary);
+        color: var(--text-dark);
+        padding: 25px 30px;
+        border-bottom: none;
+    }
+
+    .modal-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .btn-close {
+        background: rgba(255, 255, 255, 0.2) !important;
+        border-radius: 50% !important;
+        width: 35px !important;
+        height: 35px !important;
+        opacity: 1 !important;
+    }
+
+    .modal-body {
+        padding: 30px;
+    }
+
+    /* Responsive Design */
+    @@media (max-width: 768px) {
+        .hero-title
+
+    {
+        font-size: 2.5rem;
+    }
+
+    .hero-description {
+        font-size: 1rem;
+    }
+
+    .hero-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+
+        .hero-buttons .btn {
+            width: 100%;
+            max-width: 300px;
+        }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+
+    .movies-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .newsletter-content {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+
+    .coming-soon-slider {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .floating-action-menu {
+        bottom: 20px;
+        right: 20px;
+    }
+
+    .hero-controls {
+        padding: 0 15px;
+    }
+
+    .hero-nav {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
+
+    }
+
+    @@media (max-width: 480px) {
+        .stats-grid
+
+    {
+        grid-template-columns: 1fr;
+    }
+
+    .coming-soon-slider {
+        grid-template-columns: 1fr;
+    }
+
+    .movie-filters {
+        justify-content: center;
+    }
+
+    .filter-btn {
+        padding: 10px 16px;
+        font-size: 0.9rem;
+    }
+
+    }
+
+    /* AOS Animation Library Fallbacks */
+    [data-aos] {
+        opacity: 0;
+        transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+        [data-aos].aos-animate {
+            opacity: 1;
+        }
+
+    [data-aos="fade-up"] {
+        transform: translateY(30px);
+    }
+
+        [data-aos="fade-up"].aos-animate {
+            transform: translateY(0);
+        }
+</style>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+    <script>
+        // Initialize AOS
+        AOS.init({
+            duration: 800,
+            easing: 'ease-out',
+            once: true,
+            offset: 100
+        });
+
+        // Loading Screen
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                document.getElementById('loadingScreen').classList.add('hidden');
+            }, 2000);
+        });
+
+        // Floating Action Menu
+        document.addEventListener('DOMContentLoaded', function() {
+            const fabMain = document.getElementById('fabMain');
+            const fabOptions = document.querySelector('.fab-options');
+
+            fabMain.addEventListener('click', function() {
+                this.classList.toggle('active');
+                fabOptions.classList.toggle('show');
+            });
+        });
+
+        // Hero Carousel Enhanced
+        document.addEventListener('DOMContentLoaded', function() {
+            const slides = document.querySelectorAll('.hero-slide');
+            const dots = document.querySelectorAll('.hero-dots .dot');
+            const prevBtn = document.getElementById('prevSlide');
+            const nextBtn = document.getElementById('nextSlide');
+            let current = 0;
+            let slideInterval;
+
+            function showSlide(index) {
+                slides.forEach((slide, i) => {
+                    slide.classList.toggle('active', i === index);
+                });
+                dots.forEach((dot, i) => {
+                    dot.classList.toggle('active', i === index);
+                });
+                current = index;
+            }
+
+            function nextSlide() {
+                const next = (current + 1) % slides.length;
+                showSlide(next);
+            }
+
+            function prevSlide() {
+                const prev = (current - 1 + slides.length) % slides.length;
+                showSlide(prev);
+            }
+
+            function startSlideshow() {
+                slideInterval = setInterval(nextSlide, 8000);
+            }
+
+            function stopSlideshow() {
+                clearInterval(slideInterval);
+            }
+
+            // Event listeners
+            dots.forEach((dot, i) => {
+                dot.addEventListener('click', () => showSlide(i));
+            });
+
+            if (nextBtn) nextBtn.addEventListener('click', nextSlide);
+            if (prevBtn) prevBtn.addEventListener('click', prevSlide);
+
+            // Start auto slideshow
+            startSlideshow();
+
+            // Pause on hover
+            const heroCarousel = document.querySelector('.hero-carousel-container');
+            heroCarousel.addEventListener('mouseenter', stopSlideshow);
+            heroCarousel.addEventListener('mouseleave', startSlideshow);
+        });
+
+        // Counter Animation for Stats
+        function animateCounters() {
+            const counters = document.querySelectorAll('.stat-number');
+
+            counters.forEach(counter => {
+                const target = parseInt(counter.getAttribute('data-count'));
+                const duration = 2000;
+                const step = target / (duration / 16);
+                let current = 0;
+
+                const timer = setInterval(() => {
+                    current += step;
+                    if (current >= target) {
+                        current = target;
+                        clearInterval(timer);
+                    }
+                    counter.textContent = Math.floor(current).toLocaleString();
+                }, 16);
+            });
+        }
+
+        // Intersection Observer for counter animation
+        const statsObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    animateCounters();
+                    statsObserver.unobserve(entry.target);
+                }
+            });
+        });
+
+        const statsSection = document.querySelector('.stats-section');
+        if (statsSection) {
+            statsObserver.observe(statsSection);
+        }
+
+        // Movie Filter Functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const filterBtns = document.querySelectorAll('.filter-btn');
+            const movieCards = document.querySelectorAll('.movie-card');
+
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const filter = this.getAttribute('data-filter');
+
+                    // Update active filter
+                    filterBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+
+                    // Filter movies
+                    movieCards.forEach(card => {
+                        const category = card.getAttribute('data-category');
+                        if (filter === 'all' || category === filter) {
+                            card.style.display = 'block';
+                            card.style.animation = 'fadeInUp 0.6s ease forwards';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                });
+            });
+        });
+
+        // Trailer Modal
+        document.addEventListener('DOMContentLoaded', function() {
+            const trailerModal = new bootstrap.Modal(document.getElementById('trailerModal'));
+            const trailerIframe = document.getElementById('trailerIframe');
+            const playBtns = document.querySelectorAll('.play-trailer');
+
+            playBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const trailerUrl = this.getAttribute('data-trailer');
+                    if (trailerUrl) {
+                        // Convert to embed URL
+                        let embedUrl = '';
+                        if (trailerUrl.includes('watch?v=')) {
+                            const videoId = trailerUrl.split('watch?v=')[1].split('&')[0];
+                            embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+                        } else if (trailerUrl.includes('youtu.be/')) {
+                            const videoId = trailerUrl.split('youtu.be/')[1].split('?')[0];
+                            embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+                        }
+
+                        trailerIframe.src = embedUrl;
+                        trailerModal.show();
+                    }
+                });
+            });
+
+            // Clear iframe when modal closes
+            document.getElementById('trailerModal').addEventListener('hidden.bs.modal', function() {
+                trailerIframe.src = '';
+            });
+        });
+
+        // Newsletter Form
+        document.addEventListener('DOMContentLoaded', function() {
+            const subscriptionForm = document.querySelector('.subscription-form');
+
+            if (subscriptionForm) {
+                subscriptionForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const email = this.querySelector('input[type="email"]').value;
+
+                    // Simulate subscription
+                    alert('Cảm ơn bạn đã đăng ký! Chúng tôi sẽ gửi thông tin mới nhất đến email: ' + email);
+                    this.reset();
+                });
+            }
+        });
+
+        // Biến toàn cục cho booking (giữ nguyên logic gốc)
+        let selectedMovieId = null, selectedDate = null, selectedTime = null, selectedCinema = null;
+        let showtimeModal, confirmModal;
+
+        // Khởi tạo Bootstrap modal
+        document.addEventListener('DOMContentLoaded', function() {
+            showtimeModal = new bootstrap.Modal(document.getElementById('showtimeModal'));
+            confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));
+        });
+
+        // [Giữ nguyên toàn bộ logic booking từ code gốc]
+        // Khi bấm "Đặt vé ngay"
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.btn-booking[data-logged-in="true"]').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    selectedMovieId = this.getAttribute('asp-route-movieId') || this.getAttribute('data-movie-id') || this.getAttribute('href').split('movieId=')[1];
+                    const movieName = this.closest('.hero-slide')?.querySelector('.hero-title')?.innerText ||
+                                    this.closest('.movie-card')?.querySelector('.movie-title')?.innerText || "Phim";
+                    document.getElementById('modalMovieName').innerText = movieName;
+
+                    // Render tab ngày
+                    const days = getNext7Days();
+                    const dateTabs = document.getElementById('dateTabs');
+                    dateTabs.innerHTML = '';
+                    days.forEach((d, idx) => {
+                        dateTabs.innerHTML += `
+                            <li class="nav-item">
+                                <a class="nav-link${idx==0?' active':''}" data-bs-toggle="tab" href="#tab${idx}" data-date="${d.toLocaleDateString('en-GB').split('/').join('-')}">
+                                    <div style="font-size: 18px; font-weight: 700;">${d.getDate().toString().padStart(2, '0')}</div>
+                                    <div style="font-size: 11px; opacity: 0.8;">T${d.getMonth()+1}</div>
+                                </a>
+                            </li>
+                        `;
+                    });
+
+                    // Gọi API cho ngày đầu tiên
+                    fetchShowtimesForDay(days[0]);
+
+                    // Lắng nghe khi đổi tab ngày
+                    setTimeout(() => {
+                        dateTabs.querySelectorAll('.nav-link').forEach((tab, idx) => {
+                            tab.addEventListener('click', function() {
+                                fetchShowtimesForDay(days[idx]);
+                            });
+                        });
+                    }, 100);
+
+                    if (showtimeModal) showtimeModal.show();
+                });
+            });
+        });
+
+        // Hàm lấy 7 ngày tiếp theo
+        function getNext7Days() {
+            const days = [];
+            const today = new Date();
+            for (let i = 0; i < 7; i++) {
+                const d = new Date(today);
+                d.setDate(today.getDate() + i);
+                days.push(d);
+            }
+            return days;
+        }
+
+        // Gọi API lấy suất chiếu
+        async function fetchShowtimesForDay(dateObj) {
+            const tabContent = document.getElementById('showtimeTabContent');
+            tabContent.innerHTML = '<div class="loading">Đang tải suất chiếu...</div>';
+            const day = dateObj.getDate().toString().padStart(2, '0');
+            const month = (dateObj.getMonth() + 1).toString().padStart(2, '0');
+            const year = dateObj.getFullYear();
+            const dateParam = `${day}-${month}-${year}`;
+            try {
+                const baseUrl = '@(ViewBag.BookingServiceBaseUrl ?? "https://localhost:7092")';
+                const response = await fetch(`${baseUrl}/api/GetMovieSchedule?movieId=${selectedMovieId}&date=${dateParam}`);
+                if (!response.ok) {
+                    tabContent.innerHTML = '<div class="alert alert-warning">Không có suất chiếu nào cho ngày này.</div>';
+                    return;
+                }
+                const apiResult = await response.json();
+                const showtimes = apiResult.$values || [];
+                renderShowtimeTabContent(showtimes, dateParam);
+            } catch (err) {
+                tabContent.innerHTML = '<div class="alert alert-danger">Lỗi khi lấy suất chiếu.</div>';
+            }
+        }
+
+        // Render các suất chiếu
+        function renderShowtimeTabContent(showtimes, dateParam) {
+            const tabContent = document.getElementById('showtimeTabContent');
+            if (!Array.isArray(showtimes) || showtimes.length === 0) {
+                tabContent.innerHTML = '<div class="alert alert-warning">Không có suất chiếu nào cho ngày này.</div>';
+                return;
+            }
+            let html = showtimes.map(st => {
+                return `
+                    <button class="btn showtime-btn"
+                        data-schedule-id="${st.id}"
+                        data-date="${dateParam}"
+                        data-time="${st.fromTime}"
+                        data-room="${st.cinemaRoom?.cinemaRoomName || ''}"
+                        data-roomid="${st.cinemaRoomId}"
+                        data-showdate="${st.showDate}">
+                        <div class="showtime-time">
+                            <i class="fas fa-clock"></i>
+                            ${st.fromTime}
+                        </div>
+                        <div class="showtime-seats" id="seats-${st.id}">
+                            <i class="fas fa-chair"></i>
+                            Đang tải...
+                        </div>
+                    </button>
+                `;
+            }).join('');
+            tabContent.innerHTML = `<div class="tab-pane fade show active" id="tabShowtimes">${html}</div>`;
+
+            // Gọi API lấy số ghế trống cho từng suất chiếu
+            const baseUrl = '@(ViewBag.BookingServiceBaseUrl ?? "https://localhost:7092")';
+            showtimes.forEach(st => {
+                fetch(`${baseUrl}/api/schedule/${st.id}/available-seats`)
+                    .then(res => res.json())
+                    .then(data => {
+                        document.getElementById(`seats-${st.id}`).innerHTML =
+                            `<i class="fas fa-chair"></i> ${data.availableSeats} ghế trống`;
+                    })
+                    .catch(() => {
+                        document.getElementById(`seats-${st.id}`).innerHTML =
+                            `<i class="fas fa-chair"></i> Không rõ`;
+                    });
+            });
+        }
+
+        // Xử lý chọn suất chiếu
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.showtime-btn')) {
+                const btn = e.target.closest('.showtime-btn');
+                selectedDate = btn.getAttribute('data-showdate') || btn.getAttribute('data-date');
+                selectedTime = btn.getAttribute('data-time');
+                selectedCinema = btn.getAttribute('data-room') || btn.getAttribute('data-roomid');
+
+                document.getElementById('confirmMovieName').innerText = document.getElementById('modalMovieName').innerText;
+                document.getElementById('confirmCinema').innerText = selectedCinema || 'Không rõ';
+                document.getElementById('confirmDate').innerText = selectedDate || 'Không rõ';
+                document.getElementById('confirmTime').innerText = selectedTime || 'Không rõ';
+
+                if (showtimeModal) showtimeModal.hide();
+                setTimeout(() => {
+                    if (confirmModal) confirmModal.show();
+                }, 300);
+            }
+        });
+
+        // Xác nhận đặt vé
+        document.addEventListener('DOMContentLoaded', function() {
+            const confirmGoBtn = document.getElementById('confirmGoBtn');
+            if (confirmGoBtn) {
+                confirmGoBtn.onclick = function() {
+                    if (confirmModal) confirmModal.hide();
+                    setTimeout(() => {
+                        window.location.href = `/Booking/Booking/SeatMap?movieId=${selectedMovieId}&date=${encodeURIComponent(selectedDate)}&time=${encodeURIComponent(selectedTime)}`;
+                    }, 300);
+                };
+            }
+        });
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Parallax effect for hero section
+        window.addEventListener('scroll', function() {
+            const scrolled = window.pageYOffset;
+            const heroVideo = document.querySelector('.hero-video-container');
+            if (heroVideo) {
+                heroVideo.style.transform = `translateY(${scrolled * 0.5}px)`;
+            }
+        });
+    </script>
+}

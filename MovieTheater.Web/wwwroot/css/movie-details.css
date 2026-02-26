@@ -1,0 +1,535 @@
+﻿body, .details-bg {
+    background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%) !important;
+    color: #fff;
+    min-height: 100vh;
+}
+
+.details-bg {
+    min-height: 100vh;
+    width: 100%;
+    padding: 0;
+}
+
+.page-title {
+    text-align: center;
+    margin: 40px 0 20px 0;
+    font-size: 2.5em;
+    font-weight: 700;
+    background: linear-gradient(45deg, #ff6b9d, #c44569, #ff9a9e);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+}
+
+    .page-title i {
+        color: #ff6b9d;
+        font-size: 0.8em;
+    }
+
+.details-section {
+    padding: 2rem 0 3rem 0;
+}
+
+.movie-main-info-row {
+    margin-bottom: 2.5rem;
+}
+
+.movie-poster-card,
+.movie-info-card {
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+    min-height: 100%;
+    color: #fff;
+    padding: 0;
+}
+
+    .movie-info-card .card-header,
+    .movie-info-card .card-body {
+        background: transparent !important;
+        border: none !important;
+        color: #fff;
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+        .movie-info-card .card-header h3 {
+            color: #fff;
+        }
+
+    .movie-info-card .movie-title {
+        margin-top: 0;
+    }
+
+@media (max-width: 991.98px) {
+    .movie-main-info-row {
+        flex-direction: column;
+    }
+
+    .movie-poster-card,
+    .movie-info-card {
+        min-height: unset;
+    }
+}
+
+.genre-tags {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+.genre-tag {
+    background: linear-gradient(135deg, #ff6b9d, #c44569);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(255,107,157,0.2);
+    transition: all 0.3s ease;
+}
+
+    .genre-tag:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(255,107,157,0.3);
+    }
+
+.details-card {
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    margin-bottom: 2rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+    .details-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    }
+
+.card-header {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+    .card-header h3 {
+        color: white;
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin: 0;
+        display: flex;
+        align-items: center;
+    }
+
+        .card-header h3 i {
+            color: #ff6b9d;
+        }
+
+.card-body {
+    padding: 2rem;
+}
+
+.movie-title {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin: 0 0 1rem 0;
+    background: linear-gradient(45deg, #fff, #e2e8f0);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.2;
+}
+
+.movie-status {
+    display: flex;
+    align-items: center;
+}
+
+.status-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.status-active {
+    background: linear-gradient(135deg, #4ade80, #22c55e);
+    color: white;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
+}
+
+.status-inactive {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2);
+}
+
+.info-grid {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.info-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+    .info-item:last-child {
+        border-bottom: none;
+    }
+
+.info-label {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 140px;
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 600;
+}
+
+    .info-label i {
+        color: #ff6b9d;
+        width: 20px;
+        text-align: center;
+    }
+
+.info-value {
+    color: white;
+    font-weight: 500;
+    flex: 1;
+}
+
+.movie-description p {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0;
+}
+
+.navigation-section {
+    padding: 2rem 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.btn-outline-primary {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid #ff6b9d;
+    color: white;
+    backdrop-filter: blur(10px);
+}
+
+    .btn-outline-primary:hover {
+        background: #ff6b9d;
+        border-color: #ff6b9d;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 12px 35px rgba(255,107,157,0.2);
+    }
+
+#scheduleCard .nav-tabs .nav-link {
+    background: #fff !important;
+    color: #222 !important;
+    border: 1px solid #e5e7eb !important;
+    font-weight: 600;
+    border-radius: 10px 10px 0 0 !important;
+    margin-right: 4px;
+    transition: all 0.2s;
+}
+
+    #scheduleCard .nav-tabs .nav-link.active {
+        background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%) !important;
+        color: #fff !important;
+        border-color: #ff6b9d !important;
+    }
+
+.movie-breadcrumb {
+    display: flex;
+    align-items: center;
+    font-size: 1.15em;
+    font-weight: 600;
+    margin-bottom: 18px;
+    color: #fff;
+    letter-spacing: 0.5px;
+}
+
+    .movie-breadcrumb .breadcrumb-home {
+        color: #fff;
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+
+        .movie-breadcrumb .breadcrumb-home:hover {
+            color: #ff6b9d;
+            text-decoration: underline;
+        }
+
+    .movie-breadcrumb .breadcrumb-separator {
+        margin: 0 8px;
+        color: #888;
+        font-weight: 400;
+    }
+
+    .movie-breadcrumb .breadcrumb-movie-title {
+        color: #ff6b9d;
+        font-weight: 700;
+        font-size: 1.1em;
+    }
+
+.schedule-card,
+.schedule-card .card-header,
+.schedule-card .card-body {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+    .schedule-card .card-header h3 {
+        color: #fff;
+    }
+
+.schedule-date-tabs {
+    border-bottom: 1px solid #e5e7eb !important;
+    background: transparent !important;
+    gap: 0.5rem !important; /* Khoảng cách ngắn giữa các nav-link */
+    margin-bottom: 1.2rem !important;
+    padding-left: 0;
+}
+
+    .schedule-date-tabs .nav-link {
+        background: transparent !important;
+        color: #222 !important;
+        border: none !important;
+        border-radius: 0 !important;
+        font-size: 1.6rem;
+        font-weight: 700;
+        padding: 0 18px 8px 18px !important;
+        margin: 0 !important;
+        transition: color 0.2s, border-bottom 0.2s;
+        text-align: center;
+        min-width: 80px;
+        letter-spacing: 1px;
+        border-bottom: 2px solid transparent !important;
+    }
+
+        .schedule-date-tabs .nav-link.active,
+        .schedule-date-tabs .nav-link:focus {
+            color: #2196f3 !important;
+            border-bottom: 3px solid #2196f3 !important;
+            background: transparent !important;
+        }
+
+        .schedule-date-tabs .nav-link:hover:not(.active) {
+            color: #ff6b9d !important;
+            background: transparent !important;
+        }
+
+#showtimeTabContent {
+    margin-top: 1.5rem;
+}
+
+.showtime-group-title {
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.showtime-btn {
+    background: #fff !important;
+    color: #222 !important;
+    border: none !important;
+    border-radius: 4px !important;
+    min-width: 110px;
+    margin: 0 10px 18px 0 !important;
+    padding: 12px 0 6px 0 !important;
+    font-size: 1.1rem;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+
+    .showtime-btn:hover {
+        box-shadow: 0 4px 16px rgba(33,150,243,0.12);
+        transform: translateY(-2px) scale(1.04);
+        color: #2196f3 !important;
+    }
+
+.showtime-time {
+    color: #222 !important;
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-bottom: 2px;
+}
+
+.showtime-seats {
+    color: #888 !important;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+
+.schedule-date-tabs {
+    border-bottom: 1px solid #333 !important;
+    background: transparent !important;
+    gap: 0.5rem !important;
+    margin-bottom: 1.2rem !important;
+    padding-left: 0;
+    justify-content: flex-start;
+}
+
+    .schedule-date-tabs .nav-link {
+        background: transparent !important;
+        color: #fff !important;
+        border: none !important;
+        border-radius: 0 !important;
+        font-size: 2rem;
+        font-weight: 700;
+        padding: 0 18px 8px 18px !important;
+        margin: 0 !important;
+        transition: color 0.2s, border-bottom 0.2s;
+        text-align: center;
+        min-width: 80px;
+        letter-spacing: 1px;
+        border-bottom: 2px solid transparent !important;
+        opacity: 0.92;
+    }
+
+        .schedule-date-tabs .nav-link.active,
+        .schedule-date-tabs .nav-link:focus {
+            color: #ff6b9d !important;
+            border-bottom: 3px solid #ff6b9d !important;
+            background: transparent !important;
+            opacity: 1;
+        }
+
+        .schedule-date-tabs .nav-link:hover:not(.active) {
+            color: #ff6b9d !important;
+            background: transparent !important;
+            opacity: 1;
+        }
+
+/* Button giờ chiếu ngang */
+.showtime-btn-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 18px;
+}
+
+.showtime-btn {
+    background: #fff !important;
+    color: #222 !important;
+    border: none !important;
+    border-radius: 4px !important;
+    min-width: 110px;
+    padding: 12px 0 6px 0 !important;
+    font-size: 1.1rem;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+
+    .showtime-btn:hover {
+        box-shadow: 0 4px 16px rgba(33,150,243,0.12);
+        transform: translateY(-2px) scale(1.04);
+        color: #2196f3 !important;
+    }
+
+.showtime-time {
+    color: #222 !important;
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-bottom: 2px;
+}
+
+.showtime-seats {
+    color: #888 !important;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+@media (max-width: 768px) {
+    .schedule-date-tabs .nav-link {
+        font-size: 1.1rem;
+        min-width: 60px;
+        padding: 0 8px 6px 8px !important;
+    }
+
+    .showtime-btn {
+        min-width: 80px;
+        font-size: 1rem;
+        padding: 10px 0 5px 0 !important;
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+    .movie-title {
+        font-size: 1.7rem;
+    }
+
+    .details-section {
+        padding: 1.5rem 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .details-section {
+        padding: 1rem 0;
+    }
+
+    .card-body {
+        padding: 1rem;
+    }
+
+    .info-item {
+        flex-direction: column;
+        gap: 0.5rem;
+        align-items: flex-start;
+    }
+
+    .info-label {
+        min-width: auto;
+    }
+}
+
+@media (max-width: 576px) {
+    .page-title {
+        font-size: 1.3rem;
+    }
+
+    .movie-title {
+        font-size: 1.1rem;
+    }
+
+    .movie-poster {
+        max-width: 180px;
+        max-height: 270px;
+    }
+}
+
+

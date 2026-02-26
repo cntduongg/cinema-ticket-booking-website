@@ -1,0 +1,589 @@
+﻿@{
+    var active = ViewData["SidebarActive"] as string ?? "";
+}
+
+<style>
+    /* Sidebar Navigation Styles */
+    .sidebar-navigation {
+        padding: 20px 0;
+    }
+
+    .nav-section {
+        margin-bottom: 35px;
+    }
+
+    .nav-section-title {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: rgba(255, 255, 255, 0.5);
+        padding: 0 20px 10px;
+        margin-bottom: 15px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .nav-menu {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .nav-item {
+        margin-bottom: 5px;
+        position: relative;
+    }
+
+    .nav-link {
+        display: flex;
+        align-items: center;
+        padding: 15px 20px;
+        color: rgba(255, 255, 255, 0.8);
+        text-decoration: none;
+        transition: all 0.3s ease;
+        position: relative;
+        border-radius: 0 25px 25px 0;
+        margin-right: 15px;
+        overflow: hidden;
+    }
+
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: transparent;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            text-decoration: none;
+            transform: translateX(8px);
+        }
+
+            .nav-link:hover::before {
+                background: var(--admin-accent);
+            }
+
+    .nav-item.active .nav-link {
+        background: linear-gradient(135deg, rgba(52, 152, 219, 0.2) 0%, rgba(52, 152, 219, 0.1) 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+    }
+
+        .nav-item.active .nav-link::before {
+            background: var(--admin-accent);
+            box-shadow: 0 0 10px var(--admin-accent);
+        }
+
+    .nav-icon {
+        font-size: 1.2rem;
+        width: 20px;
+        text-align: center;
+        margin-right: 15px;
+        transition: all 0.3s ease;
+    }
+
+    .nav-text {
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+    }
+
+    .nav-item.active .nav-icon,
+    .nav-item.active .nav-text {
+        color: white;
+    }
+
+    .nav-link:hover .nav-icon {
+        transform: scale(1.1);
+        color: var(--admin-accent);
+    }
+
+    /* Notification Badge */
+    .nav-badge {
+        background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        color: white;
+        font-size: 0.7rem;
+        font-weight: 700;
+        padding: 2px 6px;
+        border-radius: 10px;
+        margin-left: auto;
+        min-width: 18px;
+        text-align: center;
+    }
+
+    /* Submenu Styles */
+    .nav-submenu {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+        background: rgba(0, 0, 0, 0.2);
+        margin: 5px 0;
+    }
+
+    .nav-item.has-submenu.open .nav-submenu {
+        max-height: 200px;
+    }
+
+    .nav-submenu .nav-link {
+        padding: 10px 20px 10px 55px;
+        font-size: 0.9rem;
+        margin-right: 0;
+        border-radius: 0;
+    }
+
+    .nav-submenu .nav-icon {
+        font-size: 0.9rem;
+        margin-right: 10px;
+    }
+
+    .submenu-toggle {
+        position: absolute;
+        right: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 0.8rem;
+        color: rgba(255, 255, 255, 0.6);
+        transition: all 0.3s ease;
+    }
+
+    .nav-item.has-submenu.open .submenu-toggle {
+        transform: translateY(-50%) rotate(180deg);
+    }
+
+    /* User Profile Enhancement */
+    .admin-user-profile {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+        padding: 20px;
+        margin: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.3s ease;
+    }
+
+        .admin-user-profile:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+    .user-avatar-container {
+        position: relative;
+        text-align: center;
+        margin-bottom: 15px;
+    }
+
+    .user-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        border: 3px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.3s ease;
+    }
+
+        .user-avatar:hover {
+            border-color: var(--admin-accent);
+            transform: scale(1.05);
+        }
+
+    .user-status {
+        position: absolute;
+        bottom: 5px;
+        right: calc(50% - 25px);
+        width: 12px;
+        height: 12px;
+        background: #27ae60;
+        border-radius: 50%;
+        border: 2px solid white;
+    }
+
+    .user-info {
+        text-align: center;
+    }
+
+    .user-name {
+        font-weight: 700;
+        font-size: 1rem;
+        color: white;
+        margin-bottom: 5px;
+    }
+
+    .user-role {
+        font-size: 0.85rem;
+        color: var(--admin-accent);
+        font-weight: 600;
+    }
+
+    /* Sidebar Footer */
+    .sidebar-footer {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 20px;
+        background: rgba(0, 0, 0, 0.2);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .footer-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+    }
+
+    .footer-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.1);
+        border: none;
+        color: rgba(255, 255, 255, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+        .footer-btn:hover {
+            background: var(--admin-accent);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+    /* Responsive adjustments */
+    @@media (max-width: 768px) {
+        .nav-text
+
+    {
+        display: none;
+    }
+
+    .nav-link {
+        justify-content: center;
+        padding: 15px;
+        margin-right: 0;
+        border-radius: 0;
+    }
+
+    .nav-icon {
+        margin-right: 0;
+    }
+
+    .admin-user-profile {
+        padding: 15px 10px;
+    }
+
+    .user-avatar {
+        width: 45px;
+        height: 45px;
+    }
+
+    .user-info {
+        display: none;
+    }
+
+    .nav-section-title {
+        display: none;
+    }
+
+    }
+
+    /* Active state animation */
+    @@keyframes activeGlow {
+        0%
+
+    {
+        box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+    }
+
+    50% {
+        box-shadow: 0 6px 20px rgba(52, 152, 219, 0.5);
+    }
+
+    100% {
+        box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+    }
+
+    }
+
+    .nav-item.active .nav-link {
+        animation: activeGlow 2s ease-in-out infinite;
+    }
+
+    /* Scroll indicator */
+    .sidebar-scroll-indicator {
+        position: absolute;
+        right: 5px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 3px;
+        height: 50px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 2px;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .admin-sidebar:hover .sidebar-scroll-indicator {
+        opacity: 1;
+    }
+
+    .scroll-thumb {
+        width: 100%;
+        background: var(--admin-accent);
+        border-radius: 2px;
+        transition: all 0.3s ease;
+    }
+</style>
+
+<!-- Navigation Menu -->
+<nav class="sidebar-navigation">
+    <!-- Main Navigation -->
+    <div class="nav-section">
+        <div class="nav-section-title">Quản lý chính</div>
+        <ul class="nav-menu">
+            <li class="nav-item @(active == "Dashboard" ? "active" : "")">
+                <a asp-area="UserManagement" asp-controller="Admin" asp-action="Dashboard" class="nav-link">
+                    <i class="fas fa-tachometer-alt nav-icon"></i>
+                    <span class="nav-text">Dashboard</span>
+                </a>
+            </li>
+
+            <li class="nav-item @(active == "UserManagement" ? "active" : "")">
+                <a asp-area="UserManagement" asp-controller="Admin" asp-action="UserManagement" class="nav-link">
+                    <i class="fas fa-users nav-icon"></i>
+                    <span class="nav-text">Quản lý người dùng</span>
+                    <span class="nav-badge">12</span>
+                </a>
+            </li>
+
+            <li class="nav-item @(active == "MovieManagement" ? "active" : "")">
+                <a asp-area="MovieManagement" asp-controller="Movie" asp-action="Index" class="nav-link">
+                    <i class="fas fa-film nav-icon"></i>
+                    <span class="nav-text">Quản lý phim</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Schedule Management -->
+    <div class="nav-section">
+        <div class="nav-section-title">Lịch chiếu</div>
+        <ul class="nav-menu">
+            <li class="nav-item @(active == "ScheduleManagement" ? "active" : "")">
+                <a asp-area="Booking" asp-controller="Schedule" asp-action="AdminIndexWithFilter" class="nav-link">
+                    <i class="fas fa-calendar-plus nav-icon"></i>
+                    <span class="nav-text">Quản lý suất chiếu</span>
+                    <span class="nav-badge">5</span>
+                </a>
+            </li>
+
+            <li class="nav-item @(active == "ScheduleCalendar" ? "active" : "")">
+                <a asp-area="Booking" asp-controller="Schedule" asp-action="Index" class="nav-link">
+                    <i class="fas fa-calendar-alt nav-icon"></i>
+                    <span class="nav-text">Lịch chiếu</span>
+                </a>
+            </li>
+
+            <li class="nav-item @(active == "RoomManagement" ? "active" : "")">
+                <a asp-area="Booking" asp-controller="CinemaRoom" asp-action="CinemaRooms" class="nav-link">
+                    <i class="fas fa-door-open nav-icon"></i>
+                    <span class="nav-text">Quản lý phòng chiếu</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+	<!-- Promotions -->
+    <div class="nav-section">
+        <div class="nav-section-title">Khuyến mãi</div>
+        <ul class="nav-menu">
+            <li class="nav-item @(active == "PromotionManagement" ? "active" : "")">
+                <a asp-area="Booking" asp-controller="Promotion" asp-action="Index" class="nav-link">
+                    <i class="fas fa-tags nav-icon"></i>
+                    <span class="nav-text">Quản lý khuyến mãi</span>
+                </a>
+            </li>
+		</ul>
+	</div>
+
+    <!-- Analytics & Reports -->
+    <div class="nav-section">
+        <div class="nav-section-title">Báo cáo</div>
+        <ul class="nav-menu">
+            <li class="nav-item has-submenu" id="reportsMenu">
+                <a href="#" class="nav-link" onclick="toggleSubmenu('reportsMenu'); return false;">
+                    <i class="fas fa-chart-line nav-icon"></i>
+                    <span class="nav-text">Báo cáo doanh thu</span>
+                    <i class="fas fa-chevron-down submenu-toggle"></i>
+                </a>
+                <ul class="nav-submenu">
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="fas fa-chart-bar nav-icon"></i>
+                            <span class="nav-text">Doanh thu ngày</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="fas fa-chart-pie nav-icon"></i>
+                            <span class="nav-text">Thống kê phim</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="fas fa-file-export nav-icon"></i>
+                            <span class="nav-text">Xuất báo cáo</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
+            <li class="nav-item">
+                <a href="#" class="nav-link">
+                    <i class="fas fa-cog nav-icon"></i>
+                    <span class="nav-text">Cài đặt hệ thống</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a href="#" class="nav-link">
+                    <i class="fas fa-life-ring nav-icon"></i>
+                    <span class="nav-text">Hỗ trợ</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<!-- Sidebar Footer -->
+
+
+<!-- Scroll Indicator -->
+<div class="sidebar-scroll-indicator">
+    <div class="scroll-thumb" style="height: 30%;"></div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Submenu toggle functionality
+        window.toggleSubmenu = function(menuId) {
+            const menu = document.getElementById(menuId);
+            if (menu) {
+                menu.classList.toggle('open');
+            }
+        };
+
+        // FIXED: Removed confirmLogout function - now using modal
+        window.confirmLogout = function() {
+            // Function removed - now using modal instead
+        };
+
+        // Add hover effects to nav items
+        const navItems = document.querySelectorAll('.nav-item:not(.has-submenu)');
+        navItems.forEach(item => {
+            const link = item.querySelector('.nav-link');
+
+            link.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateX(8px)';
+            });
+
+            link.addEventListener('mouseleave', function() {
+                if (!item.classList.contains('active')) {
+                    this.style.transform = 'translateX(0)';
+                }
+            });
+        });
+
+        // Active nav item enhancement
+        const activeItem = document.querySelector('.nav-item.active');
+        if (activeItem) {
+            const activeLink = activeItem.querySelector('.nav-link');
+            activeLink.style.transform = 'translateX(8px)';
+        }
+
+        // Smooth scroll for sidebar
+        const sidebar = document.querySelector('.admin-sidebar');
+        if (sidebar) {
+            let isScrolling = false;
+
+            sidebar.addEventListener('scroll', function() {
+                if (!isScrolling) {
+                    const scrollIndicator = this.querySelector('.sidebar-scroll-indicator');
+                    if (scrollIndicator) {
+                        scrollIndicator.style.opacity = '1';
+                    }
+
+                    isScrolling = true;
+                    setTimeout(() => {
+                        isScrolling = false;
+                        if (scrollIndicator) {
+                            scrollIndicator.style.opacity = '0';
+                        }
+                    }, 1000);
+                }
+            });
+        }
+
+        // Badge animation
+        const badges = document.querySelectorAll('.nav-badge');
+        badges.forEach(badge => {
+            setInterval(() => {
+                badge.style.transform = 'scale(1.1)';
+                setTimeout(() => {
+                    badge.style.transform = 'scale(1)';
+                }, 200);
+            }, 3000);
+        });
+
+        // Add ripple effect to nav links
+        const navLinks = document.querySelectorAll('.nav-link');
+        navLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                const ripple = document.createElement('span');
+                const rect = this.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = e.clientX - rect.left - size / 2;
+                const y = e.clientY - rect.top - size / 2;
+
+                ripple.style.cssText = `
+                    position: absolute;
+                    width: ${size}px;
+                    height: ${size}px;
+                    left: ${x}px;
+                    top: ${y}px;
+                    background: rgba(255, 255, 255, 0.2);
+                    border-radius: 50%;
+                    transform: scale(0);
+                    animation: ripple 0.6s linear;
+                    pointer-events: none;
+                `;
+
+                this.style.position = 'relative';
+                this.style.overflow = 'hidden';
+                this.appendChild(ripple);
+
+                setTimeout(() => {
+                    ripple.remove();
+                }, 600);
+            });
+        });
+
+        // Add CSS for ripple animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @@keyframes ripple {
+                to {
+                    transform: scale(4);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    });
+</script>

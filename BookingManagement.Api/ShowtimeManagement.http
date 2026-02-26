@@ -1,0 +1,6 @@
+@ShowtimeManagement.Api_HostAddress = http://localhost:5030
+
+GET {{ShowtimeManagement.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

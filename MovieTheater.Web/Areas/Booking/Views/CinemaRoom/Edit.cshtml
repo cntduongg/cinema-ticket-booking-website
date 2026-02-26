@@ -1,0 +1,420 @@
+@model MovieTheater.Web.Areas.Booking.Models.CinemaRoom
+
+@{
+    ViewData["SidebarActive"] = "RoomManagement";
+    ViewData["Title"] = "Sửa Phòng Chiếu";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ===== BASE STYLES ===== */
+        :root {
+            --primary:#3498db;
+            --primary-light: #5dade2;
+            --dark: #2c81ba;
+            --light: #f8fafc;
+            --gray: #94a3b8;
+            --danger: #ef4444;
+            --success: #10b981;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f1f5f9;
+            margin: 0;
+            padding: 0;
+            color: #334155;
+        }
+
+        /* ===== LAYOUT ===== */
+        .admin-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            background-color: #f1f5f9;
+        }
+
+        /* ===== FORM STYLES ===== */
+        .form-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 25px;
+        }
+
+        .form-header {
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .form-title {
+            font-size: 1.5rem;
+            color: var(--dark);
+            margin: 0 0 5px 0;
+        }
+
+        .form-subtitle {
+            color: var(--gray);
+            margin: 0;
+            font-size: 0.9rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark);
+        }
+
+        .form-label i {
+            margin-right: 8px;
+            color: var(--primary);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+        }
+
+        /* ===== BUTTONS ===== */
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn {
+padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-light);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background-color: white;
+            color: var(--dark);
+            border: 1px solid #cbd5e1;
+        }
+
+        .btn-secondary:hover {
+            background-color: #f8fafc;
+        }
+
+        /* ===== CHECKBOX ===== */
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+        }
+
+        .checkbox-input {
+            width: 18px;
+            height: 18px;
+            margin-right: 10px;
+            accent-color: var(--primary);
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            color: var(--dark);
+        }
+
+        /* ===== VALIDATION ===== */
+        .validation-error {
+            display: block;
+            margin-top: 5px;
+            color: var(--danger);
+            font-size: 0.85rem;
+        }
+
+        .form-input.error {
+            border-color: var(--danger);
+        }
+
+        .form-input.success {
+            border-color: var(--success);
+        }
+
+        /* ===== ROOM INFO ===== */
+        .room-info {
+            background-color: #e0e7ff;
+            color: var(--primary);
+            padding: 8px 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @@media (max-width: 768px) {
+            .admin-container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+       
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="form-container">
+                <div class="form-header">
+                    <h2 class="form-title">SỬA PHÒNG CHIẾU</h2>
+                    <p class="form-subtitle">Cập nhật thông tin phòng chiếu</p>
+                    
+                    <div class="room-info">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Đang chỉnh sửa: @Model.CinemaRoomName</span>
+                    </div>
+                </div>
+<form asp-action="Edit" method="post" id="editRoomForm">
+                    <input type="hidden" asp-for="Id" />
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-film"></i>
+                            Tên Phòng Chiếu
+                        </label>
+                        <input 
+                            asp-for="CinemaRoomName"
+                            type="text" 
+                            name="CinemaRoomName" 
+                            class="form-input"
+                            placeholder="VD: Phòng VIP 01, Phòng Thường 02..."
+                            required
+                        />
+                        <span asp-validation-for="CinemaRoomName" class="validation-error" id="name-error"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-chair"></i>
+                            Số Lượng Ghế
+                        </label>
+                        <input 
+                            asp-for="SeatQuantity"
+                            type="number" 
+                            name="SeatQuantity" 
+                            class="form-input"
+                            placeholder="Nhập số lượng ghế (1-500)"
+                            min="1" 
+                            max="500"
+                            required
+                        />
+                        <span asp-validation-for="SeatQuantity" class="validation-error" id="seat-error"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-cog"></i>
+                            Trạng Thái Hoạt Động
+                        </label>
+                        <div class="checkbox-group">
+                            <input type="hidden" name="Status" value="false" />
+                            <input 
+                                asp-for="Status"
+                                type="checkbox" 
+                                name="Status" 
+                                id="statusCheckbox" 
+                                class="checkbox-input"
+                                value="true"
+                            />
+                            <label for="statusCheckbox" class="checkbox-label">
+                                <i class="fas fa-power-off"></i>
+                                Phòng chiếu đang hoạt động
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i>
+                            CẬP NHẬT
+                        </button>
+<a href="@Url.Action("CinemaRooms", "CinemaRoom", new { area = "Booking" })" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i>
+                            QUAY LẠI
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Form validation
+        function validateInput(input) {
+            const value = input.value.trim();
+            const inputName = input.name;
+            let isValid = true;
+            let errorMsg = '';
+
+            // Remove previous states
+            input.classList.remove('error', 'success');
+
+            if (inputName === 'CinemaRoomName') {
+                if (value.length === 0) {
+                    errorMsg = 'Tên phòng chiếu không được để trống';
+                    isValid = false;
+                } else if (value.length < 3) {
+                    errorMsg = 'Tên phòng chiếu phải có ít nhất 3 ký tự';
+                    isValid = false;
+                } else if (value.length > 50) {
+                    errorMsg = 'Tên phòng chiếu không được vượt quá 50 ký tự';
+                    isValid = false;
+                }
+                
+                document.getElementById('name-error').textContent = errorMsg;
+            }
+
+            if (inputName === 'SeatQuantity') {
+                const numValue = parseInt(value);
+                if (isNaN(numValue) {
+                    errorMsg = 'Vui lòng nhập số hợp lệ';
+                    isValid = false;
+                } else if (numValue < 1) {
+                    errorMsg = 'Số lượng ghế phải lớn hơn 0';
+                    isValid = false;
+                } else if (numValue > 500) {
+                    errorMsg = 'Số lượng ghế không được vượt quá 500';
+                    isValid = false;
+                }
+                
+                document.getElementById('seat-error').textContent = errorMsg;
+            }
+
+            if (isValid) {
+                input.classList.add('success');
+            } else {
+                input.classList.add('error');
+            }
+
+            return isValid;
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('editRoomForm');
+            const inputs = form.querySelectorAll('.form-input');
+            const statusCheckbox = document.getElementById('statusCheckbox');
+
+            // Input validation
+            inputs.forEach(input => {
+                input.addEventListener('blur', function() {
+                    validateInput(this);
+                });
+
+                input.addEventListener('input', function() {
+                    if (this.classList.contains('error')) {
+                        validateInput(this);
+                    }
+                });
+            });
+
+            // Form submission
+            if (form) {
+form.addEventListener('submit', function (e) {
+                    // Validate form before submission
+                    let isValid = true;
+                    inputs.forEach(input => {
+                        if (!validateInput(input)) {
+                            isValid = false;
+                        }
+                    });
+
+                    if (!isValid) {
+                        e.preventDefault();
+                        return false;
+                    }
+
+                    // Ensure Status is always sent as true/false
+                    const hiddenStatus = form.querySelector('input[type="hidden"][name="Status"]');
+                    if (hiddenStatus) hiddenStatus.remove();
+                    if (!statusCheckbox.checked) {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = 'Status';
+                        input.value = 'false';
+                        form.appendChild(input);
+                    }
+
+                    // Show loading state
+                    const submitBtn = form.querySelector('.btn-primary');
+                    const originalText = submitBtn.innerHTML;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ĐANG XỬ LÝ...';
+                    submitBtn.disabled = true;
+
+                    return true;
+                });
+            }
+        });
+    </script>
+
+    @section Scripts {
+        @await Html.PartialAsync("_ValidationScriptsPartial")
+    }
+</body>
+</html>
